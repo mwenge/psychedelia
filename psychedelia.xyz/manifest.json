@@ -1,0 +1,21 @@
+{
+    "short_name": "Matrix",
+    "name": "Matrix",
+    "icons": [
+        {
+            "src": "matrix-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+            },
+        {
+            "src": "matrix-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+            }
+        ],
+    "start_url": "/",
+    "background_color": "black",
+    "display": "standalone",
+    "scope": ".",
+    "theme_color": "black"
+}

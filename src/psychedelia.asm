@@ -1,33 +1,10 @@
 ;
 ; **** ZP FIELDS **** 
 ;
-f00 = $00
-f01 = $01
-f02 = $02
-f03 = $03
 f04 = $04
-f45 = $45
-f55 = $55
-f61 = $61
-fBA = $BA
-fC1 = $C1
-fC5 = $C5
-fCC = $CC
-fD3 = $D3
-fEA = $EA
-fEF = $EF
-fF6 = $F6
-fFA = $FA
-fFB = $FB
-fFC = $FC
-fFD = $FD
-fFE = $FE
-fFF = $FF
 ;
 ; **** ZP ABSOLUTE ADRESSES **** 
 ;
-a00 = $00
-a01 = $01
 a02 = $02
 a03 = $03
 a04 = $04
@@ -65,34 +42,12 @@ a23 = $23
 a24 = $24
 a25 = $25
 a26 = $26
-a45 = $45
-a52 = $52
-a54 = $54
-a55 = $55
-a62 = $62
-a74 = $74
 aA0 = $A0
-aAE = $AE
 aBA = $BA
-aBF = $BF
-aC1 = $C1
 aC4 = $C4
 aC5 = $C5
 aC6 = $C6
-aC9 = $C9
-aCC = $CC
 aCE = $CE
-aD1 = $D1
-aD2 = $D2
-aD3 = $D3
-aD4 = $D4
-aD5 = $D5
-aD6 = $D6
-aiDC = $DC
-aDD = $DD
-aEC = $EC
-aEE = $EE
-aFA = $FA
 aFB = $FB
 aFC = $FC
 aFD = $FD
@@ -101,118 +56,37 @@ aFF = $FF
 ;
 ; **** ZP POINTERS **** 
 ;
-p00 = $00
 p01 = $01
-p02 = $02
-p03 = $03
-p04 = $04
 p05 = $05
-p06 = $06
 p07 = $07
-p08 = $08
 p0A = $0A
 p0C = $0C
 p0D = $0D
-p0E = $0E
 p10 = $10
 p18 = $18
 p1B = $1B
-p1C = $1C
 p1D = $1D
 p1F = $1F
-p20 = $20
 p22 = $22
-p24 = $24
-p28 = $28
-p2A = $2A
-p2E = $2E
-p46 = $46
-p4D = $4D
-p53 = $53
-p54 = $54
-p55 = $55
-p80 = $80
-pA0 = $A0
-pA6 = $A6
-pA9 = $A9
-pAA = $AA
-pAB = $AB
-pAC = $AC
-pAE = $AE
-pBD = $BD
-pBF = $BF
-pC3 = $C3
-pC8 = $C8
-pCC = $CC
-pD0 = $D0
-pD2 = $D2
-pD4 = $D4
-pD5 = $D5
-pD9 = $D9
-pDD = $DD
-pEC = $EC
-pEE = $EE
 pFB = $FB
 pFD = $FD
-pFF = $FF
 ;
 ; **** FIELDS **** 
 ;
-f0055 = $0055
-f00A9 = $00A9
-f00FF = $00FF
-f01FD = $01FD
-f0200 = $0200
-f0202 = $0202
-f02FD = $02FD
-f0300 = $0300
-f0303 = $0303
 f0400 = $0400
-f0455 = $0455
 f0500 = $0500
-f0503 = $0503
 f0600 = $0600
 f06C0 = $06C0
 f07BF = $07BF
-f3B38 = $3B38
-f5502 = $5502
-f5503 = $5503
-f5555 = $5555
-f55FB = $55FB
-f55FD = $55FD
-f55FE = $55FE
-f55FF = $55FF
-f8973 = $8973
 fA0A0 = $A0A0
-fB900 = $B900
-fBD00 = $BD00
-fBD81 = $BD81
-fBF00 = $BF00
-fC8C3 = $C8C3
-fCDCD = $CDCD
-fD1A0 = $D1A0
-fD8A0 = $D8A0
 fD900 = $D900
 fDA00 = $DA00
 fDAC0 = $DAC0
 fDBBF = $DBBF
 fE199 = $E199
-fF9D0 = $F9D0
-fFB03 = $FB03
-fFBF7 = $FBF7
-fFBFC = $FBFC
-fFC55 = $FC55
-fFD00 = $FD00
-fFD55 = $FD55
-fFEFD = $FEFD
-fFF55 = $FF55
-fFFFE = $FFFE
-fFFFF = $FFFF
 ;
 ; **** ABSOLUTE ADRESSES **** 
 ;
-a0001 = $0001
-a0107 = $0107
 a0286 = $0286
 a028D = $028D
 a0291 = $0291
@@ -220,51 +94,15 @@ a0314 = $0314
 a0315 = $0315
 a0318 = $0318
 a0319 = $0319
-a0607 = $0607
 a07C6 = $07C6
 a07C7 = $07C7
 a07C8 = $07C8
 a07D1 = $07D1
-a3038 = $3038
-a5514 = $5514
 a7FFF = $7FFF
-a8162 = $8162
-a8562 = $8562
-aA0C1 = $A0C1
-aA0C5 = $A0C5
-aA0CF = $A0CF
-aA0D9 = $A0D9
-aAEAE = $AEAE
-aAEC7 = $AEC7
-aBAC7 = $BAC7
-aBDC1 = $BDC1
-aC1CC = $C1CC
-aC1D3 = $C1D3
 aC300 = $C300
 aC301 = $C301
 aC4CF = $C4CF
-aC5C3 = $C5C3
-aC5CD = $C5CD
-aC5D2 = $C5D2
-aC5D3 = $C5D3
-aC820 = $C820
-aC9C1 = $C9C1
-aCCA0 = $CCA0
 aCEC9 = $CEC9
-aCFA0 = $CFA0
-aCFCE = $CFCE
-aCFD4 = $CFD4
-aD4C9 = $D4C9
-aD5CF = $D5CF
-aD8C1 = $D8C1
-aD9C1 = $D9C1
-aEC81 = $EC81
-aEE81 = $EE81
-aEE85 = $EE85
-aFD81 = $FD81
-aFDC1 = $FDC1
-aFF02 = $FF02
-aFF06 = $FF06
 ;
 ; **** POINTERS **** 
 ;
@@ -275,17 +113,11 @@ pD800 = $D800
 ;
 ; **** EXTERNAL JUMPS **** 
 ;
-e4128 = $4128
-e4153 = $4153
-e4D28 = $4D28
-e5028 = $5028
 eEA31 = $EA31
-eF8A2 = $F8A2
 ;
 ; **** PREDEFINED LABELS **** 
 ;
 ROM_IOINIT = $FF84
-ROM_RAMTAS = $FF87
 ROM_READST = $FFB7
 ROM_SETLFS = $FFBA
 ROM_SETNAM = $FFBD

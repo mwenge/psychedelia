@@ -5,7 +5,7 @@
 
 This is the disassembled and [commented source code] for the 1983 Commodore 64 game Psychedelia by Jeff Minter. 
 
-A version of the game you can play in your browser can be found at [https://psychedelia.xyz].
+A version of the game you can [play in your browser can be found here].
 
 ## Requirements
 
@@ -14,7 +14,7 @@ A version of the game you can play in your browser can be found at [https://psyc
 
 [64tass]: http://tass64.sourceforge.net/
 [vice]: http://vice-emu.sourceforge.net/
-[https://psychedelia.xyz]: https://mwenge.github.io/psychedelia.xyz
+[play in your browser can be found here]: https://mwenge.github.io/psychedelia
 [commented source code]:https://github.com/mwenge/psychedelia/blob/master/src/psychedelia.asm
 
 To compile and run it do:

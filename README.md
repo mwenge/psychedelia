@@ -3,7 +3,9 @@
 <img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" width=500>
 
 
-This is the disassembled and [commented source code] for the 1983 Commodore 64 game Psychedelia by Jeff Minter. 
+This is the disassembled and [commented source code] for the 1984 Commodore 64 "light-synthesizer" Psychedelia by Jeff Minter. 
+
+Psychedelia was Minter's first realized concept for a light synthesizer. The idea is that you manipulate the display on the screen to accompany music. He later continued the idea in [Trip-a-Tron] and [Neon] , which was built into the X360 XBox console.
 
 A version of the game you can [play in your browser can be found here].
 
@@ -16,6 +18,8 @@ A version of the game you can [play in your browser can be found here].
 [vice]: http://vice-emu.sourceforge.net/
 [play in your browser can be found here]: https://mwenge.github.io/psychedelia
 [commented source code]:https://github.com/mwenge/psychedelia/blob/master/src/psychedelia.asm
+[Trip-a-Tron]: https://en.wikipedia.org/wiki/Trip-a-Tron
+[Neon]: https://en.wikipedia.org/wiki/Neon_(light_synthesizer)
 
 To compile and run it do:
 

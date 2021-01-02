@@ -29,10 +29,10 @@ To just compile the game and get a binary (`psychedelia.prg`) do:
 ```sh
 $ make psychedelia
 ```
- ## Psychedelia Manual (by Jeff Minter)
+## Psychedelia Manual (by Jeff Minter)
 
 
-AN ENTERTAINMENT by Jeff Minter......
+### AN ENTERTAINMENT by Jeff Minter......
 
 An Explanation of the Concept...PSYCHEDELIA is really the
 culmination of several months’ idle thinking. | love games, but
@@ -70,7 +70,9 @@ I've ever programmed.
 
 Enjoy PSYCHEDELIA. This one comes straight from the heart.
 
-Loading PSYCHEDELIA: Place the cassette in the tape deck.
+### Loading PSYCHEDELIA
+
+Place the cassette in the tape deck.
 Holding down the SHIFT key tap RUN/STOP. As prompted, press
 PLAY on the deck. From this point loading is automatic. You'll see
 various messages as the load progresses, and once loadings over
@@ -78,7 +80,8 @@ you'll see the basic PSYCHEDELIA screen, black with a single pixel
 on it. You're now ready to go. Use a Joystick in Port 2 (the REAR
 socket).
 
-Using PSYCHEDELIA: I'll give various levels of information, you
+### Using PSYCHEDELIA
+I'll give various levels of information, you
 can enjoy even the simplest level but as you continue you'll
 probably want to learn how to operate the Light Synthesiser’s
 more complex options.
@@ -93,7 +96,8 @@ out io see some uf the multitude of effects which you cai achieve
 using the system. Some are fast, some slow, some pulse, others
 swirl. Play with them all, try them to different music.
 
-Basic Commands: Choose a pattern you like and get ready to
+### Basic Commands
+Choose a pattern you like and get ready to
 experiment. Press S to change the Symmetry. (The pattern gets
 reflected in various planes, or not at all according to the setting).
 Press SPACE to alter the pattern element. There are eight
@@ -103,7 +107,8 @@ always choose from 16 shapes. Press UP-ARROW to change the
 shape of the little pixels on the screen. Press L to turn on and off the
 Line Mode - a bit like drawing with the Aurora Borealis.
 
-More Advanced Commands: !'ll divide these into Variables and
+### More Advanced Commands
+I'll divide these into Variables and
 Others. Variables, when activated, bring up a little graduated bar
 at the bottom of the screen representing the current value of that
 variable. Use the< and >keys to alter the value to what is required,
@@ -114,7 +119,7 @@ generation is actually occurring. (Clever little things - those
 interrupts!).
 
  
-Variable Commands
+### Variable Commands
 
 Cursor Speed-C to activate: Just that. Gives you a slow r fast
 little cursor, according to setting. r
@@ -153,7 +158,7 @@ RETURN, and the command offers the next colour along, up to no.
 7, then ends. Cannot be adjusted while patterns being
 generated.
 
-Now some other commands, not variables:
+### Now some other commands, not variables:
 
 TRACKING on/off-T: Controls whether logic-seeking is used in
 the buffer or not. The upshot of this for you is a slightly different
@@ -246,16 +251,12 @@ next to your hi-fi!
 
 PSYCHEDELIA. I hope you enjoy playing with it as much as I do
 
- 
-
 The following all in some way inspired this creation: Roger Waters, Dave Gilmour, Nick
 Mason et al., our Phil with the bald patch, KMEL 106FM, Ronnie James Dio, the Purple,
 Isso Tomits, Rush, Steve Hillage, Yes, Led Zep, and many more... The Hairy One is pleased
 with himself this time... perhaps because The Hairy One has played with nothing else on
 his 64 for 3 weeks... If this blows your mind then you're on the same brainiength as me.
 See you out by Alpha Centauri.....
-
-   
 
 ORIGINAL SOFTWARE DESIGN
 

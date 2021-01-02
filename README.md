@@ -1,6 +1,6 @@
 # Psychedelia by Jeff Minter
 
-<img src="https://user-images.githubusercontent.com/58846/102926230-8f95c700-448c-11eb-9895-d1f0827f2aff.png" width=200>
+<img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" width=500>
 
 
 This is the disassembled and [commented source code] for the 1983 Commodore 64 game Psychedelia by Jeff Minter. 

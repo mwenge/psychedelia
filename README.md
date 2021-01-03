@@ -1,7 +1,7 @@
 # Psychedelia by Jeff Minter
 
-<img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" width=500>
-
+<img src="https://user-images.githubusercontent.com/58846/103469199-9e685d80-4d59-11eb-96c8-386b3a530809.png" height=300>
+<img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" height=300>
 
 This is the disassembled and [commented source code] for the 1984 Commodore 64 "light-synthesizer" Psychedelia by Jeff Minter. 
 

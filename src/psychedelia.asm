@@ -3045,16 +3045,9 @@ b1F73   LDA demoMessage,X
         JMP WriteLastLineBufferToScreen
 
 demoMessage
-        ; 'PSYCHEDE'
-        .BYTE $D0,$D3,$D9,$C3,$C8,$C5,$C4,$C5         ; $1F81:
-        ; 'LIA CRAC'
-        .BYTE $CC,$C9,$C1,$A0,$C3,$D2,$C1,$C3         ; $1F89:
-        ; 'KED BY S'
-        .BYTE $CB,$C5,$C4,$A0,$C2,$D9,$A0,$D3         ; $1F91:
-        ; 'NAIL HI '
-        .BYTE $CE,$C1,$C9,$CC,$20,$C8,$C9,$20         ; $1F99:
-        ; 'J MINTER'
-        .BYTE $CA,$A0,$CD,$C9,$CE,$D4,$C5,$D2         ; $1FA1:
+        .TEXT "      PSYCHEDELIA BY JEFF MINTER         "
+
+* = $1FA9
 a1FA9
         .BYTE $20
 NMIInterruptHandler

@@ -11,7 +11,7 @@ original: clean d64_orig run_orig
 
 psychedelia.prg: src/psychedelia.asm
 	64tass -Wall --cbm-prg -Wno-implied-reg -o bin/psychedelia.prg -L bin/list-co1.txt -l bin/labels.txt src/psychedelia.asm
-	md5sum bin/psychedelia.prg orig/psychedelia.prg
+	md5sum bin/psychedelia.prg orig/psychedelia-crack-removed.prg
 
 d64: psychedelia.prg
 	$(C1541) -format "psychedelia,rq" d64 $(D64_IMAGE)

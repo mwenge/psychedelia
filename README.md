@@ -150,7 +150,9 @@ D to activate: Because of the time taken to
 draw larger patterns speed increase/decrease is not linear. You
 can adjust the ‘compensating delay’ which often smooths out jerky
 patterns. Can be used just for special FX, though. Suck it and see.
-Buffer Length-B to activate: Larger patterns flow more smoothly
+
+#### Buffer Length
+B to activate: Larger patterns flow more smoothly
 with a shorter Buffer Length - not so many positions are retained
 so less plotting to do. Small patterns with a long Buffer Length are
 good for ‘steamer’ effects. N.B. Cannot be adjusted whilst

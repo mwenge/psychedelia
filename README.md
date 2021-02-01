@@ -163,10 +163,10 @@ V to activate: Controls the rate at which
 sequencer feeds in its data. See the SEQUENCER bit.
 
 #### BASE LEVEL
-- to activate: Controls how many ‘levels’ of pattern
+* to activate: Controls how many ‘levels’ of pattern
 are plotted.
 
-#### COLOUR change
+#### COLOUR CHANGE
 H to activate: Allows you to set the colour for
 each of the seven pattern steps. Set up the colour you want, press
 RETURN, and the command offers the next colour along, up to no.

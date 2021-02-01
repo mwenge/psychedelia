@@ -126,22 +126,27 @@ interrupts!).
  
 ### Variable Commands
 
-Cursor Speed-C to activate: Just that. Gives you a slow r fast
+#### Cursor Speed
+C to activate: Just that. Gives you a slow r fast
 little cursor, according to setting. r
 
-Pulse Speed-P to activate: Usually if you hold down the button
+#### Pulse Speed
+P to activate: Usually if you hold down the button
 you get a continuous stream. Setting the Pulse Speed allows you to
 generate a pulsed stream, as if you were rapidly pressing and
 releasing the FIRE button.
 
-Pulse Width-O to activate: Sets the length of the pulses in a
+#### Pulse Width
+O to activate: Sets the length of the pulses in a
 pulsed stream output. Don’t worry about what that means - just get
 in there and mess with it.
 
-Line Width-W to activate: Sets the width of the lines produced in
+#### Line Width
+W to activate: Sets the width of the lines produced in
 Line Mode.
 
-Smoothing Delay-D to activate: Because of the time taken to
+#### Smoothing Delay
+D to activate: Because of the time taken to
 draw larger patterns speed increase/decrease is not linear. You
 can adjust the ‘compensating delay’ which often smooths out jerky
 patterns. Can be used just for special FX, though. Suck it and see.
@@ -151,13 +156,16 @@ so less plotting to do. Small patterns with a long Buffer Length are
 good for ‘steamer’ effects. N.B. Cannot be adjusted whilst
 patterns are actually onscreen.
 
-Sequencer Speed-V to activate: Controls the rate at which
+#### Sequencer Speed
+V to activate: Controls the rate at which
 sequencer feeds in its data. See the SEQUENCER bit.
 
-BASE LEVEL- to activate: Controls how many ‘levels’ of pattern
+#### BASE LEVEL
+- to activate: Controls how many ‘levels’ of pattern
 are plotted.
 
-COLOUR change-H to activate: Allows you to set the colour for
+#### COLOUR change
+H to activate: Allows you to set the colour for
 each of the seven pattern steps. Set up the colour you want, press
 RETURN, and the command offers the next colour along, up to no.
 7, then ends. Cannot be adjusted while patterns being
@@ -165,12 +173,14 @@ generated.
 
 ### Now some other commands, not variables:
 
-TRACKING on/off-T: Controls whether logic-seeking is used in
+#### TRACKING on/off
+T: Controls whether logic-seeking is used in
 the buffer or not. The upshot of this for you is a slightly different
 feel - continuous but fragmented when ON, or together-ish bursts
 when OFF. Try it.
 
-AUTO DEMO on/off-A: PSYCHEDELIA plays itself if you want.
+#### AUTO DEMO on/off
+A: PSYCHEDELIA plays itself if you want.
 PAUSE-Cursor Left/Right: Hold a particularly hoopy pattern.
 STORE on PRESET KEY: SHIFT plus any of the top row of
 preset keys: Stores all the parameters for later, instantaneous,
@@ -178,7 +188,8 @@ recall by pressing that preset key. Use to store your favourites for
 recall instantly without fiddling with all the parameters. 16 presets
 available.
 
-RECORD/PLAYBACK: Shift-R to start recording, R to
+#### RECORD/PLAYBACK
+Shift-R to start recording, R to
 playback or stop: PSYCHEDELIA can record about half-an-hours’
 worth of joystick input in its memory. Start recording and play as
 normal-you get a coloured border whilst recording. When you've
@@ -189,7 +200,8 @@ happens. PSY drops out of Record automatically, if it runs out of
 memory. During playback it repeats the stored performance until R
 is pressed to halt it.
 
-BURST GENERATORS: SHIFT plus fkey to program, fkey alone
+#### BURST GENERATORS
+SHIFT plus fkey to program, fkey alone
 to activate. These allow you to preprogram and recall at will
 instantaneous flashes on the screen. Set up symmetry and
 smoothing delay as required, then press SHIFT plus the fkey to
@@ -199,7 +211,8 @@ want a burst then press Left-Arrow to enter that point. Do this up to
 assigned stuffs all the points you defined into the buffer
 instantaneously. Don’t worry about it - try the ones I've defined!
 
-SEQUENCER: SHIFT-Q to ram, Q to toggle on/off:
+#### SEQUENCER
+SHIFT-Q to ram, Q to toggle on/off:
 Programming is as for the Burst Generators, but you have the
 freedom of 255 steps allowed played back at varying speeds via the
 Sequencer Speed control. You can leave the program mode in two
@@ -210,7 +223,8 @@ Use the SPACE option to change pattern in mid-sequence, for
 example, or to ‘see how it looks so far’.
 
 
-STORING ONTO TAPE: You can SAVE your favorite presets,
+#### STORING ONTO TAPE
+You can SAVE your favorite presets,
 sequencer runs, bursts etc or stored joystick moves onto tape for
 later re-loading and use. To start the SAVE: press shift-S. You get
 the option if saving Parameters or Motion. Selecting
@@ -226,8 +240,9 @@ SHEEP from the GOATS.
 
 After either of these options terminates you return to what you
 were doing before.
-EDITING THE PATTERN ELEMENTS: There are eight elements
-you can define for yourself. To get into pattern edit mode press
+
+### EDITING THE PATTERN ELEMENTS
+There are eight elements you can define for yourself. To get into pattern edit mode press
 CTRL and any of the first 8 preset keys. The screen clears and the
 cursor centres. Each pattern is composed of seven levels. Level
 One is preset, always just a single white dot. You can determine

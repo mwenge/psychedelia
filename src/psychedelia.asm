@@ -36,7 +36,7 @@ a1D = $1D
 a1E = $1E
 a1F = $1F
 a20 = $20
-a21 = $21
+lastJoystickInput = $21
 a22 = $22
 a23 = $23
 a24 = $24
@@ -81,7 +81,7 @@ fE199 = $E199
 ; **** ABSOLUTE ADRESSES **** 
 ;
 a0286 = $0286
-a028D = $028D
+shiftKey = $028D
 a0291 = $0291
 a0314 = $0314
 a0315 = $0315
@@ -121,6 +121,7 @@ ROM_CLALL = $FFE7
 ;-----------------------------------------------------------
 ; Start program at InitializeProgram (SYS 2064)
 ;-----------------------------------------------------------
+        ; 'A2064'
         .BYTE $0B,$08,$C1,$07,$9E,$32,$30,$36,$34 ; SYS 2064
         .BYTE $00,$00,$00,$F9
         .BYTE $02,$F9    ;JAM 
@@ -201,7 +202,7 @@ b0892   LDA #$CF
         BNE b0892
         RTS 
 
-potentialKeyCodes
+presetKeyCodes
         .BYTE $39,$38,$3B,$08,$0B,$10,$13,$18
         .BYTE $1B,$20,$23,$28,$2B,$30,$33,$00
 
@@ -636,8 +637,8 @@ b0D03   LDA #$00
         LDA a0E40
         STA a0CE6
         JSR UpdateJumpTable
-        JSR s1B7D
-        LDA a21
+        JSR GetJoystickInput
+        LDA lastJoystickInput
         AND #$03
         CMP #$03
         BEQ b0D40
@@ -657,7 +658,7 @@ b0D37   CMP #$18
         BNE b0D40
         LDA #$00
         STA jumpTableIndex
-b0D40   LDA a21
+b0D40   LDA lastJoystickInput
         AND #$0C
         CMP #$0C
         BEQ b0D6D
@@ -677,7 +678,7 @@ b0D64   CMP #$28
         BNE b0D6D
         LDA #$00
         STA a0E39
-b0D6D   LDA a21
+b0D6D   LDA lastJoystickInput
         AND #$10
         BEQ b0D7B
         LDA #$00
@@ -839,6 +840,7 @@ a0E52
 f0E53   
        .BYTE $7C
        .BYTE $93
+       ; 'C'
        .BYTE $C3
        .BYTE $07
        .BYTE $23
@@ -848,12 +850,14 @@ f0E53
 f0E63   
        .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
 f0E6B   
+       ; 'HIJKLMNO'
        .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
 f0E73   
        .BYTE $A3,$AB,$E5,$15,$3D,$73,$89,$D1
        .BYTE $80,$80,$80,$80,$80,$80,$80,$80
 f0E83   
        .BYTE $09,$0E,$0E,$0F,$0F,$0F          ; $0E81:          
+       ; 'HIJKLM'
        .BYTE $11,$11,$C8,$C9,$CA,$CB,$CC,$CD          ; $0E89:          
        .BYTE $CE,$CF,$00,$55,$01,$02,$55,$01          ; $0E91:          
        .BYTE $02,$03,$55,$01,$02,$03,$04,$55          ; $0E99:          
@@ -897,7 +901,7 @@ a0F0E
 ; CheckKeyboardInput
 ;-------------------------------
 CheckKeyboardInput   
-        LDA smoothingDelay
+        LDA selectedVariables
         BEQ b0F97
         JMP j13ED
 
@@ -910,13 +914,13 @@ b0F9F   LDA lastKeyPressed
         BNE b0FAD
         LDA #$00
         STA a12
-        JSR s1F69
+        JSR DisplayDemoModeMessage
 b0FAC   RTS 
 
 b0FAD   LDY a1160
         STY a12
-        LDY a028D
-        STY a166F
+        LDY shiftKey
+        STY shiftPressed
 
         CMP #$3C ; Space pressed?
         BNE b0FE6
@@ -959,13 +963,16 @@ b0FE6   CMP #$0D ; 'S' pressed.
         ; 'S' pressed. "This changes the 'symmetry'. The pattern gets reflected
         ; in various planes, or not at all according to the setting."
         ;---------------------------------------------------------------------
-        LDA a166F
+        LDA shiftPressed
         AND #$01
         BEQ b0FF9
         LDA a1EAA
         BNE b0FF9
+        ; Shift + S pressed, save.
         JMP PromptToSave
+        ; Returns
 
+        ; Just 'S' pressed.
         ; Briefly display the new symmetry setting on the bottom of the screen.
 b0FF9   INC currentSymmetrySetting
         LDA currentSymmetrySetting
@@ -995,16 +1002,17 @@ b100F   LDA txtSymmetrySettingDescriptions,Y
 b101E   CMP #$2A ; 'L' pressed?
         BNE b1052
 
+        LDA a1EAA
+        BNE b1031
+        LDA shiftPressed
+        AND #$01
+        BEQ b1031
+        ; Shift + L pressed. Display load message
+        JMP DisplayLoadOrAbort
+
         ;---------------------------------------------------------------------
         ; 'L' pressed. Turn line mode on or off.
         ;---------------------------------------------------------------------
-        LDA a1EAA
-        BNE b1031
-        LDA a166F
-        AND #$01
-        BEQ b1031
-        JMP j1EAB
-
 b1031   LDA lineModeActivated
         EOR #$01
         STA lineModeActivated
@@ -1029,28 +1037,28 @@ b1043   LDA lineModeSettingDescriptions,Y
 b1052   CMP #$12 ; 'D' pressed?
         BNE b105C
         LDA #$01
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b105C   CMP #$14 ; C pressed?
         BNE b1066
         ; C pressed.
         LDA #$02
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b1066   CMP #$1C ; B pressed?
         BNE b1070
         ; B pressed.
         LDA #$03
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b1070   CMP #$29 ; P pressed
         BNE b107A
         ; P pressed.
         LDA #$04
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b107A   CMP #$1D ; H pressed.
@@ -1059,7 +1067,7 @@ b107A   CMP #$1D ; H pressed.
         LDA #$01
         STA a1A
         LDA #$05
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b1088   CMP #$16 ; T pressed.
@@ -1090,8 +1098,9 @@ b10A0   LDA txtTrackingOnOff,Y
         JMP WriteLastLineBufferToScreen
         RTS 
 
+        ; Check if one of the presets has been selected.
 b10B0   LDX #$00
-b10B2   CMP potentialKeyCodes,X
+b10B2   CMP presetKeyCodes,X
         BEQ b10BF
         INX 
         CPX #$10
@@ -1099,7 +1108,7 @@ b10B2   CMP potentialKeyCodes,X
 
         JMP j10C2
 
-b10BF   JMP j1602
+b10BF   JMP DisplayPresetMessage
 
 ;-------------------------------
 ; j10C2
@@ -1108,7 +1117,7 @@ j10C2
         CMP #$09 ; W pressed
         BNE b10CC
         LDA #$06
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b10CC   LDX #$00
@@ -1120,10 +1129,10 @@ b10CE   CMP f1797,X
         JMP j10EC
 
 b10DB   STX a173B
-        LDA a1921
+        LDA sequencerActive
         BNE j10EC
         LDA #$80
-        STA smoothingDelay
+        STA selectedVariables
         JSR s173C
         RTS 
 
@@ -1133,33 +1142,33 @@ b10DB   STX a173B
 j10EC    
         CMP #$3E
         BNE b1108
-        LDA a1921
+        LDA sequencerActive
         BNE b10FD
         LDA #$80
-        STA smoothingDelay
+        STA selectedVariables
         JMP j1922
 
 b10FD   LDA #$00
-        STA a1921
+        STA sequencerActive
         STA a19F8
-        JMP j1A09
+        JMP DisplaySequencerState
 
 b1108   CMP #$1F
         BNE b1112
         LDA #$07
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b1112   CMP #$26
         BNE b111C
         LDA #$08
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b111C   CMP #$31
         BNE b1126
         LDA #$09
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 b1126   CMP #$11
@@ -1188,9 +1197,9 @@ b113F   STA SCREEN_RAM + $0000,X
 
 b1152   CMP #$0A ; 'A' pressed
         BNE b115F
-        LDA demoMoveActive
+        LDA demoModeActive
         EOR #$01
-        STA demoMoveActive
+        STA demoModeActive
         RTS 
 
 b115F   RTS 
@@ -1230,7 +1239,7 @@ a11F9
         .BYTE $FF
         .BYTE $FF
         .BYTE $FF
-a11FE
+customPatternValueBufferPtr
         .BYTE $FF
         .BYTE $FF
         .BYTE $FF    ; $11F9:  
@@ -1268,34 +1277,62 @@ b1229   LDA lastLineBufferPtrMinusOne,X
         RTS 
 
 txtPresetPatternNames
+        ; 'STAR ON'
         .BYTE $D3,$D4,$C1,$D2,$A0,$CF,$CE       ; $1239:     
+        ; 'E       '
         .BYTE $C5,$A0,$A0,$A0,$A0,$A0,$A0,$A0       ; $1241:     
+        ; ' THE TWI'
         .BYTE $A0,$D4,$C8,$C5,$A0,$D4,$D7,$C9       ; $1249:     
+        ; 'ST      '
         .BYTE $D3,$D4,$A0,$A0,$A0,$A0,$A0,$A0       ; $1251:     
+        ; ' LA LLAM'
         .BYTE $A0,$CC,$C1,$A0,$CC,$CC,$C1,$CD       ; $1259:     
+        ; 'ITA     '
         .BYTE $C9,$D4,$C1,$A0,$A0,$A0,$A0,$A0       ; $1261:     
+        ; ' STAR TW'
         .BYTE $A0,$D3,$D4,$C1,$D2,$A0,$D4,$D7       ; $1269:     
+        ; 'O       '
         .BYTE $CF,$A0,$A0,$A0,$A0,$A0,$A0,$A0       ; $1271:     
+        ; ' DELTOID'
         .BYTE $A0,$C4,$C5,$CC,$D4,$CF,$C9,$C4       ; $1279:     
+        ; 'S       '
         .BYTE $D3,$A0,$A0,$A0,$A0,$A0,$A0,$A0       ; $1281:     
+        ; ' DIFFUSE'
         .BYTE $A0,$C4,$C9,$C6,$C6,$D5,$D3,$C5       ; $1289:     
+        ; 'D       '
         .BYTE $C4,$A0,$A0,$A0,$A0,$A0,$A0,$A0       ; $1291:     
+        ; ' MULTICR'
         .BYTE $A0,$CD,$D5,$CC,$D4,$C9,$C3,$D2       ; $1299:     
+        ; 'OSS     '
         .BYTE $CF,$D3,$D3,$A0,$A0,$A0,$A0,$A0       ; $12A1:     
+        ; ' PULSAR '
         .BYTE $A0,$D0,$D5,$CC,$D3,$C1,$D2,$A0       ; $12A9:     
+        ; '        '
         .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0       ; $12B1:     
+        ; ' '
         .BYTE $A0
 txtSymmetrySettingDescriptions 
+        ; 'NO SYMM'
         .BYTE $CE,$CF,$A0,$D3,$D9,$CD,$CD       ; $12B9:     
+        ; 'ETRY    '
         .BYTE $C5,$D4,$D2,$D9,$A0,$A0,$A0,$A0       ; $12C1:     
+        ; ' Y­AXIS '
         .BYTE $A0,$D9,$AD,$C1,$D8,$C9,$D3,$A0       ; $12C9:     
+        ; 'SYMMETRY'
         .BYTE $D3,$D9,$CD,$CD,$C5,$D4,$D2,$D9       ; $12D1:     
+        ; ' X­Y SYM'
         .BYTE $A0,$D8,$AD,$D9,$A0,$D3,$D9,$CD       ; $12D9:     
+        ; 'METRY   '
         .BYTE $CD,$C5,$D4,$D2,$D9,$A0,$A0,$A0       ; $12E1:     
+        ; ' X­AXIS '
         .BYTE $A0,$D8,$AD,$C1,$D8,$C9,$D3,$A0       ; $12E9:     
+        ; 'SYMMETRY'
         .BYTE $D3,$D9,$CD,$CD,$C5,$D4,$D2,$D9       ; $12F1:     
+        ; ' QUAD SY'
         .BYTE $A0,$D1,$D5,$C1,$C4,$A0,$D3,$D9       ; $12F9:     
+        ; 'MMETRY  '
         .BYTE $CD,$CD,$C5,$D4,$D2,$D9,$A0,$A0       ; $1301:     
+        ; ' '
         .BYTE $A0
 
 ;-------------------------------
@@ -1350,10 +1387,15 @@ b135B   LDA #$FF
         STX a13
         JMP j0C39
 
-lineModeSettingDescriptions .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
-                            .BYTE $C5,$BA,$A0,$CF,$C6,$C6,$A0,$A0
-                            .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
-                            .BYTE $C5,$BA,$A0,$CF,$CE,$A0,$A0,$A0
+lineModeSettingDescriptions
+        ; 'LINE MOD'
+        .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
+        ; 'Eº OFF  '
+        .BYTE $C5,$BA,$A0,$CF,$C6,$C6,$A0,$A0
+        ; 'LINE MOD'
+        .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
+        ; 'Eº ON   '
+        .BYTE $C5,$BA,$A0,$CF,$CE,$A0,$A0,$A0
 ;-------------------------------
 ; j1385
 ;-------------------------------
@@ -1404,10 +1446,11 @@ a13DD   =*+$01
 f13DE   =*+$02
 a13DC   .BYTE $FF,$FF,$20
         .BYTE $65,$74
+        ; 'ÕÁ¶ª§ '
         .BYTE $75,$61,$F6,$EA,$E7,$A0
 
 b13E7   LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         RTS 
 
 ;-------------------------------
@@ -1421,16 +1464,16 @@ j13ED
 b13F4   LDA a12
         BEQ b13FD
         DEC a12
-        JMP j1488
+        JMP DisplayVariableSelection
 
 b13FD   LDA lastKeyPressed
         CMP #$40
         BNE b1406
-        JMP j1488
+        JMP DisplayVariableSelection
 
 b1406   LDA #$04
         STA a12
-        LDA smoothingDelay
+        LDA selectedVariables
         CMP #$05
         BEQ b1415
         CMP #$03
@@ -1444,10 +1487,10 @@ b1417   LDA f0AB6,X
         BNE b1417
         LDA a19F8
         BNE b13E7
-        LDA a1B2B
+        LDA playbackOrRecordActive
         CMP #$02
         BEQ b13E7
-        LDA demoMoveActive
+        LDA demoModeActive
         BNE b13E7
 
         LDA #$FF
@@ -1458,7 +1501,7 @@ b143F   LDA #>SCREEN_RAM + $03D0
         STA a19
         LDA #<SCREEN_RAM + $03D0
         STA a18
-        LDX smoothingDelay
+        LDX selectedVariables
         LDA lastKeyPressed
         CMP #$2C
         BNE b1461
@@ -1482,18 +1525,18 @@ b1473   CPX #$05
         LDY a1A
         LDA f15D2,X
         STA f0E48,Y
-b1482   JSR j1488
+b1482   JSR DisplayVariableSelection
         JMP j14F2
 
 ;-------------------------------
-; j1488
+; DisplayVariableSelection
 ;-------------------------------
-j1488    
+DisplayVariableSelection    
         LDA #>SCREEN_RAM + $03D0
         STA a19
         LDA #<SCREEN_RAM + $03D0
         STA a18
-        LDX smoothingDelay
+        LDX selectedVariables
         CPX #$05
         BNE b14AE
         LDX a1A
@@ -1505,7 +1548,7 @@ b149E   CMP f15D2,Y
         CPY #$10
         BNE b149E
 b14A8   STY a0E43
-        LDX smoothingDelay
+        LDX selectedVariables
 b14AE   LDA f1526,X
         STA a13D9
         LDA f0E3E,X
@@ -1524,13 +1567,13 @@ b14C9   PLA
         ASL 
         TAY 
         LDX #$00
-b14D1   LDA f1532,Y
+b14D1   LDA txtVariableLabels,Y
         STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b14D1
-        LDA smoothingDelay
+        LDA selectedVariables
         CMP #$05
         BNE b14EC
         LDA #$30
@@ -1549,7 +1592,7 @@ j14F2
         BEQ b14F9
         RTS 
 
-b14F9   LDA smoothingDelay
+b14F9   LDA selectedVariables
         CMP #$05
         BNE b1509
         INC a1A
@@ -1559,7 +1602,7 @@ b14F9   LDA smoothingDelay
         RTS 
 
 b1509   LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         STA a173A
         RTS 
 
@@ -1574,30 +1617,50 @@ f151C
 f1526   
         .BYTE $00,$01,$08        ; $1521:   
         .BYTE $01,$04,$08,$08,$02,$04,$08
-smoothingDelay   
+selectedVariables   
         .BYTE $00        ; $1529:   
 a1531   
         .BYTE $01
-f1532   
+txtVariableLabels   
+        ; '       '
         .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0        ; $1531:   
+        ; '        '
         .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0        ; $1539:   
+        ; ' SMOOTHI'
         .BYTE $A0,$D3,$CD,$CF,$CF,$D4,$C8,$C9        ; $1541:   
+        ; 'NG DELAY'
         .BYTE $CE,$C7,$A0,$C4,$C5,$CC,$C1,$D9        ; $1549:   
+        ; 'ºCURSOR '
         .BYTE $BA,$C3,$D5,$D2,$D3,$CF,$D2,$A0        ; $1551:   
+        ; 'SPEED   '
         .BYTE $D3,$D0,$C5,$C5,$C4,$A0,$A0,$A0        ; $1559:   
+        ; 'ºBUFFER '
         .BYTE $BA,$C2,$D5,$C6,$C6,$C5,$D2,$A0        ; $1561:   
+        ; 'LENGTH  '
         .BYTE $CC,$C5,$CE,$C7,$D4,$C8,$A0,$A0        ; $1569:   
+        ; 'ºPULSE S'
         .BYTE $BA,$D0,$D5,$CC,$D3,$C5,$A0,$D3        ; $1571:   
+        ; 'PEED    '
         .BYTE $D0,$C5,$C5,$C4,$A0,$A0,$A0,$A0        ; $1579:   
+        ; 'ºCOLOUR '
         .BYTE $BA,$C3,$CF,$CC,$CF,$D5,$D2,$A0        ; $1581:   
+        ; '° SET   '
         .BYTE $B0,$A0,$D3,$C5,$D4,$A0,$A0,$A0        ; $1589:   
+        ; 'ºWIDTH O'
         .BYTE $BA,$D7,$C9,$C4,$D4,$C8,$A0,$CF        ; $1591:   
+        ; 'F LINE  '
         .BYTE $C6,$A0,$CC,$C9,$CE,$C5,$A0,$A0        ; $1599:   
+        ; 'ºSEQUENC'
         .BYTE $BA,$D3,$C5,$D1,$D5,$C5,$CE,$C3        ; $15A1:   
+        ; 'ER SPEED'
         .BYTE $C5,$D2,$A0,$D3,$D0,$C5,$C5,$C4        ; $15A9:   
+        ; 'ºPULSE W'
         .BYTE $BA,$D0,$D5,$CC,$D3,$C5,$A0,$D7        ; $15B1:   
+        ; 'IDTH    '
         .BYTE $C9,$C4,$D4,$C8,$A0,$A0,$A0,$A0        ; $15B9:   
+        ; 'ºBASE LE'
         .BYTE $BA,$C2,$C1,$D3,$C5,$A0,$CC,$C5        ; $15C1:   
+        ; 'VEL     '
         .BYTE $D6,$C5,$CC,$A0,$A0,$A0,$A0,$A0        ; $15C9:   
         .BYTE $BA
 f15D2   
@@ -1607,18 +1670,23 @@ f15D3
         .BYTE $01,$08,$09,$0A,$0B,$0C,$0D,$0E        ; $15D9:   
         .BYTE $0F
 txtTrackingOnOff   
+        ; 'TRACKIN'
         .BYTE $D4,$D2,$C1,$C3,$CB,$C9,$CE        ; $15E1:   
+        ; 'Gº OFF  '
         .BYTE $C7,$BA,$A0,$CF,$C6,$C6,$A0,$A0        ; $15E9:   
+        ; ' TRACKIN'
         .BYTE $A0,$D4,$D2,$C1,$C3,$CB,$C9,$CE        ; $15F1:   
+        ; 'Gº ON   '
         .BYTE $C7,$BA,$A0,$CF,$CE,$A0,$A0,$A0        ; $15F9:   
+        ; ' '
         .BYTE $A0
 
 
 ;-------------------------------
-; j1602
+; DisplayPresetMessage
 ;-------------------------------
-j1602    
-        LDA a166F
+DisplayPresetMessage    
+        LDA shiftPressed
         AND #$04
         BEQ b160C
         JMP j1C05
@@ -1627,11 +1695,12 @@ b160C   TXA
         PHA 
         JSR ClearLastLineOfScreen
         LDX #$00
-b1613   LDA f163F,X
+b1613   LDA txtPreset,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$10
         BNE b1613
+
         PLA 
         PHA 
         TAX 
@@ -1647,45 +1716,52 @@ b1635   DEX
         BNE b1623
 b1638   JMP j1670
 
-;-------------------------------
-; j163B
-;-------------------------------
 j163B    
         JSR WriteLastLineBufferToScreen
         RTS 
 
-f163F
+txtPreset
+        ; 'PR'
         .BYTE $D0,$D2      ; $1639:       
+        ; 'ESET °° '
         .BYTE $C5,$D3,$C5,$D4,$A0,$B0,$B0,$A0      ; $1641:       
+        ; '     º'
         .BYTE $A0,$A0,$A0,$A0,$A0,$BA
-f164F
+txtPresetActivatedStored
+        ; ' A'
         .BYTE $A0,$C1      ; $1649:       
+        ; 'CTIVATED'
         .BYTE $C3,$D4,$C9,$D6,$C1,$D4,$C5,$C4      ; $1651:       
+        ; '       D'
         .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$C4
+        ; 'ATA STOR'
         .BYTE $C1,$D4,$C1,$A0,$D3,$D4,$CF,$D2
+        ; 'ED    '
         .BYTE $C5,$C4,$A0,$A0,$A0,$A0
-a166F
+shiftPressed
         .BYTE $00
 
 ;-------------------------------
 ; j1670
 ;-------------------------------
 j1670    
-        LDA a166F
+        LDA shiftPressed
         AND #$01
         ASL 
         ASL 
         ASL 
         ASL 
         TAY 
+
         LDX #$00
-b167C   LDA f164F,Y
+b167C   LDA txtPresetActivatedStored,Y
         STA f1201,X
         INY 
         INX 
         CPX #$10
         BNE b167C
-        LDA a166F
+
+        LDA shiftPressed
         AND #$01
         BNE b1692
         JMP j16B2
@@ -1811,7 +1887,7 @@ a173B   .BYTE $00
 ;-------------------------------
 s173C   
         JSR ClearLastLineOfScreen
-        LDA a166F
+        LDA shiftPressed
         AND #$01
         BEQ b1756
         LDX #$00
@@ -1826,7 +1902,7 @@ b1756   LDA #$C2
         LDX a173B
         LDA f1783,X
         STA a1D
-        LDA a166F
+        LDA shiftPressed
         AND #$01
         BEQ b177B
         LDA #$10
@@ -1840,7 +1916,7 @@ b1756   LDA #$C2
         RTS 
 
 b177B   LDA #$FF
-        STA a1921
+        STA sequencerActive
         JMP j1898
 
 f1783   BRK #$20
@@ -1849,8 +1925,11 @@ f1783   BRK #$20
         RTS 
 
 f1787
+        ; 'DA'
         .BYTE $C4,$C1                             ; $1781:   
+        ; 'TAº °°° '
         .BYTE $D4,$C1,$BA,$A0,$B0,$B0,$B0,$A0     ; $1789:   
+        ; 'FREE  '
         .BYTE $C6,$D2,$C5,$C5,$A0,$A0
 f1797
         .BYTE $04,$05     ; $1791:   
@@ -1862,7 +1941,7 @@ a179B   .BYTE $FF,$60
 ; j179D
 ;-------------------------------
 j179D 
-        LDA smoothingDelay
+        LDA selectedVariables
         CMP #$83
         BNE b17A7
         JMP j1C90
@@ -1929,16 +2008,16 @@ b1801   LDA lastKeyPressed
         LDA a1E
         STA a1A49
         LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         STA a1884
-        STA a1921
+        STA sequencerActive
         LDY #$02
         LDA #$FF
         STA (p1D),Y
 b183C   RTS 
 
 b183D   LDY #$02
-        LDA a028D
+        LDA shiftKey
         AND #$01
         BEQ b184B
         LDA #$C0
@@ -1975,10 +2054,10 @@ j186C
         LDY #$02
         STA (p1D),Y
         LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         STA a1884
         STA a1A47
-        STA a1921
+        STA sequencerActive
         RTS 
 
 a1884   .BYTE $00
@@ -1999,7 +2078,7 @@ s1885
 ;-------------------------------
 j1898    
         LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         TAY 
         LDA (p1D),Y
         STA a1920
@@ -2060,12 +2139,12 @@ b1901   LDA a1D
         JMP j18A9
 
 b1919   LDA #$00
-        STA a1921
+        STA sequencerActive
         RTS 
 
 a191F   .BYTE $00
 a1920   .BYTE $00
-a1921   .BYTE $00
+sequencerActive   .BYTE $00
 ;-------------------------------
 ; j1922
 ;-------------------------------
@@ -2075,15 +2154,15 @@ j1922
         LDA #$00
         STA a1D
         LDA #$FF
-        STA a1921
-        LDA a166F
+        STA sequencerActive
+        LDA shiftPressed
         AND #$01
         BNE b1945
         LDA a0E45
         STA a19F8
         LDA #$00
-        STA smoothingDelay
-        JSR j1A09
+        STA selectedVariables
+        JSR DisplaySequencerState
         RTS 
 
 b1945   LDA a1A47
@@ -2180,14 +2259,16 @@ b19EF   LDA #<aC300
 
 a19F8   .BYTE $00
 f19F9
+        ; 'SEQUº °°'
         .BYTE $D3,$C5,$D1,$D5,$BA,$A0,$B0,$B0
+        ; '° FREE  '
         .BYTE $B0,$A0,$C6,$D2,$C5,$C5,$A0,$A0
 
 ;-------------------------------
-; j1A09
+; DisplaySequencerState
 ;-------------------------------
-j1A09    
-        LDA a1921
+DisplaySequencerState    
+        LDA sequencerActive
         AND #$01
         ASL 
         ASL 
@@ -2196,7 +2277,7 @@ j1A09
         TAY 
         JSR ClearLastLineOfScreen
         LDX #$00
-b1A18   LDA f1A27,Y
+b1A18   LDA txtSequencer,Y
         STA lastLineBufferPtr,X
         INY 
         INX 
@@ -2204,11 +2285,16 @@ b1A18   LDA f1A27,Y
         BNE b1A18
         JMP WriteLastLineBufferToScreen
 
-f1A27
+txtSequencer
+      ; 'SE'
       .BYTE $D3,$C5       ; $1A21:               
+      ; 'QUENCER '
       .BYTE $D1,$D5,$C5,$CE,$C3,$C5,$D2,$A0       ; $1A29:               
+      ; 'OFF   SE'
       .BYTE $CF,$C6,$C6,$A0,$A0,$A0,$D3,$C5       ; $1A31:               
+      ; 'QUENCER '
       .BYTE $D1,$D5,$C5,$CE,$C3,$C5,$D2,$A0     ; $1A39:       
+      ; 'ON    '
       .BYTE $CF,$CE,$A0,$A0,$A0,$A0
 a1A47
       .BYTE $00
@@ -2229,18 +2315,18 @@ j1A4B
         STA a1F
         LDA #$01
         STA a1BE7
-        LDA a166F
+        LDA shiftPressed
         AND #$01
-        STA a166F
-        LDA a1B2B
-        ORA a166F
+        STA shiftPressed
+        LDA playbackOrRecordActive
+        ORA shiftPressed
         EOR #$02
-        STA a1B2B
+        STA playbackOrRecordActive
         AND #$02
         BNE b1A72
-        JMP j1AFE
+        JMP DisplayStoppedRecording
 
-b1A72   LDA a1B2B
+b1A72   LDA playbackOrRecordActive
         AND #$01
         ASL 
         ASL 
@@ -2249,16 +2335,18 @@ b1A72   LDA a1B2B
         TAY 
         JSR ClearLastLineOfScreen
         LDX #$00
-b1A81   LDA f1ADE,Y
+b1A81   LDA txtPlayBackRecord,Y
         STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b1A81
+
         JSR WriteLastLineBufferToScreen
-        LDA a1B2B
+        LDA playbackOrRecordActive
         CMP #$03
         BNE b1AC5
+
 ;-------------------------------
 ; InitializeDynamicStorage
 ;-------------------------------
@@ -2299,19 +2387,24 @@ b1AC5   LDA #$00
         STA a1BEB
         RTS 
 
-f1ADE
+txtPlayBackRecord
+        ; 'PLA'
         .BYTE $D0,$CC,$C1       ; $1AD9:         
+        ; 'YING BAC'
         .BYTE $D9,$C9,$CE,$C7,$A0,$C2,$C1,$C3       ; $1AE1:         
+        ; 'K®®®®REC'
         .BYTE $CB,$AE,$AE,$AE,$AE,$D2,$C5,$C3       ; $1AE9:         
+        ; 'ORDING®®'
         .BYTE $CF,$D2,$C4,$C9,$CE,$C7,$AE,$AE       ; $1AF1:         
+        ; '®®®®®'
         .BYTE $AE,$AE,$AE,$AE,$AE
 
 ;-------------------------------
-; j1AFE
+; DisplayStoppedRecording
 ;-------------------------------
-j1AFE    
+DisplayStoppedRecording    
         LDA #$00
-        STA a1B2B
+        STA playbackOrRecordActive
         STA $D020    ;Border Color
         STA a1BEB
         TAY 
@@ -2322,12 +2415,16 @@ b1B0D   LDA f1B1B,Y
         CPY #$10
         BNE b1B0D
         JMP WriteLastLineBufferToScreen
+        ; Returns
 
 f1B1B
+        ; 'STOPPE'
         .BYTE $D3,$D4,$CF,$D0,$D0,$C5    ; $1B19:     
+        ; 'D       '
         .BYTE $C4,$A0,$A0,$A0,$A0,$A0,$A0,$A0    ; $1B21:     
+        ; '  '
         .BYTE $A0,$A0
-a1B2B
+playbackOrRecordActive
         .BYTE $00
 
 ;-------------------------------
@@ -2335,7 +2432,7 @@ a1B2B
 ;-------------------------------
 j1B2C    
         LDA $DC00    ;CIA1: Data Port Register A
-        STA a21
+        STA lastJoystickInput
         LDY #$00
         CMP (p1F),Y
         BEQ b1B70
@@ -2350,7 +2447,7 @@ b1B37   LDA a1F
         BNE b1B50
         LDA #$00
         STA a7FFF
-        JMP j1AFE
+        JMP DisplayStoppedRecording
 
 b1B50   LDY #$01
         TYA 
@@ -2384,10 +2481,10 @@ b1B70   INY
         RTS 
 
 ;-------------------------------
-; s1B7D
+; GetJoystickInput
 ;-------------------------------
-s1B7D   
-        LDA a1B2B
+GetJoystickInput   
+        LDA playbackOrRecordActive
         BEQ b1B8C
         CMP #$03
         BNE b1B89
@@ -2395,23 +2492,20 @@ s1B7D
 
 b1B89   JMP j1B9A
 
-b1B8C   LDA demoMoveActive
+b1B8C   LDA demoModeActive
         BEQ b1B94
         JMP j1F27
 
 b1B94   LDA $DC00    ;CIA1: Data Port Register A
-        STA a21
+        STA lastJoystickInput
         RTS 
 
-;-------------------------------
-; j1B9A
-;-------------------------------
 j1B9A    
         DEC a1BE7
         BEQ b1BA6
         LDY #$00
         LDA (p1F),Y
-        STA a21
+        STA lastJoystickInput
         RTS 
 
 b1BA6   LDA a1F
@@ -2429,7 +2523,7 @@ b1BA6   LDA a1F
         STA a1BE7
         DEY 
         LDA (p1F),Y
-        STA a21
+        STA lastJoystickInput
         RTS 
 
 b1BC6   LDA #>dynamicStorage
@@ -2458,9 +2552,13 @@ a1BEA
 a1BEB
         .BYTE $00
 f1BEC
+        ; 'DEFIN'
         .BYTE $C4,$C5,$C6,$C9,$CE   ; $1BE9:           
+        ; 'E ALL LE'
         .BYTE $C5,$A0,$C1,$CC,$CC,$A0,$CC,$C5   ; $1BF1:           
+        ; 'VEL ² PI'
         .BYTE $D6,$C5,$CC,$A0,$B2,$A0,$D0,$C9   ; $1BF9:           
+        ; 'XELS'
         .BYTE $D8,$C5,$CC,$D3
 
 ;-------------------------------
@@ -2473,7 +2571,7 @@ j1C05
         RTS 
 
 b1C0B   LDA #$83
-        STA smoothingDelay
+        STA selectedVariables
         LDA #$00
         STA a22
         STA a1BEB
@@ -2594,7 +2692,7 @@ b1CB6   INC a26
         RTS 
 
 b1CE6   LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         JSR ClearLastLineOfScreen
 b1CEE   RTS 
 
@@ -2635,22 +2733,26 @@ b1D1B   JMP b1CB6
 ;-------------------------------
 GetCustomPatternElement    
         JSR ClearLastLineOfScreen
+
         LDX #$00
 b1D23   LDA txtCustomPatterns,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$0E
         BNE b1D23
+
         LDA currentPatternElement
         AND #$07
         CLC 
         ADC #$30
-        STA a11FE
+        STA customPatternValueBufferPtr
         JMP WriteLastLineBufferToScreen
         ; Returns
 
 txtCustomPatterns
+        ; 'USER S'
         .BYTE $D5,$D3,$C5,$D2,$A0,$D3      ; $1D39:   
+        ; 'HAPE £°'
         .BYTE $C8,$C1,$D0,$C5,$A0,$A3,$B0
 pixelShapeIndex
         .BYTE $00      ; $1D41:   
@@ -2738,7 +2840,7 @@ b1DE6   LDA #$01
         JSR ROM_READST ;$FFB7 - read I/O status byte             
         AND #$10
         BEQ j1E08
-        JSR j1EAB
+        JSR DisplayLoadOrAbort
 ;-------------------------------
 ; j1E08
 ;-------------------------------
@@ -2759,12 +2861,12 @@ j1E08
 PromptToSave    
         LDA a19F8
         BNE b1E43
-        LDA a1B2B
+        LDA playbackOrRecordActive
         CMP #$02
         BEQ b1E43
 
         LDA #$84
-        STA smoothingDelay
+        STA selectedVariables
 
         LDX #$00
 b1E30   LDA txtSavePrompt,X
@@ -2784,7 +2886,7 @@ txtSavePrompt   .TEXT " SAVE (P)ARAMETERS, (M)OTION, (A)BORT?  "
 ; j1E6C
 ;-------------------------------
 j1E6C    
-        LDA smoothingDelay
+        LDA selectedVariables
         CMP #$84
         BEQ b1E74
         RTS 
@@ -2799,7 +2901,7 @@ b1E74   LDA lastKeyPressed
 ;-------------------------------
 j1E7F    
         LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         JMP ClearLastLineOfScreen
 
 b1E87   CMP #$24
@@ -2822,19 +2924,19 @@ b1EA9   RTS
 
 a1EAA   .BYTE $00
 ;-------------------------------
-; j1EAB
+; DisplayLoadOrAbort
 ;-------------------------------
-j1EAB    
+DisplayLoadOrAbort    
         
         LDA a19F8
         BNE b1EA9
-        LDA a1B2B
+        LDA playbackOrRecordActive
         CMP #$02
         BEQ b1EA9
         LDA #$85
-        STA smoothingDelay
+        STA selectedVariables
         LDX #$00
-b1EBE   LDA f1EFC,X
+b1EBE   LDA txtContinueLoadOrAbort,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$28
@@ -2852,7 +2954,7 @@ j1ED1
         BNE b1EE5
         ; 'A' pressed
         LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         STA a1EAA
         STA a171E
         JMP ClearLastLineOfScreen
@@ -2863,21 +2965,27 @@ b1EE5   CMP #$14 ; 'C'
         LDA #$03
         STA a1EAA
         LDA #$00
-        STA smoothingDelay
+        STA selectedVariables
         LDA #$18
         STA a171E
         JMP ClearLastLineOfScreen
 
 b1EFB   RTS 
 
-f1EFC
+txtContinueLoadOrAbort
+        ; '¨C©ON'
         .BYTE $A8,$C3,$A9,$CF,$CE       ; $1EF9:      
+        ; 'TINUE LO'
         .BYTE $D4,$C9,$CE,$D5,$C5,$A0,$CC,$CF       ; $1F01:      
+        ; 'AD¬ OR ¨'
         .BYTE $C1,$C4,$AC,$A0,$CF,$D2,$A0,$A8       ; $1F09:      
+        ; 'A©BORT¿ '
         .BYTE $C1,$A9,$C2,$CF,$D2,$D4,$BF,$A0         ; $1F11:
+        ; '        '
         .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0         ; $1F19:
+        ; '   '
         .BYTE $A0,$A0,$A0
-demoMoveActive
+demoModeActive
         .BYTE $00
 a1F25
         .BYTE $01
@@ -2903,7 +3011,7 @@ b1F2D   JSR s09CB
         AND #$0F
         ORA a1F26
         EOR #$1F
-        STA a21
+        STA lastJoystickInput
         DEC a1FA9
         BEQ b1F51
         RTS 
@@ -2916,30 +3024,36 @@ b1F56   ADC #$20
         AND #$0F
         TAX 
         LDA #$00
-        STA a166F
+        STA shiftPressed
         JMP b160C
 
 ;-------------------------------
-; s1F69
+; DisplayDemoModeMessage
 ;-------------------------------
-s1F69   
-        LDA demoMoveActive
+DisplayDemoModeMessage   
+        LDA demoModeActive
         BNE b1F71
         JMP ClearLastLineOfScreen
+        ;Returns
 
 b1F71   LDX #$00
-b1F73   LDA f1F81,X
+b1F73   LDA demoMessage,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$28
         BNE b1F73
         JMP WriteLastLineBufferToScreen
 
-f1F81
+demoMessage
+        ; 'PSYCHEDE'
         .BYTE $D0,$D3,$D9,$C3,$C8,$C5,$C4,$C5         ; $1F81:
+        ; 'LIA CRAC'
         .BYTE $CC,$C9,$C1,$A0,$C3,$D2,$C1,$C3         ; $1F89:
+        ; 'KED BY S'
         .BYTE $CB,$C5,$C4,$A0,$C2,$D9,$A0,$D3         ; $1F91:
+        ; 'NAIL HI '
         .BYTE $CE,$C1,$C9,$CC,$20,$C8,$C9,$20         ; $1F99:
+        ; 'J MINTER'
         .BYTE $CA,$A0,$CD,$C9,$CE,$D4,$C5,$D2         ; $1FA1:
 a1FA9
         .BYTE $20
@@ -2980,6 +3094,7 @@ b1FD8   LDA f1FE1,X
         RTS 
 
 f1FE1=*-$01   
+        ; '00CBM'
         .BYTE $30,$0C,$30,$0C,$C3,$C2,$CD          ; $1FE1:             
         .BYTE $38,$30,$00,$00,$00,$00,$00,$00          ; $1FE9:             
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00          ; $1FF1:             
@@ -3067,18 +3182,26 @@ f2000
         .BYTE $00,$05,$01,$00,$00,$00,$00,$00          ; $2279:             
         .BYTE $BD,$00,$B9,$00,$BD,$00,$BD,$81          ; $2281:             
         .BYTE $BD,$81,$FF,$00,$BD,$F1,$FF,$00          ; $2289:             
+        ; '(¿®® '
         .BYTE $28,$81,$FF,$81,$AE,$83,$AE,$00          ; $2291:             
+        ; '¿®¬A½A'
         .BYTE $FF,$81,$EE,$81,$AC,$C1,$BD,$C1          ; $2299:             
+        ; '$¿A¿ ®'
         .BYTE $24,$81,$FF,$C1,$FF,$00,$EE,$81          ; $22A1:             
+        ; '¿®¬¡¿'
         .BYTE $BF,$85,$AE,$81,$EC,$E1,$BF,$83          ; $22A9:             
+        ; '7 ®¿C.'
         .BYTE $37,$00,$EE,$81,$BF,$C3,$2E,$81          ; $22B1:             
         .BYTE $2E,$00,$FF,$00,$FF,$00,$FD,$05          ; $22B9:             
+        ; '|®¬G '
         .BYTE $DC,$02,$EE,$81,$EC,$C7,$0C,$00          ; $22C1:             
         .BYTE $68,$81,$EC,$03,$EE,$81,$EE,$85          ; $22C9:             
         .BYTE $62,$81,$EE,$01,$EC,$87,$EA,$85          ; $22D1:             
+        ; '½Mb¯ ¿ '
         .BYTE $FD,$83,$CD,$42,$EF,$00,$FF,$00          ; $22D9:             
         .BYTE $28,$02,$EA,$81,$BD,$85,$BF,$81          ; $22E1:             
         .BYTE $FF,$85,$EE,$00,$BF,$87,$BF,$00          ; $22E9:             
+        ; '®¿¿§¾'
         .BYTE $EE,$87,$FF,$81,$FF,$A7,$FE,$01          ; $22F1:             
         .BYTE $FF,$80,$EE,$FD,$FF,$FF,$FF,$01          ; $22F9:             
         .BYTE $0B,$04,$04,$07,$08,$09,$07,$0C          ; $2301:             
@@ -3086,31 +3209,45 @@ f2000
         .BYTE $17,$13,$07,$FF,$01,$06,$41,$FF          ; $2311:             
         .BYTE $00,$06,$01,$06,$01,$06,$00,$00          ; $2319:             
         .BYTE $FF,$06,$00,$02,$00,$FF,$41,$46          ; $2321:             
+        ; ' ªa '
         .BYTE $00,$06,$81,$AA,$41,$02,$00,$04          ; $2329:             
         .BYTE $62,$FF,$41,$06,$40,$00,$6B,$04          ; $2331:             
+        ; 'A¿ ¿ ¿ b'
         .BYTE $C1,$FF,$00,$FF,$00,$FF,$00,$42          ; $2339:             
+        ; '® ¿'
         .BYTE $02,$AE,$01,$00,$07,$1C,$80,$FF          ; $2341:             
         .BYTE $05,$06,$01,$02,$07,$02,$05,$00          ; $2349:             
         .BYTE $85,$06,$01,$02,$05,$02,$41,$00          ; $2351:             
         .BYTE $00,$06,$03,$BD,$00,$BF,$00,$BF          ; $2359:             
+        ; 'E¿ b@ '
         .BYTE $C5,$BF,$01,$00,$42,$02,$40,$00          ; $2361:             
         .BYTE $40,$06,$01,$FF,$00,$02,$40,$FF          ; $2369:             
         .BYTE $05,$02,$00,$00,$00,$00,$01,$20          ; $2371:             
         .BYTE $00,$8D,$01,$00,$00,$00,$00,$00          ; $2379:             
         .BYTE $BD,$00,$BD,$00,$BD,$40,$BD,$81          ; $2381:             
         .BYTE $BD,$81,$FF,$00,$FF,$F1,$FF,$00          ; $2389:             
+        ; ' ¿®C® '
         .BYTE $20,$81,$FF,$81,$AE,$C3,$EE,$00          ; $2391:             
+        ; '¿®¬A½Q'
         .BYTE $FF,$81,$EE,$81,$AC,$C1,$FD,$D1          ; $2399:             
+        ; '$¿A¿ ®'
         .BYTE $24,$81,$FF,$C1,$FF,$00,$AE,$81          ; $23A1:             
+        ; '¿E®a¬¡¿C'
         .BYTE $FF,$C5,$EE,$41,$EC,$E1,$FF,$C3          ; $23A9:             
+        ; '7 ®A¿C®A'
         .BYTE $37,$00,$EE,$C1,$BF,$C3,$AE,$C1          ; $23B1:             
+        ; '® ¿ ¿ ½'
         .BYTE $AE,$00,$FF,$00,$FF,$00,$FD,$05          ; $23B9:             
+        ; '}®¬Gl '
         .BYTE $DD,$03,$EE,$85,$EC,$C7,$4C,$00          ; $23C1:             
         .BYTE $60,$81,$EC,$87,$EE,$81,$EE,$8D          ; $23C9:             
         .BYTE $62,$85,$EE,$85,$EE,$87,$EA,$85          ; $23D1:             
         .BYTE $FD,$83,$ED,$42,$EF,$00,$FF,$40          ; $23D9:             
+        ; '(®A½¿'
         .BYTE $28,$02,$EE,$C1,$BD,$85,$FF,$81          ; $23E1:             
+        ; '¿® ¿§¿ '
         .BYTE $FF,$85,$EE,$00,$FF,$A7,$BF,$00          ; $23E9:             
+        ; '®¿¿§¾'
         .BYTE $EE,$87,$FF,$81,$FF,$A7,$FE,$01          ; $23F1:             
         .BYTE $FF,$00,$EE,$FD,$FF,$FF,$FF,$FF          ; $23F9:             
         .BYTE $00,$F7,$00,$FF,$00,$BF,$40,$46          ; $2401:             
@@ -3125,24 +3262,33 @@ f2000
         .BYTE $05,$06,$01,$02,$07,$02,$05,$00          ; $2449:             
         .BYTE $05,$06,$01,$02,$05,$02,$01,$00          ; $2451:             
         .BYTE $00,$06,$02,$BD,$00,$BF,$00,$FF          ; $2459:             
+        ; 'E¿ b@ '
         .BYTE $C5,$BF,$01,$00,$42,$02,$40,$00          ; $2461:             
         .BYTE $40,$06,$01,$FF,$00,$02,$40,$FF          ; $2469:             
         .BYTE $45,$02,$00,$00,$00,$02,$01,$24          ; $2471:             
         .BYTE $00,$05,$01,$00,$00,$00,$00,$00          ; $2479:             
         .BYTE $BD,$00,$B9,$00,$BD,$40,$BD,$81          ; $2481:             
         .BYTE $BD,$81,$FF,$00,$FD,$F1,$FF,$00          ; $2489:             
+        ; ' ¿A®® '
         .BYTE $20,$81,$FF,$C1,$AE,$83,$EE,$00          ; $2491:             
+        ; '¿®¬A½A'
         .BYTE $FF,$81,$EE,$81,$AC,$C1,$BD,$C1          ; $2499:             
+        ; '$A¿A¿ ®'
         .BYTE $24,$C1,$FF,$C1,$FF,$00,$EE,$81          ; $24A1:             
+        ; '½E®A¬¡¿C'
         .BYTE $FD,$C5,$EE,$C1,$EC,$E1,$FF,$C3          ; $24A9:             
+        ; '7 ®A¿C®A'
         .BYTE $37,$00,$EE,$C1,$BF,$C3,$AE,$C1          ; $24B1:             
+        ; '® ¿ ¿ ½'
         .BYTE $AE,$00,$FF,$00,$FF,$00,$FD,$81          ; $24B9:             
+        ; '}ª¬GL '
         .BYTE $DD,$03,$EA,$81,$EC,$C7,$CC,$00          ; $24C1:             
         .BYTE $60,$81,$EC,$83,$EE,$81,$EE,$85          ; $24C9:             
         .BYTE $62,$81,$EE,$81,$EE,$87,$EA,$85          ; $24D1:             
         .BYTE $FD,$83,$ED,$42,$EF,$00,$FF,$00          ; $24D9:             
         .BYTE $28,$02,$EE,$81,$FD,$85,$FF,$81          ; $24E1:             
         .BYTE $FF,$85,$EE,$00,$FD,$85,$FF,$00          ; $24E9:             
+        ; '®¿¿§¿'
         .BYTE $EE,$87,$FF,$81,$FF,$A7,$FF,$01          ; $24F1:             
         .BYTE $FF,$80,$EE,$FD,$FF,$FF,$FF,$FF          ; $24F9:             
         .BYTE $00,$F7,$00,$FF,$00,$BF,$40,$06          ; $2501:             
@@ -3157,28 +3303,41 @@ f2000
         .BYTE $25,$06,$01,$02,$07,$02,$05,$00          ; $2549:             
         .BYTE $85,$06,$01,$02,$05,$02,$01,$00          ; $2551:             
         .BYTE $00,$06,$03,$BD,$00,$BF,$00,$BF          ; $2559:             
+        ; 'E¿ b@ '
         .BYTE $C5,$BF,$01,$00,$42,$02,$40,$00          ; $2561:             
         .BYTE $00,$06,$01,$FF,$00,$02,$40,$FF          ; $2569:             
         .BYTE $05,$02,$00,$00,$00,$00,$01,$20          ; $2571:             
         .BYTE $00,$8D,$01,$00,$00,$00,$00,$00          ; $2579:             
         .BYTE $BD,$00,$B9,$00,$BD,$40,$BD,$81          ; $2581:             
         .BYTE $BD,$81,$FF,$00,$BF,$F9,$FF,$00          ; $2589:             
+        ; '(¿®® '
         .BYTE $28,$81,$FF,$81,$AE,$83,$AE,$00          ; $2591:             
+        ; '¿®¬A½¡'
         .BYTE $FF,$81,$EE,$81,$AC,$C1,$BD,$A1          ; $2599:             
+        ; '$A¿A¿ ®'
         .BYTE $24,$C1,$FF,$C1,$FF,$00,$AE,$81          ; $25A1:             
+        ; '¿E®A¬¡¿'
         .BYTE $BF,$C5,$EE,$C1,$EC,$E1,$BF,$83          ; $25A9:             
+        ; '? ®A¿£®A'
         .BYTE $3F,$00,$EE,$C1,$BF,$E3,$AE,$C1          ; $25B1:             
+        ; '® ¿ ¿ ½'
         .BYTE $AE,$20,$FF,$00,$FF,$00,$BD,$05          ; $25B9:             
+        ; '}ª¬Gl '
         .BYTE $DD,$03,$EA,$81,$EC,$C7,$4C,$00          ; $25C1:             
+        ; 'È¬®®­'
         .BYTE $68,$81,$EC,$87,$EE,$81,$EE,$AD          ; $25C9:             
         .BYTE $62,$85,$EE,$81,$EE,$87,$EA,$85          ; $25D1:             
         .BYTE $FD,$83,$EC,$42,$EF,$00,$FF,$00          ; $25D9:             
+        ; '(®½¥¿'
         .BYTE $28,$02,$EE,$81,$BD,$A5,$BF,$81          ; $25E1:             
+        ; '¿® ¿¯¿ '
         .BYTE $BF,$85,$EE,$00,$BF,$AF,$BF,$00          ; $25E9:             
+        ; '¬¿¿§®'
         .BYTE $EC,$87,$FF,$81,$FF,$A7,$EE,$01          ; $25F1:             
         .BYTE $FF,$80,$EE,$FD,$FF,$FF,$FF,$FF          ; $25F9:             
         .BYTE $00,$F7,$00,$FF,$00,$BF,$40,$46          ; $2601:             
         .BYTE $00,$06,$00,$FF,$00,$06,$00,$FF          ; $2609:             
+        ; '¡ a¿'
         .BYTE $A1,$06,$00,$06,$01,$06,$41,$FF          ; $2611:             
         .BYTE $00,$06,$01,$06,$01,$06,$00,$00          ; $2619:             
         .BYTE $FF,$06,$00,$02,$00,$FF,$41,$46          ; $2621:             
@@ -3189,22 +3348,32 @@ f2000
         .BYTE $25,$06,$01,$02,$07,$02,$05,$00          ; $2649:             
         .BYTE $85,$06,$01,$02,$05,$02,$01,$00          ; $2651:             
         .BYTE $00,$06,$03,$BD,$00,$BF,$00,$BF          ; $2659:             
+        ; 'E¿ b@ '
         .BYTE $C5,$BF,$01,$00,$42,$02,$40,$00          ; $2661:             
         .BYTE $40,$06,$01,$FF,$00,$02,$40,$FF          ; $2669:             
+        ; 'e    '
         .BYTE $45,$02,$00,$02,$00,$00,$01,$A0          ; $2671:             
         .BYTE $00,$8F,$01,$00,$00,$00,$00,$00          ; $2679:             
         .BYTE $BD,$00,$BD,$00,$BD,$40,$BD,$81          ; $2681:             
         .BYTE $BD,$81,$FF,$00,$FD,$F1,$FF,$00          ; $2689:             
+        ; ' ¿¬® '
         .BYTE $20,$81,$FF,$81,$AC,$83,$EE,$00          ; $2691:             
+        ; '¿®¬A½A'
         .BYTE $FF,$81,$EE,$81,$AC,$C1,$BD,$C1          ; $2699:             
+        ; '$A¿A¿ ®'
         .BYTE $24,$C1,$FF,$C1,$FF,$00,$EE,$81          ; $26A1:             
+        ; '½E®A¬¡¿C'
         .BYTE $FD,$C5,$AE,$C1,$EC,$E1,$BF,$C3          ; $26A9:             
+        ; '? ®A¿C®A'
         .BYTE $3F,$00,$EE,$C1,$BF,$C3,$AE,$C1          ; $26B1:             
         .BYTE $EE,$00,$FF,$00,$FF,$00,$FD,$85          ; $26B9:             
+        ; '}®¬GL '
         .BYTE $DD,$03,$EE,$85,$EC,$C7,$CC,$00          ; $26C1:             
         .BYTE $E8,$81,$EC,$87,$EE,$81,$EE,$8D          ; $26C9:             
         .BYTE $62,$81,$EE,$81,$EE,$87,$EA,$85          ; $26D1:             
+        ; '½Lb¯ ¿ '
         .BYTE $FD,$83,$CC,$42,$EF,$00,$FF,$00          ; $26D9:             
+        ; '(®A½¿'
         .BYTE $28,$02,$EE,$C1,$FD,$85,$FF,$81          ; $26E1:             
         .BYTE $FF,$85,$EE,$00,$FD,$85,$BF,$00          ; $26E9:             
         .BYTE $EE,$87,$FF,$81,$FF,$87,$FE,$01          ; $26F1:             
@@ -3214,6 +3383,7 @@ f2000
         .BYTE $11,$06,$00,$06,$01,$06,$41,$FF          ; $2711:             
         .BYTE $00,$06,$01,$06,$01,$06,$00,$00          ; $2719:             
         .BYTE $FF,$06,$00,$02,$00,$FF,$41,$46          ; $2721:             
+        ; ' «a '
         .BYTE $00,$06,$01,$AB,$41,$02,$00,$04          ; $2729:             
         .BYTE $62,$FF,$41,$06,$40,$00,$6B,$04          ; $2731:             
         .BYTE $91,$FF,$00,$FF,$00,$FF,$00,$42          ; $2739:             
@@ -3221,23 +3391,33 @@ f2000
         .BYTE $25,$06,$05,$02,$07,$02,$05,$00          ; $2749:             
         .BYTE $05,$06,$01,$02,$05,$02,$41,$00          ; $2751:             
         .BYTE $00,$06,$03,$BD,$00,$BF,$00,$BD          ; $2759:             
+        ; 'E¿ ba '
         .BYTE $C5,$BF,$01,$00,$42,$02,$41,$00          ; $2761:             
         .BYTE $40,$06,$01,$FF,$00,$02,$41,$FF          ; $2769:             
         .BYTE $45,$02,$00,$00,$00,$00,$01,$24          ; $2771:             
         .BYTE $00,$0D,$01,$00,$00,$00,$00,$00          ; $2779:             
         .BYTE $BD,$00,$FD,$00,$FD,$40,$BD,$81          ; $2781:             
         .BYTE $BD,$81,$FF,$00,$FF,$F1,$FF,$00          ; $2789:             
+        ; ' ¿®C® '
         .BYTE $20,$81,$FF,$81,$AE,$C3,$EE,$00          ; $2791:             
+        ; '¿®¬A½'
         .BYTE $FF,$81,$EE,$81,$AC,$C1,$FD,$81          ; $2799:             
+        ; '$A¿A¿ ®'
         .BYTE $24,$C1,$FF,$C1,$FF,$00,$EE,$81          ; $27A1:             
+        ; '¿E®a¬¡¿C'
         .BYTE $FF,$C5,$EE,$41,$EC,$E1,$FF,$C3          ; $27A9:             
+        ; '7 ®A¿C¦A'
         .BYTE $37,$00,$EE,$C1,$BF,$C3,$A6,$C1          ; $27B1:             
+        ; '¦ ¿ ¿ ¿'
         .BYTE $A6,$00,$FF,$00,$FF,$00,$BF,$05          ; $27B9:             
+        ; '½ª¬G} '
         .BYTE $FD,$03,$EA,$85,$EC,$C7,$DD,$00          ; $27C1:             
         .BYTE $60,$81,$EC,$87,$EE,$81,$EE,$85          ; $27C9:             
         .BYTE $62,$81,$EE,$81,$EE,$87,$EA,$85          ; $27D1:             
         .BYTE $FD,$83,$EC,$40,$EF,$00,$FF,$00          ; $27D9:             
+        ; '(ªA¬¿'
         .BYTE $28,$02,$EA,$C1,$AC,$85,$BF,$81          ; $27E1:             
+        ; '¿® ¿G¿ '
         .BYTE $FF,$85,$EE,$00,$FF,$C7,$BF,$00          ; $27E9:             
         .BYTE $EE,$87,$FF,$81,$FF,$87,$FE,$01          ; $27F1:             
         .BYTE $FF,$00,$EE,$FD,$FF,$FF,$FF,$00          ; $27F9:             

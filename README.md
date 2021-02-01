@@ -183,8 +183,12 @@ when OFF. Try it.
 
 #### AUTO DEMO on/off
 A: PSYCHEDELIA plays itself if you want.
-PAUSE-Cursor Left/Right: Hold a particularly hoopy pattern.
-STORE on PRESET KEY: SHIFT plus any of the top row of
+
+#### PAUSE
+Cursor Left/Right: Hold a particularly hoopy pattern.
+
+#### STORE on PRESET KEY
+SHIFT plus any of the top row of
 preset keys: Stores all the parameters for later, instantaneous,
 recall by pressing that preset key. Use to store your favourites for
 recall instantly without fiddling with all the parameters. 16 presets

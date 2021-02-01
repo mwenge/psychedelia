@@ -18,13 +18,13 @@ a0B = $0B
 a0C = $0C
 a0D = $0D
 a0E = $0E
-a0F = $0F
+currentPatternElement = $0F
 a10 = $10
 a11 = $11
 a12 = $12
 a13 = $13
 a14 = $14
-a15 = $15
+currentSymmetrySetting = $15
 a16 = $16
 a17 = $17
 a18 = $18
@@ -45,7 +45,7 @@ a26 = $26
 aA0 = $A0
 aBA = $BA
 aC4 = $C4
-aC5 = $C5
+lastKeyPressed = $C5
 aC6 = $C6
 aCE = $CE
 aFB = $FB
@@ -73,16 +73,9 @@ pFD = $FD
 ;
 ; **** FIELDS **** 
 ;
-f0400 = $0400
-f0500 = $0500
-f0600 = $0600
-f06C0 = $06C0
-f07BF = $07BF
+SCREEN_RAM  = $0400
 fA0A0 = $A0A0
-fD900 = $D900
-fDA00 = $DA00
-fDAC0 = $DAC0
-fDBBF = $DBBF
+COLOR_RAM = $D800
 fE199 = $E199
 ;
 ; **** ABSOLUTE ADRESSES **** 
@@ -107,9 +100,7 @@ aCEC9 = $CEC9
 ; **** POINTERS **** 
 ;
 p01FF = $01FF
-p07D0 = $07D0
 pC000 = $C000
-pD800 = $D800
 ;
 ; **** EXTERNAL JUMPS **** 
 ;
@@ -128,32 +119,37 @@ ROM_CLALL = $FFE7
         * = $0801
 
 ;-----------------------------------------------------------
-; Start program at s0810 (SYS 2064)
+; Start program at InitializeProgram (SYS 2064)
 ;-----------------------------------------------------------
         .BYTE $0B,$08,$C1,$07,$9E,$32,$30,$36,$34 ; SYS 2064
         .BYTE $00,$00,$00,$F9
         .BYTE $02,$F9    ;JAM 
-;-----------------------------------------------------------
-; Initialize
-;-----------------------------------------------------------
-s0810
-        ; Set border and backgrount to black
+;-------------------------------
+; InitializeProgram
+;-------------------------------
+InitializeProgram
+        ; Set border and background to black
         LDA #$00
         STA $D020    ;Border Color
         STA $D021    ;Background Color 0
 
-        JSR s1FB7
+        JSR CopyDataFrom2000ToC000
 
         STA a13
+
+        ; Create a Hi/Lo pointer to $D800
         LDA #$D8
         STA aFC
         LDA #$00
         STA aFB
+
+        ; Populate a jump table of hi/lo ptrs with $D800,
+        ; $D828, $D850 etc.
         LDX #$00
 b0827   LDA aFC
-        STA f0872,X
+        STA jumpTableHiPtrArray,X
         LDA aFB
-        STA f0854,X
+        STA jumpTableLoPtrArray,X
         CLC 
         ADC #$28
         STA aFB
@@ -163,58 +159,69 @@ b0827   LDA aFC
         INX 
         CPX #$19
         BNE b0827
+
         LDA #$80
         STA a0291
         LDA #$15
         STA $D018    ;VIC Memory Control Register
         JSR ROM_IOINIT ;$FF84 - initialize CIA & IRQ             
-        JSR s1A97
-        JMP j0C24
+        JSR InitializeDynamicStorage
+        JMP LaunchPsychedelia
 
-f0854
+jumpTableLoPtrArray
       .BYTE $00,$00,$00,$00,$00                 ; $0851:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0859:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0861:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0869:               
       .BYTE $00
-f0872
+jumpTableHiPtrArray
       .BYTE $00,$00,$00,$00,$00,$00,$BF     ; $0871:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0879:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0881:               
       .BYTE $00,$00,$00,$00,$00,$00,$00     ; $0889:               
 
-j0890
+;-------------------------------
+; InitializeScreenWithInitCharacter
+;-------------------------------
+InitializeScreenWithInitCharacter 
         LDX #$00 
 
-b0892
-a0893 = *+$01
-        LDA #$CF
-        STA f0400,X
-        STA f0500,X
-        STA f0600,X
-        STA f06C0,X
+currentPixel = *+$01
+b0892   LDA #$CF
+        STA SCREEN_RAM + $0000,X
+        STA SCREEN_RAM + $0100,X
+        STA SCREEN_RAM + $0200,X
+        STA SCREEN_RAM + $02C0,X
         LDA #$00
-        STA pD800,X
-        STA fD900,X
-        STA fDA00,X
-        STA fDAC0,X
+        STA COLOR_RAM + $0000,X
+        STA COLOR_RAM + $0100,X
+        STA COLOR_RAM + $0200,X
+        STA COLOR_RAM + $02C0,X
         DEX 
         BNE b0892
         RTS 
 
-f08B2
+potentialKeyCodes
         .BYTE $39,$38,$3B,$08,$0B,$10,$13,$18
         .BYTE $1B,$20,$23,$28,$2B,$30,$33,$00
 
-s08C2   LDX a03
-        LDA f0854,X
+;-------------------------------
+; LookUpJumpTable
+;-------------------------------
+LookUpJumpTable   
+        LDX a03
+        LDA jumpTableLoPtrArray,X
         STA a05
-        LDA f0872,X
+        LDA jumpTableHiPtrArray,X
         STA a06
         LDY a02
 b08D0   RTS 
 
-s08D1   LDA a02
+;-------------------------------
+; s08D1
+;-------------------------------
+s08D1   
+        LDA a02
         AND #$80
         BNE b08D0
         LDA a02
@@ -226,17 +233,19 @@ s08D1   LDA a02
         LDA a03
         CMP #$18
         BPL b08D0
-        JSR s08C2
+        JSR LookUpJumpTable
         LDA a17
         BNE b090D
         LDA (p05),Y
         AND #$0F
+
         LDX #$00
 b08F6   CMP f0E48,X
         BEQ b0900
         INX 
         CPX #$08
         BNE b08F6
+
 b0900   TXA 
         STA aFD
         LDX a04
@@ -251,7 +260,11 @@ b090D   LDX a04
         STA (p05),Y
         RTS 
 
-s0915   JSR s09D4
+;-------------------------------
+; s0915
+;-------------------------------
+s0915   
+        JSR s09D4
         LDY #$00
         LDA a04
         CMP #$07
@@ -321,12 +334,20 @@ b0973   LDA a08
 a09CA   .BYTE $00
 
 a09CC   =*+$01
-s09CB   LDA fE199,X
+;-------------------------------
+; s09CB
+;-------------------------------
+s09CB   
+        LDA fE199,X
         INC a09CC
         RTS 
 
         BRK #$00
-s09D4   LDA a02
+;-------------------------------
+; s09D4
+;-------------------------------
+s09D4   
+        LDA a02
         PHA 
         LDA a03
         PHA 
@@ -359,7 +380,11 @@ b09E9   CMP #$03
         SBC a03
         STA a03
         JSR s08D1
-j0A0D   PLA 
+;-------------------------------
+; j0A0D
+;-------------------------------
+j0A0D    
+        PLA 
         TAY 
         PLA 
         STA a02
@@ -458,6 +483,9 @@ f0BB6
        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF      ; $0BE9:  
        .BYTE $FF,$FF,$FF,$FF,$FF                  ; $0BF1:  
 
+;-------------------------------
+; s0BF6
+;-------------------------------
 s0BF6
         LDX #$00
         TXA 
@@ -474,33 +502,43 @@ b0BF9   STA f0A36,X
 p0C13   CPX #$40
         BNE b0BF9
         STA a12
-        STA a0F
+        STA currentPatternElement
         STA a13
         STA a17
         LDA #$01
-        STA a15
+        STA currentSymmetrySetting
         RTS 
 
-j0C24   JSR s0CBF
+;-------------------------------
+; LaunchPsychedelia
+;-------------------------------
+LaunchPsychedelia    
+        JSR SetUpInterruptHandlers
+
         LDX #$10
 b0C29   TXA 
-        STA s0CBF,X
+        STA SetUpInterruptHandlers,X
         DEX 
         BNE b0C29
+
         JSR s171F
         JSR s0BF6
-        JSR s1219
-j0C39   INC a0CBB
-        LDA aC5
+        JSR ClearLastLineOfScreen
+;-------------------------------
+; j0C39
+;-------------------------------
+j0C39    
+        INC a0CBB
+        LDA lastKeyPressed
         CMP #$02
         BNE b0C54
-b0C42   LDA aC5
+b0C42   LDA lastKeyPressed
         CMP #$40
         BNE b0C42
-b0C48   LDA aC5
+b0C48   LDA lastKeyPressed
         CMP #$02
         BNE b0C48
-b0C4E   LDA aC5
+b0C4E   LDA lastKeyPressed
         CMP #$40
         BNE b0C4E
 b0C54   LDA a171E
@@ -553,27 +591,35 @@ b0CB8   JMP j0C39
 a0CBB   .BYTE $00
 b0CBC
         JMP j130A
-s0CBF
+;-------------------------------
+; SetUpInterruptHandlers
+;-------------------------------
+SetUpInterruptHandlers
         SEI
-        LDA #<p0CE8
+        LDA #<MainInterruptHandler
         STA a0314    ;IRQ
-        LDA #>p0CE8
+        LDA #>MainInterruptHandler
         STA a0315    ;IRQ
+
         LDA #$0A
         STA a0E39
-        STA a0E3A
+        STA jumpTableIndex
+
         LDA #$01
         STA $D015    ;Sprite display Enable
         STA $D027    ;Sprite 0 Color
-        LDA #<p1FAA
+        LDA #<NMIInterruptHandler
         STA a0318    ;NMI
-        LDA #>p1FAA
+        LDA #>NMIInterruptHandler
         STA a0319    ;NMI
         CLI 
         RTS 
 
-a0CE6   .BYTE $02,$00    ;JAM 
-p0CE8
+a0CE6   .BYTE $02,$00
+;-------------------------------
+; MainInterruptHandler
+;-------------------------------
+MainInterruptHandler
         LDA a19F8
         BEQ b0CFB
         DEC a19F8
@@ -583,13 +629,13 @@ p0CE8
         JSR s1982
 b0CFB   DEC a0CE6
         BEQ b0D03
-        JMP j0E15
+        JMP JumpToCheckKeyboardInput
 
 b0D03   LDA #$00
         STA a0C
         LDA a0E40
         STA a0CE6
-        JSR s0E2C
+        JSR UpdateJumpTable
         JSR s1B7D
         LDA a21
         AND #$03
@@ -597,20 +643,20 @@ b0D03   LDA #$00
         BEQ b0D40
         CMP #$02
         BEQ b0D25
-        INC a0E3A
-        INC a0E3A
-b0D25   DEC a0E3A
-        LDA a0E3A
+        INC jumpTableIndex
+        INC jumpTableIndex
+b0D25   DEC jumpTableIndex
+        LDA jumpTableIndex
         CMP #$FF
         BNE b0D37
         LDA #$17
-        STA a0E3A
+        STA jumpTableIndex
         JMP b0D40
 
 b0D37   CMP #$18
         BNE b0D40
         LDA #$00
-        STA a0E3A
+        STA jumpTableIndex
 b0D40   LDA a21
         AND #$0C
         CMP #$0C
@@ -659,7 +705,11 @@ b0DA0   LDA a0E42
         STA a1531
         LDA a0E46
         STA a1A4A
-j0DAC   INC a0E3B
+;-------------------------------
+; j0DAC
+;-------------------------------
+j0DAC    
+        INC a0E3B
         LDA a0E3B
         CMP a0E41
         BNE b0DBC
@@ -670,7 +720,7 @@ b0DBC   TAX
         CMP #$FF
         BEQ b0DD6
         LDA a13
-        AND a0E50
+        AND trackingActivated
         BEQ j0E0E
         TAX 
         LDA f0AB6,X
@@ -679,43 +729,63 @@ b0DBC   TAX
         STX a0E3B
 b0DD6   LDA a0E39
         STA f0A36,X
-        LDA a0E3A
+        LDA jumpTableIndex
         STA f0A76,X
-        LDA a0E51
+        LDA lineModeActivated
         BEQ b0DF5
         LDA #$19
         SEC 
-        SBC a0E3A
+        SBC jumpTableIndex
         ORA #$80
         STA f0AB6,X
         JMP j0E00
 
 b0DF5   LDA a0E47
         STA f0AB6,X
-        LDA a0F
+        LDA currentPatternElement
         STA f0B76,X
-j0E00   LDA a0E3F
+;-------------------------------
+; j0E00
+;-------------------------------
+j0E00    
+        LDA a0E3F
 a0E03   STA f0AF6,X
         STA f0B36,X
-        LDA a15
+        LDA currentSymmetrySetting
         STA f0BB6,X
-j0E0E   LDA #$01
+;-------------------------------
+; j0E0E
+;-------------------------------
+j0E0E    
+        LDA #$01
         STA a0C
-        JSR s0E2C
-j0E15   JSR s0F8F
+        JSR UpdateJumpTable
+;-------------------------------
+; JumpToCheckKeyboardInput
+;-------------------------------
+JumpToCheckKeyboardInput    
+        JSR CheckKeyboardInput
         JMP eEA31
 
-s0E1B   LDX a0E3A
-        LDA f0854,X
+;-------------------------------
+; LookUpJumpTable2
+;-------------------------------
+LookUpJumpTable2   
+        LDX jumpTableIndex
+        LDA jumpTableLoPtrArray,X
         STA a0A
-        LDA f0872,X
+        LDA jumpTableHiPtrArray,X
         STA a0B
         LDY a0E39
 b0E2B   RTS 
 
-s0E2C   LDA a1BEB
+;-------------------------------
+; UpdateJumpTable
+;-------------------------------
+UpdateJumpTable   
+        LDA a1BEB
         BNE b0E2B
-        JSR s0E1B
+        JSR LookUpJumpTable2
         LDA a0C
         STA (p0A),Y
         RTS 
@@ -723,7 +793,7 @@ s0E2C   LDA a1BEB
 
 a0E39   
        .BYTE $0A
-a0E3A   
+jumpTableIndex   
        .BYTE $0A
 a0E3B   
        .BYTE $00
@@ -760,9 +830,9 @@ f0E48
        .BYTE $03
        .BYTE $07
        .BYTE $01
-a0E50   
+trackingActivated   
        .BYTE $FF          ; $0E49:          
-a0E51   
+lineModeActivated   
        .BYTE $00
 a0E52   
        .BYTE $05
@@ -823,7 +893,11 @@ a0F0E
        .BYTE $02,$FE,$02,$55,$00,$55                  ; $0F89:          
 
 
-s0F8F   LDA a1530
+;-------------------------------
+; CheckKeyboardInput
+;-------------------------------
+CheckKeyboardInput   
+        LDA smoothingDelay
         BEQ b0F97
         JMP j13ED
 
@@ -831,7 +905,7 @@ b0F97   LDA a12
         BEQ b0F9F
         DEC a12
         BNE b0FAC
-b0F9F   LDA aC5
+b0F9F   LDA lastKeyPressed
         CMP #$40
         BNE b0FAD
         LDA #$00
@@ -843,64 +917,87 @@ b0FAD   LDY a1160
         STY a12
         LDY a028D
         STY a166F
-        CMP #$3C
+
+        CMP #$3C ; Space pressed?
         BNE b0FE6
-        INC a0F
-        LDA a0F
+
+        ;---------------------------------------------------------------------
+        ; Space pressed. Selects a new pattern element. " There are eight permanent ones,
+        ; and eight you can define for yourself (more on this later!). The latter eight
+        ; are all set up when you load, so you can always choose from 16 shapes."
+        ;---------------------------------------------------------------------
+        INC currentPatternElement
+        LDA currentPatternElement
         AND #$0F
-        STA a0F
+        STA currentPatternElement
         AND #$08
         BEQ b0FCB
-        JMP j1D1E
+        JMP GetCustomPatternElement
 
-b0FCB   JSR s1219
-        LDA a0F
+b0FCB   JSR ClearLastLineOfScreen
+        LDA currentPatternElement
         ASL 
         ASL 
         ASL 
         ASL 
         TAY 
+
         LDX #$00
-b0FD7   LDA f123A,Y
-        STA f11F1,X
+b0FD7   LDA txtPresetPatternNames,Y
+        STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b0FD7
-        JMP j1227
+        JMP WriteLastLineBufferToScreen
+        ; Returns
 
-b0FE6   CMP #$0D
+b0FE6   CMP #$0D ; 'S' pressed.
         BNE b101E
+
+        ;---------------------------------------------------------------------
+        ; 'S' pressed. "This changes the 'symmetry'. The pattern gets reflected
+        ; in various planes, or not at all according to the setting."
+        ;---------------------------------------------------------------------
         LDA a166F
         AND #$01
         BEQ b0FF9
         LDA a1EAA
         BNE b0FF9
-        JMP j1E1D
+        JMP PromptToSave
 
-b0FF9   INC a15
-        LDA a15
+        ; Briefly display the new symmetry setting on the bottom of the screen.
+b0FF9   INC currentSymmetrySetting
+        LDA currentSymmetrySetting
         CMP #$05
         BNE b1005
         LDA #$00
-        STA a15
+        STA currentSymmetrySetting
 b1005   ASL 
         ASL 
         ASL 
         ASL 
         TAY 
-        JSR s1219
+        JSR ClearLastLineOfScreen
+
+        ; currentSymmetrySetting is in Y
         LDX #$00
-b100F   LDA f12BA,Y
-        STA f11F1,X
+b100F   LDA txtSymmetrySettingDescriptions,Y
+        STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b100F
-        JMP j1227
 
-b101E   CMP #$2A
+        JMP WriteLastLineBufferToScreen
+        ;Returns
+
+b101E   CMP #$2A ; 'L' pressed?
         BNE b1052
+
+        ;---------------------------------------------------------------------
+        ; 'L' pressed. Turn line mode on or off.
+        ;---------------------------------------------------------------------
         LDA a1EAA
         BNE b1031
         LDA a166F
@@ -908,93 +1005,110 @@ b101E   CMP #$2A
         BEQ b1031
         JMP j1EAB
 
-b1031   LDA a0E51
+b1031   LDA lineModeActivated
         EOR #$01
-        STA a0E51
+        STA lineModeActivated
         ASL 
         ASL 
         ASL 
         ASL 
         TAY 
-        JSR s1219
+
+        ; Briefly display the new linemode setting on the bottom of the screen.
+        JSR ClearLastLineOfScreen
         LDX #$00
-b1043   LDA f1365,Y
-        STA f11F1,X
+b1043   LDA lineModeSettingDescriptions,Y
+        STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b1043
-        JMP j1227
+        JMP WriteLastLineBufferToScreen
+        ; Returns
 
-b1052   CMP #$12
+b1052   CMP #$12 ; 'D' pressed?
         BNE b105C
         LDA #$01
-        STA a1530
+        STA smoothingDelay
         RTS 
 
-b105C   CMP #$14
+b105C   CMP #$14 ; C pressed?
         BNE b1066
+        ; C pressed.
         LDA #$02
-        STA a1530
+        STA smoothingDelay
         RTS 
 
-b1066   CMP #$1C
+b1066   CMP #$1C ; B pressed?
         BNE b1070
+        ; B pressed.
         LDA #$03
-        STA a1530
+        STA smoothingDelay
         RTS 
 
-b1070   CMP #$29
+b1070   CMP #$29 ; P pressed
         BNE b107A
+        ; P pressed.
         LDA #$04
-        STA a1530
+        STA smoothingDelay
         RTS 
 
-b107A   CMP #$1D
+b107A   CMP #$1D ; H pressed.
         BNE b1088
+        ; H pressed.
         LDA #$01
         STA a1A
         LDA #$05
-        STA a1530
+        STA smoothingDelay
         RTS 
 
-b1088   CMP #$16
+b1088   CMP #$16 ; T pressed.
         BNE b10B0
-        LDA a0E50
+
+        ;"T: Controls whether logic-seeking is used in the buffer or not. The upshot of 
+        ; this for you is a slightly different feel - continuous but fragmented when ON,
+        ; or together-ish bursts when OFF. "
+        LDA trackingActivated
         EOR #$FF
-        STA a0E50
+        STA trackingActivated
         AND #$01
         ASL 
         ASL 
         ASL 
         ASL 
         TAY 
-        JSR s1219
+        JSR ClearLastLineOfScreen
+
         LDX #$00
-b10A0   LDA f15E2,Y
-        STA f11F1,X
+b10A0   LDA txtTrackingOnOff,Y
+        STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b10A0
-        JMP j1227
 
+        JMP WriteLastLineBufferToScreen
         RTS 
 
 b10B0   LDX #$00
-b10B2   CMP f08B2,X
+b10B2   CMP potentialKeyCodes,X
         BEQ b10BF
         INX 
         CPX #$10
         BNE b10B2
+
         JMP j10C2
 
 b10BF   JMP j1602
 
-j10C2   CMP #$09
+;-------------------------------
+; j10C2
+;-------------------------------
+j10C2    
+        CMP #$09 ; W pressed
         BNE b10CC
         LDA #$06
-        STA a1530
+        STA smoothingDelay
         RTS 
 
 b10CC   LDX #$00
@@ -1009,16 +1123,20 @@ b10DB   STX a173B
         LDA a1921
         BNE j10EC
         LDA #$80
-        STA a1530
+        STA smoothingDelay
         JSR s173C
         RTS 
 
-j10EC   CMP #$3E
+;-------------------------------
+; j10EC
+;-------------------------------
+j10EC    
+        CMP #$3E
         BNE b1108
         LDA a1921
         BNE b10FD
         LDA #$80
-        STA a1530
+        STA smoothingDelay
         JMP j1922
 
 b10FD   LDA #$00
@@ -1029,47 +1147,50 @@ b10FD   LDA #$00
 b1108   CMP #$1F
         BNE b1112
         LDA #$07
-        STA a1530
+        STA smoothingDelay
         RTS 
 
 b1112   CMP #$26
         BNE b111C
         LDA #$08
-        STA a1530
+        STA smoothingDelay
         RTS 
 
 b111C   CMP #$31
         BNE b1126
         LDA #$09
-        STA a1530
+        STA smoothingDelay
         RTS 
 
 b1126   CMP #$11
         BNE b112D
         JMP j1A4B
 
-b112D   CMP #$36
+b112D   CMP #$36 ; Up arrow
         BNE b1152
-        INC a1D48
-        LDA a1D48
+        ; Up arrow pressed. "Press UP-ARROW to change the shape of the little pixels on the screen."
+        INC pixelShapeIndex
+        LDA pixelShapeIndex
         AND #$0F
         TAY 
-        LDA f1D49,Y
+        LDA pixelShapeArray,Y
+
+        ; Rewrite the screen using the new pixel.
         LDX #$00
-b113F   STA f0400,X
-        STA f0500,X
-        STA f0600,X
-        STA f06C0,X
+b113F   STA SCREEN_RAM + $0000,X
+        STA SCREEN_RAM + $0100,X
+        STA SCREEN_RAM + $0200,X
+        STA SCREEN_RAM + $02C0,X
         DEX 
         BNE b113F
-        STA a0893
+        STA currentPixel
         RTS 
 
-b1152   CMP #$0A
+b1152   CMP #$0A ; 'A' pressed
         BNE b115F
-        LDA a1F24
+        LDA demoMoveActive
         EOR #$01
-        STA a1F24
+        STA demoMoveActive
         RTS 
 
 b115F   RTS 
@@ -1095,9 +1216,9 @@ a1160
         .BYTE $00,$55,$FD,$00,$03,$00,$55,$FC    ; $11D9:  
         .BYTE $00,$04,$00,$55,$FB,$00,$05,$00    ; $11E1:  
         .BYTE $55,$FA,$00,$06,$00,$55,$00        ; $11E9:  
-f11F0
+lastLineBufferPtrMinusOne
         .BYTE $55
-f11F1
+lastLineBufferPtr
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF
 a11F7
         .BYTE $FF
@@ -1119,26 +1240,34 @@ f1201
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00    ; $1211:  
 
 
-s1219   
+;-------------------------------
+; ClearLastLineOfScreen
+;-------------------------------
+ClearLastLineOfScreen   
+        
         LDX #$28
 b121B   LDA #$20
-        STA f11F0,X
-        STA f07BF,X
+        STA lastLineBufferPtrMinusOne,X
+        STA SCREEN_RAM + $03BF,X
         DEX 
         BNE b121B
         RTS 
 
-j1227   LDX #$28
-b1229   LDA f11F0,X
+;-------------------------------
+; WriteLastLineBufferToScreen
+;-------------------------------
+WriteLastLineBufferToScreen    
+        LDX #$28
+b1229   LDA lastLineBufferPtrMinusOne,X
         AND #$3F
-        STA f07BF,X
+        STA SCREEN_RAM + $03BF,X
         LDA #$0C
-        STA fDBBF,X
+        STA COLOR_RAM + $03BF,X
         DEX 
         BNE b1229
         RTS 
 
-f123a
+txtPresetPatternNames
         .BYTE $D3,$D4,$C1,$D2,$A0,$CF,$CE       ; $1239:     
         .BYTE $C5,$A0,$A0,$A0,$A0,$A0,$A0,$A0       ; $1241:     
         .BYTE $A0,$D4,$C8,$C5,$A0,$D4,$D7,$C9       ; $1249:     
@@ -1156,7 +1285,7 @@ f123a
         .BYTE $A0,$D0,$D5,$CC,$D3,$C1,$D2,$A0       ; $12A9:     
         .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0       ; $12B1:     
         .BYTE $A0
-f12BA 
+txtSymmetrySettingDescriptions 
         .BYTE $CE,$CF,$A0,$D3,$D9,$CD,$CD       ; $12B9:     
         .BYTE $C5,$D4,$D2,$D9,$A0,$A0,$A0,$A0       ; $12C1:     
         .BYTE $A0,$D9,$AD,$C1,$D8,$C9,$D3,$A0       ; $12C9:     
@@ -1169,7 +1298,10 @@ f12BA
         .BYTE $CD,$CD,$C5,$D4,$D2,$D9,$A0,$A0       ; $1301:     
         .BYTE $A0
 
-j130A
+;-------------------------------
+; j130A
+;-------------------------------
+j130A 
         LDA a04
         AND #$7F
         STA a16
@@ -1202,7 +1334,11 @@ b1343   STA a04
         LDA a03
         CMP #$19
         BNE b1331
-j134B   LDX a0CBB
+;-------------------------------
+; j134B
+;-------------------------------
+j134B    
+        LDX a0CBB
         DEC f0AB6,X
         LDA f0AB6,X
         CMP #$80
@@ -1214,30 +1350,26 @@ b135B   LDA #$FF
         STX a13
         JMP j0C39
 
-f1365   CPY aCEC9
-        CMP aA0
-        CMP aC4CF
-        CMP aBA
-        LDY #$CF
-        DEC aC6
-        LDY #$A0
-        CPY aCEC9
-        CMP aA0
-        CMP aC4CF
-        CMP aBA
-        LDY #$CF
-        DEC fA0A0
-j1385   =*+$01
-        LDY #$A5
-        ORA f1848,Y
+lineModeSettingDescriptions .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
+                            .BYTE $C5,$BA,$A0,$CF,$C6,$C6,$A0,$A0
+                            .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
+                            .BYTE $C5,$BA,$A0,$CF,$CE,$A0,$A0,$A0
+;-------------------------------
+; j1385
+;-------------------------------
+j1385   LDA a19
+        PHA 
+        CLC 
         ADC #$D4
         STA a19
+
         LDY #$00
 b138F   LDA f15D3,Y
         STA (p18),Y
         INY 
         CPY #$10
         BNE b138F
+
         PLA 
         STA a19
         LDA #$00
@@ -1275,10 +1407,14 @@ a13DC   .BYTE $FF,$FF,$20
         .BYTE $75,$61,$F6,$EA,$E7,$A0
 
 b13E7   LDA #$00
-        STA a1530
+        STA smoothingDelay
         RTS 
 
-j13ED   AND #$80
+;-------------------------------
+; j13ED
+;-------------------------------
+j13ED    
+        AND #$80
         BEQ b13F4
         JMP j179D
 
@@ -1287,14 +1423,14 @@ b13F4   LDA a12
         DEC a12
         JMP j1488
 
-b13FD   LDA aC5
+b13FD   LDA lastKeyPressed
         CMP #$40
         BNE b1406
         JMP j1488
 
 b1406   LDA #$04
         STA a12
-        LDA a1530
+        LDA smoothingDelay
         CMP #$05
         BEQ b1415
         CMP #$03
@@ -1311,18 +1447,19 @@ b1417   LDA f0AB6,X
         LDA a1B2B
         CMP #$02
         BEQ b13E7
-        LDA a1F24
+        LDA demoMoveActive
         BNE b13E7
+
         LDA #$FF
         STA a171E
         LDA #$00
         STA a0E3B
-b143F   LDA #>p07D0
+b143F   LDA #>SCREEN_RAM + $03D0
         STA a19
-        LDA #<p07D0
+        LDA #<SCREEN_RAM + $03D0
         STA a18
-        LDX a1530
-        LDA aC5
+        LDX smoothingDelay
+        LDA lastKeyPressed
         CMP #$2C
         BNE b1461
         INC f0E3E,X
@@ -1348,11 +1485,15 @@ b1473   CPX #$05
 b1482   JSR j1488
         JMP j14F2
 
-j1488   LDA #>p07D0
+;-------------------------------
+; j1488
+;-------------------------------
+j1488    
+        LDA #>SCREEN_RAM + $03D0
         STA a19
-        LDA #<p07D0
+        LDA #<SCREEN_RAM + $03D0
         STA a18
-        LDX a1530
+        LDX smoothingDelay
         CPX #$05
         BNE b14AE
         LDX a1A
@@ -1364,7 +1505,7 @@ b149E   CMP f15D2,Y
         CPY #$10
         BNE b149E
 b14A8   STY a0E43
-        LDX a1530
+        LDX smoothingDelay
 b14AE   LDA f1526,X
         STA a13D9
         LDA f0E3E,X
@@ -1375,7 +1516,7 @@ b14AE   LDA f1526,X
         BNE b14C9
         LDA #$01
         STA a173A
-        JSR s1219
+        JSR ClearLastLineOfScreen
 b14C9   PLA 
         ASL 
         ASL 
@@ -1384,27 +1525,31 @@ b14C9   PLA
         TAY 
         LDX #$00
 b14D1   LDA f1532,Y
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b14D1
-        LDA a1530
+        LDA smoothingDelay
         CMP #$05
         BNE b14EC
         LDA #$30
         CLC 
         ADC a1A
         STA a11F8
-b14EC   JSR j1227
+b14EC   JSR WriteLastLineBufferToScreen
         JMP j1385
 
-j14F2   LDA aC5
+;-------------------------------
+; j14F2
+;-------------------------------
+j14F2    
+        LDA lastKeyPressed
         CMP #$01
         BEQ b14F9
         RTS 
 
-b14F9   LDA a1530
+b14F9   LDA smoothingDelay
         CMP #$05
         BNE b1509
         INC a1A
@@ -1414,7 +1559,7 @@ b14F9   LDA a1530
         RTS 
 
 b1509   LDA #$00
-        STA a1530
+        STA smoothingDelay
         STA a173A
         RTS 
 
@@ -1429,7 +1574,7 @@ f151C
 f1526   
         .BYTE $00,$01,$08        ; $1521:   
         .BYTE $01,$04,$08,$08,$02,$04,$08
-a1530   
+smoothingDelay   
         .BYTE $00        ; $1529:   
 a1531   
         .BYTE $01
@@ -1461,7 +1606,7 @@ f15D3
         .BYTE $06,$02,$04,$05,$03,$07        ; $15D1:   
         .BYTE $01,$08,$09,$0A,$0B,$0C,$0D,$0E        ; $15D9:   
         .BYTE $0F
-f15E2   
+txtTrackingOnOff   
         .BYTE $D4,$D2,$C1,$C3,$CB,$C9,$CE        ; $15E1:   
         .BYTE $C7,$BA,$A0,$CF,$C6,$C6,$A0,$A0        ; $15E9:   
         .BYTE $A0,$D4,$D2,$C1,$C3,$CB,$C9,$CE        ; $15F1:   
@@ -1469,17 +1614,21 @@ f15E2
         .BYTE $A0
 
 
-j1602   LDA a166F
+;-------------------------------
+; j1602
+;-------------------------------
+j1602    
+        LDA a166F
         AND #$04
         BEQ b160C
         JMP j1C05
 
 b160C   TXA 
         PHA 
-        JSR s1219
+        JSR ClearLastLineOfScreen
         LDX #$00
 b1613   LDA f163F,X
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$10
         BNE b1613
@@ -1498,7 +1647,11 @@ b1635   DEX
         BNE b1623
 b1638   JMP j1670
 
-j163B   JSR j1227
+;-------------------------------
+; j163B
+;-------------------------------
+j163B    
+        JSR WriteLastLineBufferToScreen
         RTS 
 
 f163F
@@ -1514,7 +1667,11 @@ f164F
 a166F
         .BYTE $00
 
-j1670   LDA a166F
+;-------------------------------
+; j1670
+;-------------------------------
+j1670    
+        LDA a166F
         AND #$01
         ASL 
         ASL 
@@ -1544,14 +1701,18 @@ b169B   LDA f0E3E,X
         INX 
         CPX #$15
         BNE b169B
-        LDA a0F
+        LDA currentPatternElement
         STA (p1B),Y
         INY 
-        LDA a15
+        LDA currentSymmetrySetting
         STA (p1B),Y
         JMP j163B
 
-j16B2   PLA 
+;-------------------------------
+; j16B2
+;-------------------------------
+j16B2    
+        PLA 
         TAX 
         JSR s16F7
         LDY #$03
@@ -1572,7 +1733,11 @@ b16CA   LDA (p1B),Y
         BNE b16CA
         JMP j16DA
 
-j16DA   LDA #$FF
+;-------------------------------
+; j16DA
+;-------------------------------
+j16DA    
+        LDA #$FF
         STA a171E
         LDY #$00
 b16E1   LDA (p1B),Y
@@ -1581,13 +1746,17 @@ b16E1   LDA (p1B),Y
         CPY #$15
         BNE b16E1
         LDA (p1B),Y
-        STA a0F
+        STA currentPatternElement
         INY 
         LDA (p1B),Y
-        STA a15
+        STA currentSymmetrySetting
         JMP j163B
 
-s16F7   LDA #>pC000
+;-------------------------------
+; s16F7
+;-------------------------------
+s16F7   
+        LDA #>pC000
         STA a1C
         LDA #<pC000
         STA a1B
@@ -1604,42 +1773,54 @@ b1702   LDA a1B
         BNE b1702
 b1712   RTS 
 
-s1713   LDA #$FF
+;-------------------------------
+; s1713
+;-------------------------------
+s1713   
+        LDA #$FF
         STA a171E
         LDA #$00
         STA a0E3B
         RTS 
 
 a171E  .BYTE $00
+;-------------------------------
+; s171F
+;-------------------------------
 s171F
         LDA #$00
         STA a0CBB
         STA a13
+
         LDX #$00
         LDA #$FF
-b172a
-        STA $0AB6,X
+b172a   STA $0AB6,X
         INX
         CPX #$40
         BNE b172A
+
         LDA #$00
         STA a171E
-        JMP j0890
+        JMP InitializeScreenWithInitCharacter
 
 a173A   .BYTE $00
 a173B   .BYTE $00
 
-s173C   JSR s1219
+;-------------------------------
+; s173C
+;-------------------------------
+s173C   
+        JSR ClearLastLineOfScreen
         LDA a166F
         AND #$01
         BEQ b1756
         LDX #$00
 b1748   LDA f1787,X
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$10
         BNE b1748
-        JSR j1227
+        JSR WriteLastLineBufferToScreen
 b1756   LDA #$C2
         STA a1E
         LDX a173B
@@ -1651,7 +1832,7 @@ b1756   LDA #$C2
         LDA #$10
         STA a179B
         LDY #$00
-        LDA a15
+        LDA currentSymmetrySetting
         STA (p1D),Y
         LDA a0E3F
         INY 
@@ -1677,8 +1858,11 @@ f1797
 
 a179B   .BYTE $FF,$60
 
-j179D
-        LDA a1530
+;-------------------------------
+; j179D
+;-------------------------------
+j179D 
+        LDA smoothingDelay
         CMP #$83
         BNE b17A7
         JMP j1C90
@@ -1717,7 +1901,7 @@ b17E9   DEX
         JSR s1885
         LDA a1884
         BEQ b1801
-        LDA aC5
+        LDA lastKeyPressed
         CMP #$40
         BEQ b17FB
         RTS 
@@ -1726,7 +1910,7 @@ b17FB   LDA #$00
         STA a1884
 b1800   RTS 
 
-b1801   LDA aC5
+b1801   LDA lastKeyPressed
         CMP #$40
         BEQ b1800
         LDX #$01
@@ -1745,7 +1929,7 @@ b1801   LDA aC5
         LDA a1E
         STA a1A49
         LDA #$00
-        STA a1530
+        STA smoothingDelay
         STA a1884
         STA a1921
         LDY #$02
@@ -1761,11 +1945,15 @@ b183D   LDY #$02
 f1848   JMP j184E
 
 b184B   LDA a0E39
-j184E   STA (p1D),Y
-        LDA a0E3A
+;-------------------------------
+; j184E
+;-------------------------------
+j184E    
+        STA (p1D),Y
+        LDA jumpTableIndex
         INY 
         STA (p1D),Y
-        LDA a0F
+        LDA currentPatternElement
         INY 
         STA (p1D),Y
         LDA a1D
@@ -1778,18 +1966,25 @@ j184E   STA (p1D),Y
         DEC a179B
         RTS 
 
-j186C   JSR s1885
+;-------------------------------
+; j186C
+;-------------------------------
+j186C    
+        JSR s1885
         LDA #$FF
         LDY #$02
         STA (p1D),Y
         LDA #$00
-        STA a1530
+        STA smoothingDelay
         STA a1884
         STA a1A47
         STA a1921
         RTS 
 
 a1884   .BYTE $00
+;-------------------------------
+; s1885
+;-------------------------------
 s1885
         LDA a11F7
         STA a07C6
@@ -1799,15 +1994,23 @@ s1885
         STA a07C8
         RTS 
 
-j1898   LDA #$00
-        STA a1530
+;-------------------------------
+; j1898
+;-------------------------------
+j1898    
+        LDA #$00
+        STA smoothingDelay
         TAY 
         LDA (p1D),Y
         STA a1920
         INY 
         LDA (p1D),Y
         STA a191F
-j18A9   LDY #$02
+;-------------------------------
+; j18A9
+;-------------------------------
+j18A9    
+        LDY #$02
         INC a0E3B
         LDA a0E3B
         CMP a0E41
@@ -1819,7 +2022,7 @@ b18BB   LDX a0E3B
         CMP #$FF
         BEQ b18D7
         LDA a13
-        AND a0E50
+        AND trackingActivated
         BEQ b1901
         STA a0E3B
         TAX 
@@ -1863,7 +2066,10 @@ b1919   LDA #$00
 a191F   .BYTE $00
 a1920   .BYTE $00
 a1921   .BYTE $00
-j1922
+;-------------------------------
+; j1922
+;-------------------------------
+j1922 
         LDA #$C3
         STA a1E
         LDA #$00
@@ -1876,7 +2082,7 @@ j1922
         LDA a0E45
         STA a19F8
         LDA #$00
-        STA a1530
+        STA smoothingDelay
         JSR j1A09
         RTS 
 
@@ -1892,23 +2098,31 @@ b1945   LDA a1A47
 
 b195D   LDA #$FF
         STA a179B
-        LDA a15
+        LDA currentSymmetrySetting
         LDY #$00
         STA (p1D),Y
         LDA a0E3F
         INY 
         STA (p1D),Y
-j196E   JSR s1219
+;-------------------------------
+; j196E
+;-------------------------------
+j196E    
+        JSR ClearLastLineOfScreen
         LDX #$00
 b1973   LDA f19F9,X
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$10
         BNE b1973
-        JSR j1227
+        JSR WriteLastLineBufferToScreen
         RTS 
 
-s1982   INC a0E3B
+;-------------------------------
+; s1982
+;-------------------------------
+s1982   
+        INC a0E3B
         LDA a0E3B
         CMP a0E41
         BNE b1992
@@ -1919,7 +2133,7 @@ b1992   TAX
         CMP #$FF
         BEQ b19A9
         LDA a13
-        AND a0E50
+        AND trackingActivated
         BEQ b19D9
         TAX 
         LDA f0AB6,X
@@ -1969,22 +2183,26 @@ f19F9
         .BYTE $D3,$C5,$D1,$D5,$BA,$A0,$B0,$B0
         .BYTE $B0,$A0,$C6,$D2,$C5,$C5,$A0,$A0
 
-j1A09   LDA a1921
+;-------------------------------
+; j1A09
+;-------------------------------
+j1A09    
+        LDA a1921
         AND #$01
         ASL 
         ASL 
         ASL 
         ASL 
         TAY 
-        JSR s1219
+        JSR ClearLastLineOfScreen
         LDX #$00
 b1A18   LDA f1A27,Y
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b1A18
-        JMP j1227
+        JMP WriteLastLineBufferToScreen
 
 f1A27
       .BYTE $D3,$C5       ; $1A21:               
@@ -2001,9 +2219,13 @@ a1A49
 a1A4A
       .BYTE $00
 
-j1A4B   LDA #>p3000
+;-------------------------------
+; j1A4B
+;-------------------------------
+j1A4B    
+        LDA #>dynamicStorage
         STA a20
-        LDA #<p3000
+        LDA #<dynamicStorage
         STA a1F
         LDA #$01
         STA a1BE7
@@ -2025,24 +2247,29 @@ b1A72   LDA a1B2B
         ASL 
         ASL 
         TAY 
-        JSR s1219
+        JSR ClearLastLineOfScreen
         LDX #$00
 b1A81   LDA f1ADE,Y
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
         BNE b1A81
-        JSR j1227
+        JSR WriteLastLineBufferToScreen
         LDA a1B2B
         CMP #$03
         BNE b1AC5
-s1A97   LDA #<p3000
+;-------------------------------
+; InitializeDynamicStorage
+;-------------------------------
+InitializeDynamicStorage   
+        LDA #<dynamicStorage
         STA aFB
-        LDA #>p3000
+        LDA #>dynamicStorage
         STA aFC
         LDY #$00
         TYA 
+
         LDX #$50
 b1AA4   STA (pFB),Y
         DEY 
@@ -2050,23 +2277,24 @@ b1AA4   STA (pFB),Y
         INC aFC
         DEX 
 b1AAC   BNE b1AA4
+
         LDA #<p01FF
-        STA p3000
+        STA dynamicStorage
         LDA #>p01FF
         STA a3001
         LDA a0E39
         STA a1BE8
-        LDA a0E3A
+        LDA jumpTableIndex
         STA a1BE9
         RTS 
 
 b1AC5   LDA #$00
         STA a0C
-        JSR s0E2C
+        JSR UpdateJumpTable
         LDA a1BE8
         STA a0E39
         LDA a1BE9
-        STA a0E3A
+        STA jumpTableIndex
         LDA #$FF
         STA a1BEB
         RTS 
@@ -2078,18 +2306,22 @@ f1ADE
         .BYTE $CF,$D2,$C4,$C9,$CE,$C7,$AE,$AE       ; $1AF1:         
         .BYTE $AE,$AE,$AE,$AE,$AE
 
-j1AFE   LDA #$00
+;-------------------------------
+; j1AFE
+;-------------------------------
+j1AFE    
+        LDA #$00
         STA a1B2B
         STA $D020    ;Border Color
         STA a1BEB
         TAY 
-        JSR s1219
+        JSR ClearLastLineOfScreen
 b1B0D   LDA f1B1B,Y
-        STA f11F1,Y
+        STA lastLineBufferPtr,Y
         INY 
         CPY #$10
         BNE b1B0D
-        JMP j1227
+        JMP WriteLastLineBufferToScreen
 
 f1B1B
         .BYTE $D3,$D4,$CF,$D0,$D0,$C5    ; $1B19:     
@@ -2098,7 +2330,11 @@ f1B1B
 a1B2B
         .BYTE $00
 
-j1B2C   LDA $DC00    ;CIA1: Data Port Register A
+;-------------------------------
+; j1B2C
+;-------------------------------
+j1B2C    
+        LDA $DC00    ;CIA1: Data Port Register A
         STA a21
         LDY #$00
         CMP (p1F),Y
@@ -2147,7 +2383,11 @@ b1B70   INY
         BEQ b1B37
         RTS 
 
-s1B7D   LDA a1B2B
+;-------------------------------
+; s1B7D
+;-------------------------------
+s1B7D   
+        LDA a1B2B
         BEQ b1B8C
         CMP #$03
         BNE b1B89
@@ -2155,7 +2395,7 @@ s1B7D   LDA a1B2B
 
 b1B89   JMP j1B9A
 
-b1B8C   LDA a1F24
+b1B8C   LDA demoMoveActive
         BEQ b1B94
         JMP j1F27
 
@@ -2163,7 +2403,11 @@ b1B94   LDA $DC00    ;CIA1: Data Port Register A
         STA a21
         RTS 
 
-j1B9A   DEC a1BE7
+;-------------------------------
+; j1B9A
+;-------------------------------
+j1B9A    
+        DEC a1BE7
         BEQ b1BA6
         LDY #$00
         LDA (p1F),Y
@@ -2188,19 +2432,19 @@ b1BA6   LDA a1F
         STA a21
         RTS 
 
-b1BC6   LDA #>p3000
+b1BC6   LDA #>dynamicStorage
         STA a20
-        LDA #<p3000
+        LDA #<dynamicStorage
         STA a1F
         LDA #$01
         STA a1BE7
         LDA #$00
         STA a0C
-        JSR s0E2C
+        JSR UpdateJumpTable
         LDA a1BE8
         STA a0E39
         LDA a1BE9
-        STA a0E3A
+        STA jumpTableIndex
         RTS 
 
 a1BE7
@@ -2219,14 +2463,17 @@ f1BEC
         .BYTE $D6,$C5,$CC,$A0,$B2,$A0,$D0,$C9   ; $1BF9:           
         .BYTE $D8,$C5,$CC,$D3
 
-j1C05
+;-------------------------------
+; j1C05
+;-------------------------------
+j1C05 
         TXA
         AND #$08
         BEQ b1C0B
         RTS 
 
 b1C0B   LDA #$83
-        STA a1530
+        STA smoothingDelay
         LDA #$00
         STA a22
         STA a1BEB
@@ -2236,14 +2483,14 @@ b1C0B   LDA #$83
         CLC 
         ADC #$08
         STA a1BEA
-        JSR s1219
+        JSR ClearLastLineOfScreen
         LDX #$00
 b1C28   LDA f1BEC,X
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$19
         BNE b1C28
-        JSR j1227
+        JSR WriteLastLineBufferToScreen
         LDA #$06
         STA a25
         LDY #$00
@@ -2265,10 +2512,14 @@ b1C28   LDA f1BEC,X
         STA a171E
         RTS 
 
-j1C5B   LDA #<p0C13
+;-------------------------------
+; j1C5B
+;-------------------------------
+j1C5B    
+        LDA #<p0C13
         STA a0E39
         LDA #>p0C13
-        STA a0E3A
+        STA jumpTableIndex
         JSR s171F
 b1C68   LDA a1BEA
         STA a0E52
@@ -2288,9 +2539,13 @@ b1C68   LDA a1BEA
         STA a171E
         JMP j0C39
 
-j1C90   LDA a1884
+;-------------------------------
+; j1C90
+;-------------------------------
+j1C90    
+        LDA a1884
         BEQ b1CA2
-        LDA aC5
+        LDA lastKeyPressed
         CMP #$40
         BEQ b1C9C
         RTS 
@@ -2299,12 +2554,12 @@ b1C9C   LDA #$00
         STA a1884
 b1CA1   RTS 
 
-b1CA2   LDA aC5
+b1CA2   LDA lastKeyPressed
         CMP #$40
         BEQ b1CA1
         LDA #$FF
         STA a1884
-        LDA aC5
+        LDA lastKeyPressed
         CMP #$01
         BEQ b1CB6
         JMP j1CEF
@@ -2339,11 +2594,15 @@ b1CB6   INC a26
         RTS 
 
 b1CE6   LDA #$00
-        STA a1530
-        JSR s1219
+        STA smoothingDelay
+        JSR ClearLastLineOfScreen
 b1CEE   RTS 
 
-j1CEF   CMP #$39
+;-------------------------------
+; j1CEF
+;-------------------------------
+j1CEF    
+        CMP #$39
         BNE b1CEE
         LDY a26
         LDA a0E39
@@ -2358,7 +2617,7 @@ j1CEF   CMP #$39
         CLC 
         ADC #$7F
         TAY 
-        LDA a0E3A
+        LDA jumpTableIndex
         SEC 
 b1D0D   SBC #$0C
         STA (p22),Y
@@ -2371,37 +2630,45 @@ b1D0D   SBC #$0C
 
 b1D1B   JMP b1CB6
 
-j1D1E   JSR s1219
+;-------------------------------
+; GetCustomPatternElement
+;-------------------------------
+GetCustomPatternElement    
+        JSR ClearLastLineOfScreen
         LDX #$00
-b1D23   LDA f1D3B,X
-        STA f11F1,X
+b1D23   LDA txtCustomPatterns,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$0E
         BNE b1D23
-        LDA a0F
+        LDA currentPatternElement
         AND #$07
         CLC 
         ADC #$30
         STA a11FE
-        JMP j1227
+        JMP WriteLastLineBufferToScreen
+        ; Returns
 
-f1D3B
+txtCustomPatterns
         .BYTE $D5,$D3,$C5,$D2,$A0,$D3      ; $1D39:   
         .BYTE $C8,$C1,$D0,$C5,$A0,$A3,$B0
-a1D48
+pixelShapeIndex
         .BYTE $00      ; $1D41:   
-f1D49
+pixelShapeArray
         .BYTE $CF,$51,$53,$5A,$5B,$5F,$57,$7F      ; $1D49:   
         .BYTE $56,$61,$4F,$66,$6C,$EC,$A0,$2A      ; $1D51:   
         .BYTE $47,$4F,$41,$54,$53,$53,$48,$45      ; $1D59:   
         .BYTE $45,$50
 
-j1D63
-        lda #$13
-        jsr $FFD2
-        lda #$ff
+;-------------------------------
+; j1D63
+;-------------------------------
+j1D63 
+        LDA #$13
+        JSR $FFD2
+        LDA #$FF
         STA a1BEB
-        JSR j0890
+        JSR InitializeScreenWithInitCharacter
 b1D70   LDA a1EAA
         BEQ b1D70
         CMP #$01
@@ -2472,7 +2739,11 @@ b1DE6   LDA #$01
         AND #$10
         BEQ j1E08
         JSR j1EAB
-j1E08   LDA #$00
+;-------------------------------
+; j1E08
+;-------------------------------
+j1E08    
+        LDA #$00
         STA a171E
         STA a1BEB
         STA a1EAA
@@ -2482,45 +2753,54 @@ j1E08   LDA #$00
 
         RTS 
 
-j1E1D   LDA a19F8
+;-------------------------------
+; PromptToSave
+;-------------------------------
+PromptToSave    
+        LDA a19F8
         BNE b1E43
         LDA a1B2B
         CMP #$02
         BEQ b1E43
+
         LDA #$84
-        STA a1530
+        STA smoothingDelay
+
         LDX #$00
-b1E30   LDA f1E44,X
-        STA f11F1,X
+b1E30   LDA txtSavePrompt,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$28
         BNE b1E30
+
         LDA #$00
         STA a1EAA
-        JSR j1227
+        JSR WriteLastLineBufferToScreen
 b1E43   RTS 
 
-f1E44
-        .BYTE $20,$53,$41,$56,$45    ; $1E41:       
-        .BYTE $20,$28,$50,$29,$41,$52,$41,$4D    ; $1E49:       
-        .BYTE $45,$54,$45,$52,$53,$2C,$20,$28    ; $1E51:       
-        .BYTE $4D,$29,$4F,$54,$49,$4F,$4E,$2C    ; $1E59:       
-        .BYTE $20,$28,$41,$29,$42,$4F,$52,$54    ; $1E61:       
-        .BYTE $3F,$20,$20
+txtSavePrompt   .TEXT " SAVE (P)ARAMETERS, (M)OTION, (A)BORT?  "
 
-j1E6C   LDA a1530
+;-------------------------------
+; j1E6C
+;-------------------------------
+j1E6C    
+        LDA smoothingDelay
         CMP #$84
         BEQ b1E74
         RTS 
 
-b1E74   LDA aC5
+b1E74   LDA lastKeyPressed
         CMP #$0A
         BNE b1E87
         LDA #$00
         STA a171E
-j1E7F   LDA #$00
-        STA a1530
-        JMP s1219
+;-------------------------------
+; j1E7F
+;-------------------------------
+j1E7F    
+        LDA #$00
+        STA smoothingDelay
+        JMP ClearLastLineOfScreen
 
 b1E87   CMP #$24
         BNE b1E98
@@ -2541,43 +2821,52 @@ b1E98   CMP #$29
 b1EA9   RTS 
 
 a1EAA   .BYTE $00
-j1EAB   
+;-------------------------------
+; j1EAB
+;-------------------------------
+j1EAB    
+        
         LDA a19F8
         BNE b1EA9
         LDA a1B2B
         CMP #$02
         BEQ b1EA9
         LDA #$85
-        STA a1530
+        STA smoothingDelay
         LDX #$00
 b1EBE   LDA f1EFC,X
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$28
         BNE b1EBE
         LDA #$00
         STA a1EAA
-        JMP j1227
+        JMP WriteLastLineBufferToScreen
 
-j1ED1   LDA aC5
-        CMP #$0A
+;-------------------------------
+; j1ED1
+;-------------------------------
+j1ED1    
+        LDA lastKeyPressed
+        CMP #$0A ; 'A'
         BNE b1EE5
+        ; 'A' pressed
         LDA #$00
-        STA a1530
+        STA smoothingDelay
         STA a1EAA
         STA a171E
-        JMP s1219
+        JMP ClearLastLineOfScreen
 
-b1EE5   CMP #$14
+b1EE5   CMP #$14 ; 'C'
         BNE b1EFB
+        ; 'C' pressed
         LDA #$03
         STA a1EAA
         LDA #$00
-        STA a1530
+        STA smoothingDelay
         LDA #$18
-b1EF6   =*+$01
         STA a171E
-        JMP s1219
+        JMP ClearLastLineOfScreen
 
 b1EFB   RTS 
 
@@ -2588,14 +2877,17 @@ f1EFC
         .BYTE $C1,$A9,$C2,$CF,$D2,$D4,$BF,$A0         ; $1F11:
         .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0         ; $1F19:
         .BYTE $A0,$A0,$A0
-a1F24
+demoMoveActive
         .BYTE $00
 a1F25
         .BYTE $01
 a1F26
         .BYTE $10
 
-j1F27
+;-------------------------------
+; j1F27
+;-------------------------------
+j1F27 
         DEC a1F25
         BEQ b1F2D
         RTS 
@@ -2627,17 +2919,21 @@ b1F56   ADC #$20
         STA a166F
         JMP b160C
 
-s1F69   LDA a1F24
+;-------------------------------
+; s1F69
+;-------------------------------
+s1F69   
+        LDA demoMoveActive
         BNE b1F71
-        JMP s1219
+        JMP ClearLastLineOfScreen
 
 b1F71   LDX #$00
 b1F73   LDA f1F81,X
-        STA f11F1,X
+        STA lastLineBufferPtr,X
         INX 
         CPX #$28
         BNE b1F73
-        JMP j1227
+        JMP WriteLastLineBufferToScreen
 
 f1F81
         .BYTE $D0,$D3,$D9,$C3,$C8,$C5,$C4,$C5         ; $1F81:
@@ -2647,12 +2943,16 @@ f1F81
         .BYTE $CA,$A0,$CD,$C9,$CE,$D4,$C5,$D2         ; $1FA1:
 a1FA9
         .BYTE $20
-p1FAA
+NMIInterruptHandler
         .BYTE $A2,$F8,$9A,$A9,$0C,$48,$A9         ; $1FA9:
         .BYTE $30,$48,$A9,$23,$48,$40
 
 
-s1FB7   LDY #$00
+;-------------------------------
+; CopyDataFrom2000ToC000
+;-------------------------------
+CopyDataFrom2000ToC000   
+        LDY #$00
         TYA 
         STA aFB
         STA aFD
@@ -2660,26 +2960,31 @@ s1FB7   LDY #$00
         STA aFC
         LDA #$C0
         STA aFE
+
         LDX #$10
 b1FC8   LDA (pFB),Y
         STA (pFD),Y
         DEY 
         BNE b1FC8
+
         INC aFC
         INC aFE
         DEX 
         BNE b1FC8
+
         LDX #$09
 b1FD8   LDA f1FE1,X
         STA a7FFF,X
         DEX 
         BNE b1FD8
-f1FE1   RTS 
+        RTS 
 
+f1FE1=*-$01   
         .BYTE $30,$0C,$30,$0C,$C3,$C2,$CD          ; $1FE1:             
         .BYTE $38,$30,$00,$00,$00,$00,$00,$00          ; $1FE9:             
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00          ; $1FF1:             
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00          ; $1FF9:             
+f2000
         .BYTE $0C,$02,$1F,$01,$01,$07,$04,$01          ; $2001:             
         .BYTE $07,$00,$06,$02,$04,$05,$03,$07          ; $2009:             
         .BYTE $01,$00,$00,$00,$00,$01,$FF,$00          ; $2011:             
@@ -3195,7 +3500,7 @@ a2AA0
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00          ; $2FF1:             
         .BYTE $00,$00,$00,$00,$00,$00                  ; $2FF9:             
         .BYTE $FF
-p3000
+dynamicStorage
         .BYTE $00
 a3001
 

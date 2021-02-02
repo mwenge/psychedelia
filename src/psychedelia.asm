@@ -15,13 +15,13 @@ a08 = $08
 a09 = $09
 a0A = $0A
 a0B = $0B
-a0C = $0C
+currentColorToPaint = $0C
 a0D = $0D
 a0E = $0E
 currentPatternElement = $0F
 a10 = $10
 a11 = $11
-a12 = $12
+timerBetweenKeyStrokes = $12
 a13 = $13
 a14 = $14
 currentSymmetrySetting = $15
@@ -29,7 +29,7 @@ a16 = $16
 a17 = $17
 a18 = $18
 a19 = $19
-a1A = $1A
+currentColorSet = $1A
 a1B = $1B
 a1C = $1C
 a1D = $1D
@@ -121,7 +121,6 @@ ROM_CLALL = $FFE7
 ;-----------------------------------------------------------
 ; Start program at InitializeProgram (SYS 2064)
 ;-----------------------------------------------------------
-        ; 'A2064'
         .BYTE $0B,$08,$C1,$07,$9E,$32,$30,$36,$34 ; SYS 2064
         .BYTE $00,$00,$00,$F9
         .BYTE $02,$F9    ;JAM 
@@ -144,13 +143,15 @@ InitializeProgram
         LDA #$00
         STA aFB
 
-        ; Populate a jump table of hi/lo ptrs with $D800,
-        ; $D828, $D850 etc.
+        ; Populate a table of hi/lo ptrs to the color RAM
+        ; of each line on the screen (e.g. $D800,
+        ; $D828, $D850 etc). Each entry represents a single
+        ; line 40 bytes long and there are twenty lines.
         LDX #$00
 b0827   LDA aFC
-        STA jumpTableHiPtrArray,X
+        STA colorRAMLineTableHiPtrArray,X
         LDA aFB
-        STA jumpTableLoPtrArray,X
+        STA colorRAMLineTableLoPtrArray,X
         CLC 
         ADC #$28
         STA aFB
@@ -169,13 +170,13 @@ b0827   LDA aFC
         JSR InitializeDynamicStorage
         JMP LaunchPsychedelia
 
-jumpTableLoPtrArray
+colorRAMLineTableLoPtrArray
       .BYTE $00,$00,$00,$00,$00                 ; $0851:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0859:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0861:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0869:               
       .BYTE $00
-jumpTableHiPtrArray
+colorRAMLineTableHiPtrArray
       .BYTE $00,$00,$00,$00,$00,$00,$BF     ; $0871:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0879:               
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0881:               
@@ -207,13 +208,13 @@ presetKeyCodes
         .BYTE $1B,$20,$23,$28,$2B,$30,$33,$00
 
 ;-------------------------------
-; LookUpJumpTable
+; GetColorRAMPtrFromLineTable
 ;-------------------------------
-LookUpJumpTable   
+GetColorRAMPtrFromLineTable   
         LDX a03
-        LDA jumpTableLoPtrArray,X
+        LDA colorRAMLineTableLoPtrArray,X
         STA a05
-        LDA jumpTableHiPtrArray,X
+        LDA colorRAMLineTableHiPtrArray,X
         STA a06
         LDY a02
 b08D0   RTS 
@@ -234,7 +235,7 @@ s08D1
         LDA a03
         CMP #$18
         BPL b08D0
-        JSR LookUpJumpTable
+        JSR GetColorRAMPtrFromLineTable
         LDA a17
         BNE b090D
         LDA (p05),Y
@@ -334,11 +335,11 @@ b0973   LDA a08
 
 a09CA   .BYTE $00
 
+;-------------------------------
+; PutRandomByteInAccumulator
+;-------------------------------
+PutRandomByteInAccumulator   
 a09CC   =*+$01
-;-------------------------------
-; s09CB
-;-------------------------------
-s09CB   
         LDA fE199,X
         INC a09CC
         RTS 
@@ -485,9 +486,9 @@ f0BB6
        .BYTE $FF,$FF,$FF,$FF,$FF                  ; $0BF1:  
 
 ;-------------------------------
-; s0BF6
+; ReinitializeSequences
 ;-------------------------------
-s0BF6
+ReinitializeSequences
         LDX #$00
         TXA 
 b0BF9   STA f0A36,X
@@ -502,7 +503,7 @@ b0BF9   STA f0A36,X
         INX 
 p0C13   CPX #$40
         BNE b0BF9
-        STA a12
+        STA timerBetweenKeyStrokes
         STA currentPatternElement
         STA a13
         STA a17
@@ -522,8 +523,8 @@ b0C29   TXA
         DEX 
         BNE b0C29
 
-        JSR s171F
-        JSR s0BF6
+        JSR ReinitializeScreen
+        JSR ReinitializeSequences
         JSR ClearLastLineOfScreen
 ;-------------------------------
 ; j0C39
@@ -552,7 +553,7 @@ b0C60   CMP #$18
         BNE b0C67
         JMP j1D63
 
-b0C67   JSR s171F
+b0C67   JSR ReinitializeScreen
 b0C6A   LDA a0CBB
         CMP a0E41
         BNE b0C77
@@ -603,8 +604,8 @@ SetUpInterruptHandlers
         STA a0315    ;IRQ
 
         LDA #$0A
-        STA a0E39
-        STA jumpTableIndex
+        STA offsetInLineToPaint
+        STA colorRAMLineTableIndex
 
         LDA #$01
         STA $D015    ;Sprite display Enable
@@ -621,22 +622,25 @@ a0CE6   .BYTE $02,$00
 ; MainInterruptHandler
 ;-------------------------------
 MainInterruptHandler
-        LDA a19F8
+        LDA stepsRemainingInSequencerSequence
         BEQ b0CFB
-        DEC a19F8
+        DEC stepsRemainingInSequencerSequence
         BNE b0CFB
+
         LDA a0E45
-        STA a19F8
+        STA stepsRemainingInSequencerSequence
         JSR s1982
+
 b0CFB   DEC a0CE6
         BEQ b0D03
         JMP JumpToCheckKeyboardInput
 
 b0D03   LDA #$00
-        STA a0C
+        STA currentColorToPaint
         LDA a0E40
         STA a0CE6
-        JSR UpdateJumpTable
+        JSR UpdateLineinColorRAMUsingIndex
+
         JSR GetJoystickInput
         LDA lastJoystickInput
         AND #$03
@@ -644,40 +648,40 @@ b0D03   LDA #$00
         BEQ b0D40
         CMP #$02
         BEQ b0D25
-        INC jumpTableIndex
-        INC jumpTableIndex
-b0D25   DEC jumpTableIndex
-        LDA jumpTableIndex
+        INC colorRAMLineTableIndex
+        INC colorRAMLineTableIndex
+b0D25   DEC colorRAMLineTableIndex
+        LDA colorRAMLineTableIndex
         CMP #$FF
         BNE b0D37
         LDA #$17
-        STA jumpTableIndex
+        STA colorRAMLineTableIndex
         JMP b0D40
 
 b0D37   CMP #$18
         BNE b0D40
         LDA #$00
-        STA jumpTableIndex
+        STA colorRAMLineTableIndex
 b0D40   LDA lastJoystickInput
         AND #$0C
         CMP #$0C
         BEQ b0D6D
         CMP #$08
         BEQ b0D52
-        INC a0E39
-        INC a0E39
-b0D52   DEC a0E39
-        LDA a0E39
+        INC offsetInLineToPaint
+        INC offsetInLineToPaint
+b0D52   DEC offsetInLineToPaint
+        LDA offsetInLineToPaint
         CMP #$FF
         BNE b0D64
         LDA #$27
-        STA a0E39
+        STA offsetInLineToPaint
         JMP b0D6D
 
 b0D64   CMP #$28
         BNE b0D6D
         LDA #$00
-        STA a0E39
+        STA offsetInLineToPaint
 b0D6D   LDA lastJoystickInput
         AND #$10
         BEQ b0D7B
@@ -728,15 +732,15 @@ b0DBC   TAX
         CMP #$FF
         BNE j0E0E
         STX a0E3B
-b0DD6   LDA a0E39
+b0DD6   LDA offsetInLineToPaint
         STA f0A36,X
-        LDA jumpTableIndex
+        LDA colorRAMLineTableIndex
         STA f0A76,X
         LDA lineModeActivated
         BEQ b0DF5
         LDA #$19
         SEC 
-        SBC jumpTableIndex
+        SBC colorRAMLineTableIndex
         ORA #$80
         STA f0AB6,X
         JMP j0E00
@@ -759,8 +763,9 @@ a0E03   STA f0AF6,X
 ;-------------------------------
 j0E0E    
         LDA #$01
-        STA a0C
-        JSR UpdateJumpTable
+        STA currentColorToPaint
+        JSR UpdateLineinColorRAMUsingIndex
+
 ;-------------------------------
 ; JumpToCheckKeyboardInput
 ;-------------------------------
@@ -769,86 +774,64 @@ JumpToCheckKeyboardInput
         JMP eEA31
 
 ;-------------------------------
-; LookUpJumpTable2
+; GetColorRAMPtrFromLineTableUsingIndex
 ;-------------------------------
-LookUpJumpTable2   
-        LDX jumpTableIndex
-        LDA jumpTableLoPtrArray,X
+GetColorRAMPtrFromLineTableUsingIndex   
+        LDX colorRAMLineTableIndex
+        LDA colorRAMLineTableLoPtrArray,X
         STA a0A
-        LDA jumpTableHiPtrArray,X
+        LDA colorRAMLineTableHiPtrArray,X
         STA a0B
-        LDY a0E39
+        LDY offsetInLineToPaint
 b0E2B   RTS 
 
 ;-------------------------------
-; UpdateJumpTable
+; UpdateLineinColorRAMUsingIndex
 ;-------------------------------
-UpdateJumpTable   
+UpdateLineinColorRAMUsingIndex   
         LDA a1BEB
         BNE b0E2B
-        JSR LookUpJumpTable2
-        LDA a0C
+        JSR GetColorRAMPtrFromLineTableUsingIndex
+        LDA currentColorToPaint
         STA (p0A),Y
         RTS 
 
 
-a0E39   
-       .BYTE $0A
-jumpTableIndex   
-       .BYTE $0A
-a0E3B   
-       .BYTE $00
-a0E3C   
-       .BYTE $00
-a0E3D   
-       .BYTE $00
-f0E3E   
-       .BYTE $00
-a0E3F   
-       .BYTE $0C
-a0E40   
-       .BYTE $02          ; $0E39:          
-a0E41   
-       .BYTE $1F
-a0E42   
-       .BYTE $01
-a0E43   
-       .BYTE $01
-a0E44   
-       .BYTE $07
-a0E45   
-       .BYTE $04
-a0E46   
-       .BYTE $01
-a0E47   
-       .BYTE $07
-f0E48   
-       .BYTE $00          ; $0E41:          
-       .BYTE $06
-       .BYTE $02
-       .BYTE $04
-       .BYTE $05
-       .BYTE $03
-       .BYTE $07
-       .BYTE $01
-trackingActivated   
-       .BYTE $FF          ; $0E49:          
-lineModeActivated   
-       .BYTE $00
-a0E52   
-       .BYTE $05
-f0E53   
-       .BYTE $7C
-       .BYTE $93
-       ; 'C'
-       .BYTE $C3
-       .BYTE $07
-       .BYTE $23
-       .BYTE $57          ; $0E51:          
-       .BYTE $61,$B1,$00,$00,$00,$00,$00,$00          ; $0E59:          
-       .BYTE $00,$00
-f0E63   
-       .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
+offsetInLineToPaint            .BYTE $0A
+colorRAMLineTableIndex         .BYTE $0A
+a0E3B                          .BYTE $00
+a0E3C                          .BYTE $00
+a0E3D                          .BYTE $00
+colorBarCurrentValueForModePtr .BYTE $00
+a0E3F                          .BYTE $0C
+a0E40                          .BYTE $02          ; $0E39:
+a0E41                          .BYTE $1F
+a0E42                          .BYTE $01
+a0E43                          .BYTE $01
+a0E44                          .BYTE $07
+a0E45                          .BYTE $04
+a0E46                          .BYTE $01
+a0E47                          .BYTE $07
+f0E48                          .BYTE $00          ; $0E41:
+                               .BYTE $06
+                               .BYTE $02
+                               .BYTE $04
+                               .BYTE $05
+                               .BYTE $03
+                               .BYTE $07
+                               .BYTE $01
+trackingActivated              .BYTE $FF          ; $0E49:
+lineModeActivated              .BYTE $00
+a0E52                          .BYTE $05
+f0E53                          .BYTE $7C
+                               .BYTE $93
+                               .BYTE $C3
+                               .BYTE $07
+                               .BYTE $23
+                               .BYTE $57          ; $0E51:
+                               .BYTE $61,$B1,$00,$00,$00,$00,$00,$00          ; $0E59:
+                               .BYTE $00,$00
+f0E63   .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
 f0E6B   
        ; 'HIJKLMNO'
        .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
@@ -901,41 +884,45 @@ a0F0E
 ; CheckKeyboardInput
 ;-------------------------------
 CheckKeyboardInput   
-        LDA selectedVariables
+        LDA currentVariableMode
         BEQ b0F97
-        JMP j13ED
+        JMP CheckKeyboardInputForActiveVariable
 
-b0F97   LDA a12
+        ; Allow a bit of time to elapse between detected key strokes.
+b0F97   LDA timerBetweenKeyStrokes
         BEQ b0F9F
-        DEC a12
+        DEC timerBetweenKeyStrokes
         BNE b0FAC
+
 b0F9F   LDA lastKeyPressed
         CMP #$40
         BNE b0FAD
+
+        ; No key was pressed. Return early.
         LDA #$00
-        STA a12
+        STA timerBetweenKeyStrokes
         JSR DisplayDemoModeMessage
 b0FAC   RTS 
 
+        ; A key was pressed. Figure out which one.
 b0FAD   LDY a1160
-        STY a12
+        STY timerBetweenKeyStrokes
         LDY shiftKey
         STY shiftPressed
 
         CMP #$3C ; Space pressed?
         BNE b0FE6
 
-        ;---------------------------------------------------------------------
         ; Space pressed. Selects a new pattern element. " There are eight permanent ones,
         ; and eight you can define for yourself (more on this later!). The latter eight
         ; are all set up when you load, so you can always choose from 16 shapes."
-        ;---------------------------------------------------------------------
         INC currentPatternElement
         LDA currentPatternElement
         AND #$0F
         STA currentPatternElement
         AND #$08
         BEQ b0FCB
+        ; The first 8 patterns are standard, the rest are custom.
         JMP GetCustomPatternElement
 
 b0FCB   JSR ClearLastLineOfScreen
@@ -959,10 +946,8 @@ b0FD7   LDA txtPresetPatternNames,Y
 b0FE6   CMP #$0D ; 'S' pressed.
         BNE b101E
 
-        ;---------------------------------------------------------------------
         ; 'S' pressed. "This changes the 'symmetry'. The pattern gets reflected
         ; in various planes, or not at all according to the setting."
-        ;---------------------------------------------------------------------
         LDA shiftPressed
         AND #$01
         BEQ b0FF9
@@ -1010,9 +995,7 @@ b101E   CMP #$2A ; 'L' pressed?
         ; Shift + L pressed. Display load message
         JMP DisplayLoadOrAbort
 
-        ;---------------------------------------------------------------------
         ; 'L' pressed. Turn line mode on or off.
-        ;---------------------------------------------------------------------
 b1031   LDA lineModeActivated
         EOR #$01
         STA lineModeActivated
@@ -1037,37 +1020,37 @@ b1043   LDA lineModeSettingDescriptions,Y
 b1052   CMP #$12 ; 'D' pressed?
         BNE b105C
         LDA #$01
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
 b105C   CMP #$14 ; C pressed?
         BNE b1066
         ; C pressed.
         LDA #$02
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
 b1066   CMP #$1C ; B pressed?
         BNE b1070
         ; B pressed.
         LDA #$03
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
 b1070   CMP #$29 ; P pressed
         BNE b107A
         ; P pressed.
         LDA #$04
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
 b107A   CMP #$1D ; H pressed.
         BNE b1088
-        ; H pressed.
+        ; H pressed. Select a change to the pattern colors.
         LDA #$01
-        STA a1A
+        STA currentColorSet
         LDA #$05
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
 b1088   CMP #$16 ; T pressed.
@@ -1110,70 +1093,75 @@ b10B2   CMP presetKeyCodes,X
 
 b10BF   JMP DisplayPresetMessage
 
-;-------------------------------
-; j10C2
-;-------------------------------
 j10C2    
-        CMP #$09 ; W pressed
+        CMP #$09 ; W pressed?
         BNE b10CC
+        ; W pressed
         LDA #$06
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
+        ; Was one of the function keys pressed?
 b10CC   LDX #$00
-b10CE   CMP f1797,X
-        BEQ b10DB
+b10CE   CMP functionKeys,X
+        BEQ b10DB ; One of them was pressed!
         INX 
         CPX #$04
         BNE b10CE
+        ; Continue checking
         JMP j10EC
 
-b10DB   STX a173B
+        ; A Function key was pressed, only valid if the sequencer is active.
+b10DB   STX functionKeyIndex
         LDA sequencerActive
         BNE j10EC
         LDA #$80
-        STA selectedVariables
-        JSR s173C
+        STA currentVariableMode
+        JSR UpdateSequencer
         RTS 
 
-;-------------------------------
-; j10EC
-;-------------------------------
 j10EC    
-        CMP #$3E
+        CMP #$3E ; Q pressed?
         BNE b1108
+        ; Q was presed. Toggle the sequencer on or off.
         LDA sequencerActive
         BNE b10FD
         LDA #$80
-        STA selectedVariables
-        JMP j1922
+        STA currentVariableMode
+        JMP ActivateSequencer
+        ;Returns
 
+        ;Turn the sequencer off.
 b10FD   LDA #$00
         STA sequencerActive
-        STA a19F8
+        STA stepsRemainingInSequencerSequence
         JMP DisplaySequencerState
 
-b1108   CMP #$1F
+b1108   CMP #$1F ; V pressed?
         BNE b1112
+        ; V pressed.
         LDA #$07
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
-b1112   CMP #$26
+b1112   CMP #$26 ; O pressed.
         BNE b111C
+        ; O pressed.
         LDA #$08
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
-b111C   CMP #$31
+b111C   CMP #$31 ; * pressed?
         BNE b1126
+        ; * pressed.
         LDA #$09
-        STA selectedVariables
+        STA currentVariableMode
         RTS 
 
-b1126   CMP #$11
+b1126   CMP #$11 ; R pressed?
         BNE b112D
-        JMP j1A4B
+        ; R was pressed. Stop or start recording.
+        JMP StopOrStartRecording
 
 b112D   CMP #$36 ; Up arrow
         BNE b1152
@@ -1397,16 +1385,19 @@ lineModeSettingDescriptions
         ; 'Eº ON   '
         .BYTE $C5,$BA,$A0,$CF,$CE,$A0,$A0,$A0
 ;-------------------------------
-; j1385
+; DrawColorValueBar
 ;-------------------------------
-j1385   LDA a19
+DrawColorValueBar
+        ; Shift the pointer from SCREEN_RAM ($0400) to COLOR_RAM ($D800)
+        LDA a19
         PHA 
         CLC 
         ADC #$D4
         STA a19
 
+        ; Draw the colors from the bar to color ram.
         LDY #$00
-b138F   LDA f15D3,Y
+b138F   LDA colorBarValues,Y
         STA (p18),Y
         INY 
         CPY #$10
@@ -1420,6 +1411,7 @@ b138F   LDA f15D3,Y
         STA a13DD
         LDA a13DB
         BEQ b13D8
+
 b13AC   LDA a13DD
         CLC 
         ADC a13D9
@@ -1439,107 +1431,136 @@ b13CD   INC a13DC
         BNE b13AC
 b13D8   RTS 
 
-a13DA   =*+$01
-a13DB   =*+$02
-a13D9   .BYTE $FF,$FF,$FF
-a13DD   =*+$01
-f13DE   =*+$02
-a13DC   .BYTE $FF,$FF,$20
+a13D9   .BYTE $FF
+a13DA   .BYTE $FF
+a13DB   .BYTE $FF
+a13DC   .BYTE $FF
+a13DD   .BYTE $FF
+f13DE   .BYTE $20
         .BYTE $65,$74
-        ; 'ÕÁ¶ª§ '
         .BYTE $75,$61,$F6,$EA,$E7,$A0
 
-b13E7   LDA #$00
-        STA selectedVariables
+ResetSelectedVariableAndReturn
+        LDA #$00
+        STA currentVariableMode
         RTS 
 
 ;-------------------------------
-; j13ED
+; CheckKeyboardInputForActiveVariable
 ;-------------------------------
-j13ED    
+CheckKeyboardInputForActiveVariable    
         AND #$80
         BEQ b13F4
-        JMP j179D
+        ; The value in currentVariableMode starts with an $8, so is
+        ; one of Custom Preset, Save Prompt, Display/Load/Abort,
+        JMP CheckKeyboardWhilePromptActive
+        ;Returns
 
-b13F4   LDA a12
+        ; The active variable is one with a sliding scale.
+        ; Allow a bit of time between detected keystrokes.
+b13F4   LDA timerBetweenKeyStrokes
         BEQ b13FD
-        DEC a12
+        DEC timerBetweenKeyStrokes
         JMP DisplayVariableSelection
+        ; Returns
 
 b13FD   LDA lastKeyPressed
         CMP #$40
         BNE b1406
+        ; No key pressed. Just display the active variable mode and return.
         JMP DisplayVariableSelection
+        ; Returns
 
+        ; Display the current active variable
 b1406   LDA #$04
-        STA a12
-        LDA selectedVariables
-        CMP #$05
+        STA timerBetweenKeyStrokes
+
+        LDA currentVariableMode
+        CMP #$05 ; 'Color Change'
         BEQ b1415
-        CMP #$03
+        CMP #$03 ; 'Buffer Length'
         BNE b143F
+
+        ; The active mode is 'COlor Change'.
 b1415   LDX #$00
 b1417   LDA f0AB6,X
         CMP #$FF
-        BNE b13E7
+        BNE ResetSelectedVariableAndReturn
         INX 
         CPX a0E41
         BNE b1417
-        LDA a19F8
-        BNE b13E7
+
+        ; Reset the selected variable if necessary.
+        LDA stepsRemainingInSequencerSequence
+        BNE ResetSelectedVariableAndReturn
         LDA playbackOrRecordActive
         CMP #$02
-        BEQ b13E7
+        BEQ ResetSelectedVariableAndReturn
         LDA demoModeActive
-        BNE b13E7
+        BNE ResetSelectedVariableAndReturn
 
         LDA #$FF
         STA a171E
         LDA #$00
         STA a0E3B
+
 b143F   LDA #>SCREEN_RAM + $03D0
         STA a19
         LDA #<SCREEN_RAM + $03D0
         STA a18
-        LDX selectedVariables
+
+        LDX currentVariableMode
         LDA lastKeyPressed
-        CMP #$2C
+        CMP #$2C ; > pressed?
         BNE b1461
-        INC f0E3E,X
-        LDA f0E3E,X
-        CMP f1512,X
+
+        ; > pressed, increase the value bar.
+        INC colorBarCurrentValueForModePtr,X
+        LDA colorBarCurrentValueForModePtr,X
+        ; Make sure we don't exceed the max value.
+        CMP colorBarMaxValueForModePtr,X
         BNE b1473
-        DEC f0E3E,X
+        DEC colorBarCurrentValueForModePtr,X
         JMP b1473
 
-b1461   CMP #$2F
+b1461   CMP #$2F ; < pressed?
         BNE b1473
-        DEC f0E3E,X
-        LDA f0E3E,X
-        CMP f151C,X
+        ; < pressed, decrease the value bar.
+        DEC colorBarCurrentValueForModePtr,X
+        LDA colorBarCurrentValueForModePtr,X
+        ; Make sure we don't exceed the min value.
+        CMP colorBarMinValueForModePtr,X
         BNE b1473
-        INC f0E3E,X
-b1473   CPX #$05
+        INC colorBarCurrentValueForModePtr,X
+
+b1473   CPX #$05 ; Color Mode?
         BNE b1482
+
+        ; For Color Mode update some variables.
         LDX a0E43
-        LDY a1A
+        LDY currentColorSet
         LDA f15D2,X
         STA f0E48,Y
+
 b1482   JSR DisplayVariableSelection
-        JMP j14F2
+        JMP CheckIfEnterPressed
 
 ;-------------------------------
 ; DisplayVariableSelection
 ;-------------------------------
 DisplayVariableSelection    
+        ; Set the pointers to the position on screen for the color bar.
         LDA #>SCREEN_RAM + $03D0
         STA a19
         LDA #<SCREEN_RAM + $03D0
         STA a18
-        LDX selectedVariables
+
+        LDX currentVariableMode
         CPX #$05
         BNE b14AE
-        LDX a1A
+
+        ; Current variable mode is 'color change'
+        LDX currentColorSet
         LDA f0E48,X
         LDY #$00
 b149E   CMP f15D2,Y
@@ -1548,10 +1569,11 @@ b149E   CMP f15D2,Y
         CPY #$10
         BNE b149E
 b14A8   STY a0E43
-        LDX selectedVariables
+        LDX currentVariableMode
+
 b14AE   LDA f1526,X
         STA a13D9
-        LDA f0E3E,X
+        LDA colorBarCurrentValueForModePtr,X
         STA a13DB
         TXA 
         PHA 
@@ -1560,12 +1582,14 @@ b14AE   LDA f1526,X
         LDA #$01
         STA a173A
         JSR ClearLastLineOfScreen
+
 b14C9   PLA 
         ASL 
         ASL 
         ASL 
         ASL 
         TAY 
+
         LDX #$00
 b14D1   LDA txtVariableLabels,Y
         STA lastLineBufferPtr,X
@@ -1573,51 +1597,57 @@ b14D1   LDA txtVariableLabels,Y
         INX 
         CPX #$10
         BNE b14D1
-        LDA selectedVariables
+
+        LDA currentVariableMode
         CMP #$05
         BNE b14EC
         LDA #$30
         CLC 
-        ADC a1A
+        ADC currentColorSet
         STA a11F8
 b14EC   JSR WriteLastLineBufferToScreen
-        JMP j1385
+        JMP DrawColorValueBar
 
 ;-------------------------------
-; j14F2
+; CheckIfEnterPressed
 ;-------------------------------
-j14F2    
+CheckIfEnterPressed    
         LDA lastKeyPressed
         CMP #$01
         BEQ b14F9
         RTS 
 
-b14F9   LDA selectedVariables
+        ; Enter pressed
+b14F9   LDA currentVariableMode
         CMP #$05
         BNE b1509
-        INC a1A
-        LDA a1A
+
+        ; In Color Change mode, move to the next color set
+        ; until you reach the last one.
+        INC currentColorSet
+        LDA currentColorSet
         CMP #$08
         BEQ b1509
         RTS 
 
+        ; Enter was pressed, so exit variable mode.
 b1509   LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         STA a173A
         RTS 
 
 
-f1512   
+colorBarMaxValueForModePtr   
         .BYTE $00,$40,$08,$40,$10,$10,$08        ; $1511:   
         .BYTE $20,$10,$08
-f151C   
+colorBarMinValueForModePtr   
         .BYTE $00,$00,$00,$00,$00        ; $1519:   
 
         .BYTE $00,$00,$00,$00,$00
 f1526   
         .BYTE $00,$01,$08        ; $1521:   
         .BYTE $01,$04,$08,$08,$02,$04,$08
-selectedVariables   
+currentVariableMode   
         .BYTE $00        ; $1529:   
 a1531   
         .BYTE $01
@@ -1665,7 +1695,7 @@ txtVariableLabels
         .BYTE $BA
 f15D2   
         .BYTE $00
-f15D3   
+colorBarValues   
         .BYTE $06,$02,$04,$05,$03,$07        ; $15D1:   
         .BYTE $01,$08,$09,$0A,$0B,$0C,$0D,$0E        ; $15D9:   
         .BYTE $0F
@@ -1689,7 +1719,7 @@ DisplayPresetMessage
         LDA shiftPressed
         AND #$04
         BEQ b160C
-        JMP j1C05
+        JMP DisplayCustomPreset
 
 b160C   TXA 
         PHA 
@@ -1714,7 +1744,8 @@ b1623   INC a11F9
         INC a11F8
 b1635   DEX 
         BNE b1623
-b1638   JMP j1670
+
+b1638   JMP DrawPresetActivatedMessage
 
 j163B    
         JSR WriteLastLineBufferToScreen
@@ -1742,9 +1773,9 @@ shiftPressed
         .BYTE $00
 
 ;-------------------------------
-; j1670
+; DrawPresetActivatedMessage
 ;-------------------------------
-j1670    
+DrawPresetActivatedMessage    
         LDA shiftPressed
         AND #$01
         ASL 
@@ -1771,12 +1802,13 @@ b1692   PLA
         JSR s16F7
         LDY #$00
         LDX #$00
-b169B   LDA f0E3E,X
+b169B   LDA colorBarCurrentValueForModePtr,X
         STA (p1B),Y
         INY 
         INX 
         CPX #$15
         BNE b169B
+
         LDA currentPatternElement
         STA (p1B),Y
         INY 
@@ -1817,7 +1849,7 @@ j16DA
         STA a171E
         LDY #$00
 b16E1   LDA (p1B),Y
-        STA f0E3E,Y
+        STA colorBarCurrentValueForModePtr,Y
         INY 
         CPY #$15
         BNE b16E1
@@ -1861,16 +1893,16 @@ s1713
 
 a171E  .BYTE $00
 ;-------------------------------
-; s171F
+; ReinitializeScreen
 ;-------------------------------
-s171F
+ReinitializeScreen
         LDA #$00
         STA a0CBB
         STA a13
 
         LDX #$00
         LDA #$FF
-b172a   STA $0AB6,X
+b172a   STA f0AB6,X
         INX
         CPX #$40
         BNE b172A
@@ -1878,35 +1910,43 @@ b172a   STA $0AB6,X
         LDA #$00
         STA a171E
         JMP InitializeScreenWithInitCharacter
+        ; Returns
 
 a173A   .BYTE $00
-a173B   .BYTE $00
+functionKeyIndex   .BYTE $00
 
 ;-------------------------------
-; s173C
+; UpdateSequencer
 ;-------------------------------
-s173C   
+UpdateSequencer   
         JSR ClearLastLineOfScreen
         LDA shiftPressed
         AND #$01
         BEQ b1756
+
+        ; Display data free
         LDX #$00
-b1748   LDA f1787,X
+b1748   LDA txtDataFree,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$10
         BNE b1748
         JSR WriteLastLineBufferToScreen
+
 b1756   LDA #$C2
         STA a1E
-        LDX a173B
-        LDA f1783,X
+        LDX functionKeyIndex
+        LDA functionKeyToSequenceArray,X
         STA a1D
         LDA shiftPressed
         AND #$01
         BEQ b177B
         LDA #$10
         STA a179B
+
+        ; Store the current symmetry setting at one of $C200,
+        ; $C220, $C240, $C260 depending on the Function key
+        ; selected.
         LDY #$00
         LDA currentSymmetrySetting
         STA (p1D),Y
@@ -1919,36 +1959,33 @@ b177B   LDA #$FF
         STA sequencerActive
         JMP j1898
 
-f1783   BRK #$20
-        RTI 
+functionKeyToSequenceArray   .BYTE $00,$20,$40,$60
 
-        RTS 
-
-f1787
+txtDataFree
         ; 'DA'
         .BYTE $C4,$C1                             ; $1781:   
         ; 'TAº °°° '
         .BYTE $D4,$C1,$BA,$A0,$B0,$B0,$B0,$A0     ; $1789:   
         ; 'FREE  '
         .BYTE $C6,$D2,$C5,$C5,$A0,$A0
-f1797
+functionKeys
         .BYTE $04,$05     ; $1791:   
         .BYTE $06,$03
 
 a179B   .BYTE $FF,$60
 
 ;-------------------------------
-; j179D
+; CheckKeyboardWhilePromptActive
 ;-------------------------------
-j179D 
-        LDA selectedVariables
+CheckKeyboardWhilePromptActive 
+        LDA currentVariableMode
         CMP #$83
         BNE b17A7
         JMP j1C90
 
 b17A7   CMP #$84
         BNE b17AE
-        JMP j1E6C
+        JMP CheckKeyboardInputWhileSavePromptActive
 
 b17AE   CMP #$85
         BNE b17B5
@@ -2008,7 +2045,7 @@ b1801   LDA lastKeyPressed
         LDA a1E
         STA a1A49
         LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         STA a1884
         STA sequencerActive
         LDY #$02
@@ -2023,13 +2060,13 @@ b183D   LDY #$02
         LDA #$C0
 f1848   JMP j184E
 
-b184B   LDA a0E39
+b184B   LDA offsetInLineToPaint
 ;-------------------------------
 ; j184E
 ;-------------------------------
 j184E    
         STA (p1D),Y
-        LDA jumpTableIndex
+        LDA colorRAMLineTableIndex
         INY 
         STA (p1D),Y
         LDA currentPatternElement
@@ -2054,7 +2091,7 @@ j186C
         LDY #$02
         STA (p1D),Y
         LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         STA a1884
         STA a1A47
         STA sequencerActive
@@ -2078,7 +2115,7 @@ s1885
 ;-------------------------------
 j1898    
         LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         TAY 
         LDA (p1D),Y
         STA a1920
@@ -2146,9 +2183,9 @@ a191F   .BYTE $00
 a1920   .BYTE $00
 sequencerActive   .BYTE $00
 ;-------------------------------
-; j1922
+; ActivateSequencer
 ;-------------------------------
-j1922 
+ActivateSequencer 
         LDA #$C3
         STA a1E
         LDA #$00
@@ -2159,9 +2196,9 @@ j1922
         AND #$01
         BNE b1945
         LDA a0E45
-        STA a19F8
+        STA stepsRemainingInSequencerSequence
         LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         JSR DisplaySequencerState
         RTS 
 
@@ -2173,7 +2210,8 @@ b1945   LDA a1A47
         STA a1D
         LDA a1A49
         STA a1E
-        JMP j196E
+        JMP DisplaySequFree
+        ;Returns
 
 b195D   LDA #$FF
         STA a179B
@@ -2183,17 +2221,17 @@ b195D   LDA #$FF
         LDA a0E3F
         INY 
         STA (p1D),Y
-;-------------------------------
-; j196E
-;-------------------------------
-j196E    
+
+DisplaySequFree    
         JSR ClearLastLineOfScreen
+
         LDX #$00
-b1973   LDA f19F9,X
+b1973   LDA txtSequFree,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$10
         BNE b1973
+
         JSR WriteLastLineBufferToScreen
         RTS 
 
@@ -2257,8 +2295,8 @@ b19EF   LDA #<aC300
         STA a1E
         RTS 
 
-a19F8   .BYTE $00
-f19F9
+stepsRemainingInSequencerSequence   .BYTE $00
+txtSequFree
         ; 'SEQUº °°'
         .BYTE $D3,$C5,$D1,$D5,$BA,$A0,$B0,$B0
         ; '° FREE  '
@@ -2306,9 +2344,9 @@ a1A4A
       .BYTE $00
 
 ;-------------------------------
-; j1A4B
+; StopOrStartRecording
 ;-------------------------------
-j1A4B    
+StopOrStartRecording    
         LDA #>dynamicStorage
         STA a20
         LDA #<dynamicStorage
@@ -2370,19 +2408,19 @@ b1AAC   BNE b1AA4
         STA dynamicStorage
         LDA #>p01FF
         STA a3001
-        LDA a0E39
+        LDA offsetInLineToPaint
         STA a1BE8
-        LDA jumpTableIndex
+        LDA colorRAMLineTableIndex
         STA a1BE9
         RTS 
 
 b1AC5   LDA #$00
-        STA a0C
-        JSR UpdateJumpTable
+        STA currentColorToPaint
+        JSR UpdateLineinColorRAMUsingIndex
         LDA a1BE8
-        STA a0E39
+        STA offsetInLineToPaint
         LDA a1BE9
-        STA jumpTableIndex
+        STA colorRAMLineTableIndex
         LDA #$FF
         STA a1BEB
         RTS 
@@ -2409,7 +2447,7 @@ DisplayStoppedRecording
         STA a1BEB
         TAY 
         JSR ClearLastLineOfScreen
-b1B0D   LDA f1B1B,Y
+b1B0D   LDA txtStopped,Y
         STA lastLineBufferPtr,Y
         INY 
         CPY #$10
@@ -2417,7 +2455,7 @@ b1B0D   LDA f1B1B,Y
         JMP WriteLastLineBufferToScreen
         ; Returns
 
-f1B1B
+txtStopped
         ; 'STOPPE'
         .BYTE $D3,$D4,$CF,$D0,$D0,$C5    ; $1B19:     
         ; 'D       '
@@ -2428,9 +2466,9 @@ playbackOrRecordActive
         .BYTE $00
 
 ;-------------------------------
-; j1B2C
+; RecordJoystickMovements
 ;-------------------------------
-j1B2C    
+RecordJoystickMovements    
         LDA $DC00    ;CIA1: Data Port Register A
         STA lastJoystickInput
         LDY #$00
@@ -2467,7 +2505,7 @@ b1B50   LDY #$01
         CLC 
         ROR 
         TAX 
-        LDA f15D3,X
+        LDA colorBarValues,X
         STA $D020    ;Border Color
         RTS 
 
@@ -2488,9 +2526,9 @@ GetJoystickInput
         BEQ b1B8C
         CMP #$03
         BNE b1B89
-        JMP j1B2C
+        JMP RecordJoystickMovements
 
-b1B89   JMP j1B9A
+b1B89   JMP PlaybackRecordedJoystickInputs
 
 b1B8C   LDA demoModeActive
         BEQ b1B94
@@ -2500,7 +2538,7 @@ b1B94   LDA $DC00    ;CIA1: Data Port Register A
         STA lastJoystickInput
         RTS 
 
-j1B9A    
+PlaybackRecordedJoystickInputs    
         DEC a1BE7
         BEQ b1BA6
         LDY #$00
@@ -2533,12 +2571,12 @@ b1BC6   LDA #>dynamicStorage
         LDA #$01
         STA a1BE7
         LDA #$00
-        STA a0C
-        JSR UpdateJumpTable
+        STA currentColorToPaint
+        JSR UpdateLineinColorRAMUsingIndex
         LDA a1BE8
-        STA a0E39
+        STA offsetInLineToPaint
         LDA a1BE9
-        STA jumpTableIndex
+        STA colorRAMLineTableIndex
         RTS 
 
 a1BE7
@@ -2551,7 +2589,7 @@ a1BEA
         .BYTE $00
 a1BEB
         .BYTE $00
-f1BEC
+txtDefineAllLevelPixels
         ; 'DEFIN'
         .BYTE $C4,$C5,$C6,$C9,$CE   ; $1BE9:           
         ; 'E ALL LE'
@@ -2562,16 +2600,16 @@ f1BEC
         .BYTE $D8,$C5,$CC,$D3
 
 ;-------------------------------
-; j1C05
+; DisplayCustomPreset
 ;-------------------------------
-j1C05 
+DisplayCustomPreset 
         TXA
         AND #$08
         BEQ b1C0B
         RTS 
 
 b1C0B   LDA #$83
-        STA selectedVariables
+        STA currentVariableMode
         LDA #$00
         STA a22
         STA a1BEB
@@ -2583,7 +2621,7 @@ b1C0B   LDA #$83
         STA a1BEA
         JSR ClearLastLineOfScreen
         LDX #$00
-b1C28   LDA f1BEC,X
+b1C28   LDA txtDefineAllLevelPixels,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$19
@@ -2615,10 +2653,10 @@ b1C28   LDA f1BEC,X
 ;-------------------------------
 j1C5B    
         LDA #<p0C13
-        STA a0E39
+        STA offsetInLineToPaint
         LDA #>p0C13
-        STA jumpTableIndex
-        JSR s171F
+        STA colorRAMLineTableIndex
+        JSR ReinitializeScreen
 b1C68   LDA a1BEA
         STA a0E52
         LDA a25
@@ -2632,7 +2670,7 @@ b1C68   LDA a1BEA
         JSR s0915
         LDA a25
         BNE b1C68
-        JSR s171F
+        JSR ReinitializeScreen
         LDA #$00
         STA a171E
         JMP j0C39
@@ -2692,7 +2730,7 @@ b1CB6   INC a26
         RTS 
 
 b1CE6   LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         JSR ClearLastLineOfScreen
 b1CEE   RTS 
 
@@ -2703,7 +2741,7 @@ j1CEF
         CMP #$39
         BNE b1CEE
         LDY a26
-        LDA a0E39
+        LDA offsetInLineToPaint
         SEC 
         SBC #$13
         STA (p22),Y
@@ -2715,7 +2753,7 @@ j1CEF
         CLC 
         ADC #$7F
         TAY 
-        LDA jumpTableIndex
+        LDA colorRAMLineTableIndex
         SEC 
 b1D0D   SBC #$0C
         STA (p22),Y
@@ -2850,7 +2888,7 @@ j1E08
         STA a1BEB
         STA a1EAA
         JSR ROM_CLALL ;$FFE7 - close or abort all files         
-        JSR s171F
+        JSR ReinitializeScreen
         JMP j0C39
 
         RTS 
@@ -2859,14 +2897,14 @@ j1E08
 ; PromptToSave
 ;-------------------------------
 PromptToSave    
-        LDA a19F8
+        LDA stepsRemainingInSequencerSequence
         BNE b1E43
         LDA playbackOrRecordActive
         CMP #$02
         BEQ b1E43
 
         LDA #$84
-        STA selectedVariables
+        STA currentVariableMode
 
         LDX #$00
 b1E30   LDA txtSavePrompt,X
@@ -2883,10 +2921,10 @@ b1E43   RTS
 txtSavePrompt   .TEXT " SAVE (P)ARAMETERS, (M)OTION, (A)BORT?  "
 
 ;-------------------------------
-; j1E6C
+; CheckKeyboardInputWhileSavePromptActive
 ;-------------------------------
-j1E6C    
-        LDA selectedVariables
+CheckKeyboardInputWhileSavePromptActive    
+        LDA currentVariableMode
         CMP #$84
         BEQ b1E74
         RTS 
@@ -2896,12 +2934,10 @@ b1E74   LDA lastKeyPressed
         BNE b1E87
         LDA #$00
         STA a171E
-;-------------------------------
-; j1E7F
-;-------------------------------
+
 j1E7F    
         LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         JMP ClearLastLineOfScreen
 
 b1E87   CMP #$24
@@ -2928,13 +2964,13 @@ a1EAA   .BYTE $00
 ;-------------------------------
 DisplayLoadOrAbort    
         
-        LDA a19F8
+        LDA stepsRemainingInSequencerSequence
         BNE b1EA9
         LDA playbackOrRecordActive
         CMP #$02
         BEQ b1EA9
         LDA #$85
-        STA selectedVariables
+        STA currentVariableMode
         LDX #$00
 b1EBE   LDA txtContinueLoadOrAbort,X
         STA lastLineBufferPtr,X
@@ -2954,7 +2990,7 @@ j1ED1
         BNE b1EE5
         ; 'A' pressed
         LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         STA a1EAA
         STA a171E
         JMP ClearLastLineOfScreen
@@ -2965,7 +3001,7 @@ b1EE5   CMP #$14 ; 'C'
         LDA #$03
         STA a1EAA
         LDA #$00
-        STA selectedVariables
+        STA currentVariableMode
         LDA #$18
         STA a171E
         JMP ClearLastLineOfScreen
@@ -3000,14 +3036,14 @@ j1F27
         BEQ b1F2D
         RTS 
 
-b1F2D   JSR s09CB
+b1F2D   JSR PutRandomByteInAccumulator
         AND #$1F
         ORA #$01
         STA a1F25
         LDA a1F26
         EOR #$10
         STA a1F26
-        JSR s09CB
+        JSR PutRandomByteInAccumulator
         AND #$0F
         ORA a1F26
         EOR #$1F
@@ -3016,11 +3052,11 @@ b1F2D   JSR s09CB
         BEQ b1F51
         RTS 
 
-b1F51   JSR s09CB
+b1F51   JSR PutRandomByteInAccumulator
         AND #$07
 b1F56   ADC #$20
         STA a1FA9
-        JSR s09CB
+        JSR PutRandomByteInAccumulator
         AND #$0F
         TAX 
         LDA #$00

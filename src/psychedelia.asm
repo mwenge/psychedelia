@@ -1,7 +1,6 @@
 ;
 ; **** ZP FIELDS **** 
 ;
-f04 = $04
 ;
 ; **** ZP ABSOLUTE ADRESSES **** 
 ;
@@ -42,12 +41,7 @@ a23 = $23
 a24 = $24
 a25 = $25
 a26 = $26
-aA0 = $A0
-aBA = $BA
-aC4 = $C4
 lastKeyPressed = $C5
-aC6 = $C6
-aCE = $CE
 aFB = $FB
 aFC = $FC
 aFD = $FD
@@ -57,7 +51,6 @@ aFF = $FF
 ; **** ZP POINTERS **** 
 ;
 p01 = $01
-p07 = $07
 p0D = $0D
 p10 = $10
 p18 = $18
@@ -71,7 +64,6 @@ pFD = $FD
 ; **** FIELDS **** 
 ;
 SCREEN_RAM  = $0400
-fA0A0 = $A0A0
 COLOR_RAM = $D800
 fE199 = $E199
 ;
@@ -91,8 +83,6 @@ a07D1 = $07D1
 a7FFF = $7FFF
 aC300 = $C300
 aC301 = $C301
-aC4CF = $C4CF
-aCEC9 = $CEC9
 ;
 ; **** POINTERS **** 
 ;

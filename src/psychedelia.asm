@@ -1,63 +1,71 @@
+; This is the reverse-engineered source code for the game 'Psychedelia'
+; written by Jeff Minter in 1984.
 ;
-; **** ZP FIELDS **** 
+; The code in this file was created by disassembling a binary of the game released into
+; the public domain by Jeff Minter in 2019.
 ;
+; The original code from which this source is derived is the copyright of Jeff Minter.
 ;
-; **** ZP ABSOLUTE ADRESSES **** 
+; The original home of this file is at: https://github.com/mwenge/psychedelia
 ;
-offsetInLineToPaintZP = $02
-colorRamTableIndexZP = $03
-a04 = $04
-colorRamTableLoPtr2 = $05
-colorRamTableHiPtr2 = $06
-a07 = $07
-a08 = $08
-a09 = $09
-colorRamTableLoPtr = $0A
-colorRamTableHiPtr = $0B
-currentColorToPaint = $0C
-a0D = $0D
-a0E = $0E
-currentPatternElement = $0F
-a10 = $10
-a11 = $11
-timerBetweenKeyStrokes = $12
-a13 = $13
-a14 = $14
-currentSymmetrySetting = $15
-a16 = $16
-a17 = $17
-a18 = $18
-a19 = $19
-currentColorSet = $1A
-a1B = $1B
-a1C = $1C
-a1D = $1D
-a1E = $1E
-a1F = $1F
-a20 = $20
-lastJoystickInput = $21
-a22 = $22
-a23 = $23
-a24 = $24
-a25 = $25
-a26 = $26
-lastKeyPressed = $C5
-aFB = $FB
-aFC = $FC
-aFD = $FD
-aFE = $FE
-aFF = $FF
+; To the extent to which any copyright may apply to the act of disassembling and reconstructing
+; the code from its binary, the author disclaims copyright to this source code.  In place of
+; a legal notice, here is a blessing:
+;
+;    May you do good and not evil.
+;    May you find forgiveness for yourself and forgive others.
+;    May you share freely, never taking more than you give.
+
+
+pixelXPositionZP          = $02
+pixelYPositionZP          = $03
+currentIndexToColorValues = $04
+colorRamTableLoPtr2       = $05
+colorRamTableHiPtr2       = $06
+previousPixelXPositionZP  = $08
+previousPixelYPositionZP  = $09
+colorRamTableLoPtr        = $0A
+colorRamTableHiPtr        = $0B
+currentColorToPaint       = $0C
+dataLoPtr                 = $0D
+dataHiPtr                 = $0E
+currentPatternElement     = $0F
+data2LoPtr                = $10
+data2HiPtr                = $11
+timerBetweenKeyStrokes    = $12
+a13                       = $13
+a14                       = $14
+currentSymmetrySetting    = $15
+a16                       = $16
+a17                       = $17
+a18                       = $18
+a19                       = $19
+currentColorSet           = $1A
+a1B                       = $1B
+a1C                       = $1C
+currentSequencePtrLo      = $1D
+currentSequencePtrHi      = $1E
+a1F                       = $1F
+a20                       = $20
+lastJoystickInput         = $21
+customPresetLoPtr         = $22
+customPresetHiPtr         = $23
+a24                       = $24
+a25                       = $25
+a26                       = $26
+lastKeyPressed            = $C5
+aFB                       = $FB
+aFC                       = $FC
+aFD                       = $FD
+aFE                       = $FE
+aFF                       = $FF
 ;
 ; **** ZP POINTERS **** 
 ;
 p01 = $01
-p0D = $0D
-p10 = $10
 p18 = $18
 p1B = $1B
-p1D = $1D
 p1F = $1F
-p22 = $22
 pFB = $FB
 pFD = $FD
 ;
@@ -65,17 +73,12 @@ pFD = $FD
 ;
 SCREEN_RAM  = $0400
 COLOR_RAM = $D800
-fE199 = $E199
 ;
 ; **** ABSOLUTE ADRESSES **** 
 ;
 a0286 = $0286
 shiftKey = $028D
 a0291 = $0291
-a0314 = $0314
-a0315 = $0315
-a0318 = $0318
-a0319 = $0319
 a07C6 = $07C6
 a07C7 = $07C7
 a07C8 = $07C8
@@ -92,6 +95,7 @@ pC000 = $C000
 ; **** EXTERNAL JUMPS **** 
 ;
 eEA31 = $EA31
+
 ;
 ; **** PREDEFINED LABELS **** 
 ;
@@ -103,8 +107,7 @@ ROM_LOAD = $FFD5
 ROM_SAVE = $FFD8
 ROM_CLALL = $FFE7
 
-        * = $0801
-
+* = $0801
 ;-----------------------------------------------------------------------------------
 ; Start program at InitializeProgram (SYS 2064)
 ;-----------------------------------------------------------------------------------
@@ -151,9 +154,13 @@ b0827   LDA aFC
         BNE b0827
 
         LDA #$80
-        STA a0291
+        STA $0291 ; Disable character set case change
+
+        ; Points character memory to $1000 (i.e. the ROM IMAGE,
+        ; rather than the adress in RAM here)
         LDA #$15
         STA $D018    ;VIC Memory Control Register
+
         JSR ROM_IOINIT ;$FF84 - initialize CIA & IRQ             
         JSR InitializeDynamicStorage
         JMP LaunchPsychedelia
@@ -199,12 +206,12 @@ presetKeyCodes
 ; GetColorRAMPtrFromLineTable
 ;-------------------------------------------------------
 GetColorRAMPtrFromLineTable   
-        LDX colorRamTableIndexZP
+        LDX pixelYPositionZP
         LDA colorRAMLineTableLoPtrArray,X
         STA colorRamTableLoPtr2
         LDA colorRAMLineTableHiPtrArray,X
         STA colorRamTableHiPtr2
-        LDY offsetInLineToPaintZP
+        LDY pixelXPositionZP
 b08D0   RTS 
 
 ;-------------------------------------------------------
@@ -212,22 +219,23 @@ b08D0   RTS
 ;-------------------------------------------------------
 PaintPixel   
         ; Return early if the index or offset are invalid
-        LDA offsetInLineToPaintZP
+        LDA pixelXPositionZP
         AND #$80
         BNE b08D0
-        LDA offsetInLineToPaintZP
+        LDA pixelXPositionZP
         CMP #$28
         BPL b08D0
-        LDA colorRamTableIndexZP
+        LDA pixelYPositionZP
         AND #$80
         BNE b08D0
-        LDA colorRamTableIndexZP
+        LDA pixelYPositionZP
         CMP #$18
         BPL b08D0
 
         JSR GetColorRAMPtrFromLineTable
         LDA a17
         BNE b090D
+
         LDA (colorRamTableLoPtr2),Y
         AND #$0F
 
@@ -240,14 +248,14 @@ b08F6   CMP presetColorValuesArray,X
 
 b0900   TXA 
         STA aFD
-        LDX a04
+        LDX currentIndexToColorValues
         INX 
         CPX aFD
         BEQ b090D
         BPL b090D
         RTS 
 
-b090D   LDX a04
+b090D   LDX currentIndexToColorValues
         LDA presetColorValuesArray,X
         STA (colorRamTableLoPtr2),Y
         RTS 
@@ -258,59 +266,64 @@ b090D   LDX a04
 LoopThroughPixelsAndPaint   
         JSR PushOffsetAndIndexAndPaintPixel
         LDY #$00
-        LDA a04
+        LDA currentIndexToColorValues
         CMP #$07
         BNE b0921
         RTS 
 
 b0921   LDA #$07
         STA a09CA
-        LDA offsetInLineToPaintZP
-        STA a08
-        LDA colorRamTableIndexZP
-        STA a09
-        LDX a0E52
-        LDA f0E53,X
-        STA a0D
-        LDA f0E63,X
-        STA a0E
-        LDA f0E73,X
-        STA a10
-        LDA f0E83,X
-        STA a11
-b0945   LDA a08
+
+        LDA pixelXPositionZP
+        STA previousPixelXPositionZP
+        LDA pixelYPositionZP
+        STA previousPixelYPositionZP
+
+        LDX dataPtrIndex
+        LDA pixelXPositionLoPtrArray,X
+        STA dataLoPtr
+        LDA pixelXPositionHiPtrArray,X
+        STA dataHiPtr
+        LDA pixelYPositionLoPtrArray,X
+        STA data2LoPtr
+        LDA pixelYPositionHiPtrArray,X
+        STA data2HiPtr
+
+b0945   LDA previousPixelXPositionZP
         CLC 
-        ADC (p0D),Y
-        STA offsetInLineToPaintZP
-        LDA a09
+        ADC (dataLoPtr),Y
+        STA pixelXPositionZP
+        LDA previousPixelYPositionZP
         CLC 
-        ADC (p10),Y
-        STA colorRamTableIndexZP
+        ADC (data2LoPtr),Y
+        STA pixelYPositionZP
         TYA 
         PHA 
         JSR PushOffsetAndIndexAndPaintPixel
         PLA 
         TAY 
         INY 
-        LDA (p0D),Y
+        LDA (dataLoPtr),Y
         CMP #$55
         BNE b0945
+
         DEC a09CA
         LDA a09CA
-        CMP a04
+        CMP currentIndexToColorValues
         BEQ b0973
         CMP #$01
         BEQ b0973
         INY 
         JMP b0945
 
-b0973   LDA a08
-        STA offsetInLineToPaintZP
-        LDA a09
-        STA colorRamTableIndexZP
+b0973   LDA previousPixelXPositionZP
+        STA pixelXPositionZP
+        LDA previousPixelYPositionZP
+        STA pixelYPositionZP
         RTS 
 
 ; Redundant data?
+f097C
         .BYTE $00,$01,$01,$01,$00
         .BYTE $FF,$FF,$FF,$55,$00,$02,$00,$FE
         .BYTE $55,$00,$03,$00,$FD,$55,$00,$04
@@ -330,7 +343,7 @@ a09CA   .BYTE $00
 ;-------------------------------------------------------
 PutRandomByteInAccumulator   
 a09CC   =*+$01
-        LDA fE199,X
+        LDA $E199,X
         INC a09CC
         RTS 
 
@@ -339,17 +352,17 @@ a09CC   =*+$01
 ; PushOffsetAndIndexAndPaintPixel
 ;-------------------------------------------------------
 PushOffsetAndIndexAndPaintPixel   
-        LDA offsetInLineToPaintZP
+        LDA pixelXPositionZP
         PHA 
-        LDA colorRamTableIndexZP
+        LDA pixelYPositionZP
         PHA 
         JSR PaintPixel
         LDA a14
         BNE b09E9
 b09E1   PLA 
-        STA colorRamTableIndexZP
+        STA pixelYPositionZP
         PLA 
-        STA offsetInLineToPaintZP
+        STA pixelXPositionZP
         RTS 
 
         RTS 
@@ -358,8 +371,8 @@ b09E9   CMP #$03
         BEQ b0A1B
         LDA #$27
         SEC 
-        SBC offsetInLineToPaintZP
-        STA offsetInLineToPaintZP
+        SBC pixelXPositionZP
+        STA pixelXPositionZP
         LDY a14
         CPY #$02
         BEQ b0A25
@@ -369,40 +382,40 @@ b09E9   CMP #$03
         BEQ b09E1
         LDA #$17
         SEC 
-        SBC colorRamTableIndexZP
-        STA colorRamTableIndexZP
+        SBC pixelYPositionZP
+        STA pixelYPositionZP
         JSR PaintPixel
 
 j0A0D    
         PLA 
         TAY 
         PLA 
-        STA offsetInLineToPaintZP
+        STA pixelXPositionZP
         TYA 
         PHA 
         JSR PaintPixel
         PLA 
-        STA colorRamTableIndexZP
+        STA pixelYPositionZP
         RTS 
 
 b0A1B   LDA #$17
         SEC 
-        SBC colorRamTableIndexZP
-        STA colorRamTableIndexZP
+        SBC pixelYPositionZP
+        STA pixelYPositionZP
         JMP j0A0D
 
 b0A25   LDA #$17
         SEC 
-        SBC colorRamTableIndexZP
-        STA colorRamTableIndexZP
+        SBC pixelYPositionZP
+        STA pixelYPositionZP
         JSR PaintPixel
         PLA 
-        STA colorRamTableIndexZP
+        STA pixelYPositionZP
         PLA 
-        STA offsetInLineToPaintZP
+        STA pixelXPositionZP
         RTS 
 
-f0A36
+pixelXPositionArray
        .BYTE $00,$00,$FF
        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -412,7 +425,7 @@ f0A36
        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
        .BYTE $00,$00,$00,$00,$00
-f0A76
+pixelYPositionArray
        .BYTE $00,$00,$FD
        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -452,7 +465,7 @@ f0B36
        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
        .BYTE $FF,$FF,$FF,$FF,$FF
-f0B76
+nextPixelYPositionArray
        .BYTE $FF,$FF,$FF
        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -479,14 +492,14 @@ f0BB6
 ReinitializeSequences
         LDX #$00
         TXA 
-b0BF9   STA f0A36,X
-        STA f0A76,X
+b0BF9   STA pixelXPositionArray,X
+        STA pixelYPositionArray,X
         LDA #$FF
         STA f0AB6,X
         LDA #$00
         STA f0AF6,X
         STA f0B36,X
-        STA f0B76,X
+        STA nextPixelYPositionArray,X
         STA f0BB6,X
         INX 
 p0C13   CPX #$40
@@ -519,7 +532,7 @@ b0C29   TXA
 ; MainPaintRoutine
 ;-------------------------------------------------------
 MainPaintRoutine    
-        INC a0CBB
+        INC stepCount
 
         ; Left/Right cursor key pauses the paint animation.
         ; This section just loops around if the left/right keys
@@ -549,32 +562,32 @@ b0C60   CMP #$18 ; Current Mode is 'Save/Prompt'
         JMP DisplaySavePromptScreen
 
 b0C67   JSR ReinitializeScreen
-b0C6A   LDA a0CBB
+b0C6A   LDA stepCount
         CMP a0E41
         BNE b0C77
         LDA #$00
-        STA a0CBB
-b0C77   LDX a0CBB
+        STA stepCount
+b0C77   LDX stepCount
         LDA f0AB6,X
         CMP #$FF
         BNE b0C86
         STX a13
         JMP MainPaintRoutine
 
-b0C86   STA a04
+b0C86   STA currentIndexToColorValues
         DEC f0B36,X
         BNE b0CB8
         LDA f0AF6,X
         STA f0B36,X
-        LDA f0A36,X
-        STA offsetInLineToPaintZP
-        LDA f0A76,X
-        STA colorRamTableIndexZP
-        LDA f0B76,X
-        STA a0E52
+        LDA pixelXPositionArray,X
+        STA pixelXPositionZP
+        LDA pixelYPositionArray,X
+        STA pixelYPositionZP
+        LDA nextPixelYPositionArray,X
+        STA dataPtrIndex
         LDA f0BB6,X
         STA a14
-        LDA a04
+        LDA currentIndexToColorValues
         AND #$80
         BNE b0CBC
         TXA 
@@ -585,7 +598,7 @@ b0C86   STA a04
         DEC f0AB6,X
 b0CB8   JMP MainPaintRoutine
 
-a0CBB   .BYTE $00
+stepCount   .BYTE $00
 b0CBC
         ; Loops back to MainPaintRoutine
         JMP ResetAndReenterMainPaint
@@ -596,25 +609,25 @@ b0CBC
 SetUpInterruptHandlers
         SEI
         LDA #<MainInterruptHandler
-        STA a0314    ;IRQ
+        STA $0314    ;IRQ
         LDA #>MainInterruptHandler
-        STA a0315    ;IRQ
+        STA $0315    ;IRQ
 
         LDA #$0A
-        STA offsetInLineToPaint
+        STA pixelXPosition
         STA colorRAMLineTableIndex
 
         LDA #$01
         STA $D015    ;Sprite display Enable
         STA $D027    ;Sprite 0 Color
         LDA #<NMIInterruptHandler
-        STA a0318    ;NMI
+        STA $0318    ;NMI
         LDA #>NMIInterruptHandler
-        STA a0319    ;NMI
+        STA $0319    ;NMI
         CLI 
         RTS 
 
-a0CE6   .BYTE $02,$00
+countStepsBeforeCheckingJoystickInput   .BYTE $02,$00
 ;-------------------------------------------------------
 ; MainInterruptHandler
 ;-------------------------------------------------------
@@ -628,25 +641,35 @@ MainInterruptHandler
         STA stepsRemainingInSequencerSequence
         JSR UpdatePointersFromSequenceData
 
-b0CFB   DEC a0CE6
+b0CFB   DEC countStepsBeforeCheckingJoystickInput
         BEQ b0D03
         JMP JumpToCheckKeyboardInput
+        ;Returns?
 
+        ; Once in every 256 interrupts, check the joystick
+        ; for input and act on it.
 b0D03   LDA #$00
         STA currentColorToPaint
         LDA a0E40
-        STA a0CE6
+        STA countStepsBeforeCheckingJoystickInput
         JSR UpdateLineinColorRAMUsingIndex
 
         JSR GetJoystickInput
         LDA lastJoystickInput
         AND #$03
         CMP #$03
-        BEQ b0D40
+        BEQ b0D40 ; Neither up nor down have been pushed.
+
         CMP #$02
-        BEQ b0D25
+        BEQ b0D25 ; Player has pressed down.
+        
+        ; Player has pressed up. Incremeent up two lines
+        ; so that when we decrement down one, we're still
+        ; one up!
         INC colorRAMLineTableIndex
         INC colorRAMLineTableIndex
+
+        ; Player has pressed down.
 b0D25   DEC colorRAMLineTableIndex
         LDA colorRAMLineTableIndex
         CMP #$FF
@@ -659,40 +682,56 @@ b0D37   CMP #$18
         BNE b0D40
         LDA #$00
         STA colorRAMLineTableIndex
+
+        ; Player has pressed left or right?
 b0D40   LDA lastJoystickInput
         AND #$0C
         CMP #$0C
-        BEQ b0D6D
+        BEQ b0D6D ; Player has pressed neither left nor right.
+
         CMP #$08
-        BEQ b0D52
-        INC offsetInLineToPaint
-        INC offsetInLineToPaint
-b0D52   DEC offsetInLineToPaint
-        LDA offsetInLineToPaint
+        BEQ b0D52 ; Player has pressed left.
+
+        ; Player has pressed right.
+        INC pixelXPosition
+        INC pixelXPosition
+
+        ; Player has pressed left.
+b0D52   DEC pixelXPosition
+        ; Handle any wrap around from left to right.
+        LDA pixelXPosition
         CMP #$FF
         BNE b0D64
+
+        ; Cursor has wrapped around, move it to the extreme
+        ; right of the screen.
         LDA #$27
-        STA offsetInLineToPaint
+        STA pixelXPosition
         JMP b0D6D
 
+        ; Handle any wrap around from right to left.
 b0D64   CMP #$28
         BNE b0D6D
         LDA #$00
-        STA offsetInLineToPaint
+        STA pixelXPosition
+
 b0D6D   LDA lastJoystickInput
         AND #$10
         BEQ b0D7B
-        LDA #$00
-        STA a0E3C
-        JMP j0E0E
 
+        ; Player has pressed fire.
+        LDA #$00
+        STA stepsSincePressedFire
+        JMP DrawWhiteCursor
+
+        ; Player hasn't pressed fire.
 b0D7B   LDA a0E3D
         BEQ b0D8B
-        LDA a0E3C
+        LDA stepsSincePressedFire
         BEQ b0D88
-        JMP j0E0E
+        JMP DrawWhiteCursor
 
-b0D88   INC a0E3C
+b0D88   INC stepsSincePressedFire
 b0D8B   LDA a1A4A
         BEQ b0D98
         DEC a1A4A
@@ -701,7 +740,7 @@ b0D8B   LDA a1A4A
 
 b0D98   DEC a1531
         BEQ b0DA0
-        JMP j0E0E
+        JMP DrawWhiteCursor
 
 b0DA0   LDA a0E42
         STA a1531
@@ -723,17 +762,17 @@ b0DBC   TAX
         BEQ b0DD6
         LDA a13
         AND trackingActivated
-        BEQ j0E0E
+        BEQ DrawWhiteCursor
         TAX 
         LDA f0AB6,X
         CMP #$FF
-        BNE j0E0E
+        BNE DrawWhiteCursor
         STX a0E3B
 
-b0DD6   LDA offsetInLineToPaint
-        STA f0A36,X
+b0DD6   LDA pixelXPosition
+        STA pixelXPositionArray,X
         LDA colorRAMLineTableIndex
-        STA f0A76,X
+        STA pixelYPositionArray,X
         LDA lineModeActivated
         BEQ b0DF5
         LDA #$19
@@ -746,7 +785,7 @@ b0DD6   LDA offsetInLineToPaint
 b0DF5   LDA a0E47
         STA f0AB6,X
         LDA currentPatternElement
-        STA f0B76,X
+        STA nextPixelYPositionArray,X
 
 j0E00    
         LDA a0E3F
@@ -755,10 +794,11 @@ a0E03   STA f0AF6,X
         LDA currentSymmetrySetting
         STA f0BB6,X
 
-j0E0E    
+DrawWhiteCursor    
         LDA #$01
         STA currentColorToPaint
         JSR UpdateLineinColorRAMUsingIndex
+        ; Falls through
 
 ;-------------------------------------------------------
 ; JumpToCheckKeyboardInput
@@ -776,7 +816,7 @@ GetColorRAMPtrFromLineTableUsingIndex
         STA colorRamTableLoPtr
         LDA colorRAMLineTableHiPtrArray,X
         STA colorRamTableHiPtr
-        LDY offsetInLineToPaint
+        LDY pixelXPosition
 b0E2B   RTS 
 
 ;-------------------------------------------------------
@@ -791,10 +831,10 @@ UpdateLineinColorRAMUsingIndex
         RTS 
 
 
-offsetInLineToPaint            .BYTE $0A
+pixelXPosition            .BYTE $0A
 colorRAMLineTableIndex         .BYTE $0A
 a0E3B                          .BYTE $00
-a0E3C                          .BYTE $00
+stepsSincePressedFire                          .BYTE $00
 a0E3D                          .BYTE $00
 colorBarCurrentValueForModePtr .BYTE $00
 a0E3F                          .BYTE $0C
@@ -816,26 +856,23 @@ presetColorValuesArray                          .BYTE $00
                                .BYTE $01
 trackingActivated              .BYTE $FF
 lineModeActivated              .BYTE $00
-a0E52                          .BYTE $05
-f0E53                          .BYTE $7C
-                               .BYTE $93
-                               .BYTE $C3
-                               .BYTE $07
-                               .BYTE $23
-                               .BYTE $57
-                               .BYTE $61,$B1,$00,$00,$00,$00,$00,$00
-                               .BYTE $00,$00
-f0E63   .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
-f0E6B   
-       ; 'HIJKLMNO'
-       .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
-f0E73   
-       .BYTE $A3,$AB,$E5,$15,$3D,$73,$89,$D1
-       .BYTE $80,$80,$80,$80,$80,$80,$80,$80
-f0E83   
-       .BYTE $09,$0E,$0E,$0F,$0F,$0F
-       ; 'HIJKLM'
-       .BYTE $11,$11,$C8,$C9,$CA,$CB,$CC,$CD
+dataPtrIndex                          .BYTE $05
+
+; A pair of arrays together consituting a list of pointers
+; to positions in memory containing X position data.
+; (i.e. $097C, $0E93,$0EC3, $0F07, $0F23, $0F57, $1161, $11B1)
+pixelXPositionLoPtrArray .BYTE $7C,$93,$C3,$07,$23,$57,$61,$B1
+                         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+pixelXPositionHiPtrArray .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
+
+customPresetHiPtrArray   .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
+
+pixelYPositionLoPtrArray .BYTE $A3,$AB,$E5,$15,$3D,$73,$89,$D1
+                         .BYTE $80,$80,$80,$80,$80,$80,$80,$80
+pixelYPositionHiPtrArray .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
+
+;$0E93
+       .BYTE $C8,$C9,$CA,$CB,$CC,$CD
        .BYTE $CE,$CF,$00,$55,$01,$02,$55,$01
        .BYTE $02,$03,$55,$01,$02,$03,$04,$55
        .BYTE $00,$00,$00,$55,$FF,$FE,$55,$FF
@@ -1321,41 +1358,41 @@ txtSymmetrySettingDescriptions
 ; ResetAndReenterMainPaint
 ;-------------------------------------------------------
 ResetAndReenterMainPaint 
-        LDA a04
+        LDA currentIndexToColorValues
         AND #$7F
         STA a16
         LDA #$19
         SEC 
         SBC a16
-        STA colorRamTableIndexZP
-        DEC colorRamTableIndexZP
+        STA pixelYPositionZP
+        DEC pixelYPositionZP
         LDA #$00
-        STA a04
+        STA currentIndexToColorValues
         LDA #$01
         STA a17
         JSR PushOffsetAndIndexAndPaintPixel
-        INC colorRamTableIndexZP
+        INC pixelYPositionZP
         LDA #$00
         STA a17
         LDA a0E44
         EOR #$07
-        STA a04
+        STA currentIndexToColorValues
 b1331   JSR PushOffsetAndIndexAndPaintPixel
-        INC colorRamTableIndexZP
-        INC a04
-        LDA a04
+        INC pixelYPositionZP
+        INC currentIndexToColorValues
+        LDA currentIndexToColorValues
         CMP #$08
         BNE b1343
         JMP j134B
 
-        INC a04
-b1343   STA a04
-        LDA colorRamTableIndexZP
+        INC currentIndexToColorValues
+b1343   STA currentIndexToColorValues
+        LDA pixelYPositionZP
         CMP #$19
         BNE b1331
 
 j134B    
-        LDX a0CBB
+        LDX stepCount
         DEC f0AB6,X
         LDA f0AB6,X
         CMP #$80
@@ -1478,6 +1515,7 @@ b1415   LDX #$00
 b1417   LDA f0AB6,X
         CMP #$FF
         BNE ResetSelectedVariableAndReturn
+
         INX 
         CPX a0E41
         BNE b1417
@@ -1884,7 +1922,7 @@ currentModeActive  .BYTE $00
 ;-------------------------------------------------------
 ReinitializeScreen
         LDA #$00
-        STA a0CBB
+        STA stepCount
         STA a13
 
         LDX #$00
@@ -1921,10 +1959,10 @@ b1748   LDA txtDataFree,X
         JSR WriteLastLineBufferToScreen
 
 b1756   LDA #$C2
-        STA a1E
+        STA currentSequencePtrHi
         LDX functionKeyIndex
         LDA functionKeyToSequenceArray,X
-        STA a1D
+        STA currentSequencePtrLo
         LDA shiftPressed
         AND #$01
         BEQ b177B
@@ -1936,10 +1974,10 @@ b1756   LDA #$C2
         ; selected.
         LDY #$00
         LDA currentSymmetrySetting
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
         LDA a0E3F
         INY 
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
         RTS 
 
 b177B   LDA #$FF
@@ -2029,9 +2067,9 @@ b1801   LDA lastKeyPressed
         JSR ResetSomeData
         LDA a179B
         STA a1A47
-        LDA a1D
+        LDA currentSequencePtrLo
         STA a1A48
-        LDA a1E
+        LDA currentSequencePtrHi
         STA a1A49
         LDA #$00
         STA currentVariableMode
@@ -2039,7 +2077,7 @@ b1801   LDA lastKeyPressed
         STA sequencerActive
         LDY #$02
         LDA #$FF
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
 b183C   RTS 
 
 b183D   LDY #$02
@@ -2049,23 +2087,23 @@ b183D   LDY #$02
         LDA #$C0
 f1848   JMP j184E
 
-b184B   LDA offsetInLineToPaint
+b184B   LDA pixelXPosition
 
 j184E    
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
         LDA colorRAMLineTableIndex
         INY 
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
         LDA currentPatternElement
         INY 
-        STA (p1D),Y
-        LDA a1D
+        STA (currentSequencePtrLo),Y
+        LDA currentSequencePtrLo
         CLC 
         ADC #$03
-        STA a1D
-        LDA a1E
+        STA currentSequencePtrLo
+        LDA currentSequencePtrHi
         ADC #$00
-        STA a1E
+        STA currentSequencePtrHi
         DEC a179B
         RTS 
 
@@ -2076,7 +2114,7 @@ ReturnPressed
         JSR ResetSomeData
         LDA #$FF
         LDY #$02
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
         LDA #$00
         STA currentVariableMode
         STA a1884
@@ -2104,10 +2142,10 @@ InitializeSequencer
         LDA #$00
         STA currentVariableMode
         TAY 
-        LDA (p1D),Y
+        LDA (currentSequencePtrLo),Y
         STA a1920
         INY 
-        LDA (p1D),Y
+        LDA (currentSequencePtrLo),Y
         STA a191F
 
 j18A9    
@@ -2132,30 +2170,30 @@ b18BB   LDX a0E3B
         BNE b1901
 b18D7   LDA a0E47
         STA f0AB6,X
-        LDA (p1D),Y
+        LDA (currentSequencePtrLo),Y
         CMP #$C0
         BEQ b1901
-        STA f0A36,X
+        STA pixelXPositionArray,X
         INY 
-        LDA (p1D),Y
-        STA f0A76,X
+        LDA (currentSequencePtrLo),Y
+        STA pixelYPositionArray,X
         INY 
-        LDA (p1D),Y
-        STA f0B76,X
+        LDA (currentSequencePtrLo),Y
+        STA nextPixelYPositionArray,X
         LDA a191F
         STA f0AF6,X
         STA f0B36,X
         LDA a1920
         STA f0BB6,X
-b1901   LDA a1D
+b1901   LDA currentSequencePtrLo
         CLC 
         ADC #$03
-        STA a1D
-        LDA a1E
+        STA currentSequencePtrLo
+        LDA currentSequencePtrHi
         ADC #$00
-        STA a1E
+        STA currentSequencePtrHi
         LDY #$02
-        LDA (p1D),Y
+        LDA (currentSequencePtrLo),Y
         CMP #$FF
         BEQ b1919
         JMP j18A9
@@ -2172,9 +2210,9 @@ sequencerActive   .BYTE $00
 ;-------------------------------------------------------
 ActivateSequencer 
         LDA #$C3
-        STA a1E
+        STA currentSequencePtrHi
         LDA #$00
-        STA a1D
+        STA currentSequencePtrLo
         LDA #$FF
         STA sequencerActive
         LDA shiftPressed
@@ -2192,9 +2230,9 @@ b1945   LDA a1A47
         LDA a1A47
         STA a179B
         LDA a1A48
-        STA a1D
+        STA currentSequencePtrLo
         LDA a1A49
-        STA a1E
+        STA currentSequencePtrHi
         JMP DisplaySequFree
         ;Returns
 
@@ -2202,10 +2240,10 @@ b195D   LDA #$FF
         STA a179B
         LDA currentSymmetrySetting
         LDY #$00
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
         LDA a0E3F
         INY 
-        STA (p1D),Y
+        STA (currentSequencePtrLo),Y
 
 DisplaySequFree    
         JSR ClearLastLineOfScreen
@@ -2242,7 +2280,7 @@ b1992   TAX
         CMP #$FF
         BNE b19D9
 b19A9   LDY #$02
-        LDA (p1D),Y
+        LDA (currentSequencePtrLo),Y
         CMP #$C0
         BEQ b19D9
         LDA a0E47
@@ -2253,31 +2291,31 @@ b19A9   LDY #$02
         LDA aC300
         STA f0BB6,X
         LDY #$02
-        LDA (p1D),Y
-        STA f0A36,X
+        LDA (currentSequencePtrLo),Y
+        STA pixelXPositionArray,X
         INY 
-        LDA (p1D),Y
-        STA f0A76,X
+        LDA (currentSequencePtrLo),Y
+        STA pixelYPositionArray,X
         INY 
-        LDA (p1D),Y
-        STA f0B76,X
-b19D9   LDA a1D
+        LDA (currentSequencePtrLo),Y
+        STA nextPixelYPositionArray,X
+b19D9   LDA currentSequencePtrLo
         CLC 
         ADC #$03
-        STA a1D
-        LDA a1E
+        STA currentSequencePtrLo
+        LDA currentSequencePtrHi
         ADC #$00
-        STA a1E
+        STA currentSequencePtrHi
         LDY #$02
-        LDA (p1D),Y
+        LDA (currentSequencePtrLo),Y
         CMP #$FF
         BEQ b19EF
         RTS 
 
 b19EF   LDA #<aC300
-        STA a1D
+        STA currentSequencePtrLo
         LDA #>aC300
-        STA a1E
+        STA currentSequencePtrHi
         RTS 
 
 stepsRemainingInSequencerSequence   .BYTE $00
@@ -2393,7 +2431,7 @@ b1AAC   BNE b1AA4
         STA dynamicStorage
         LDA #>p01FF
         STA a3001
-        LDA offsetInLineToPaint
+        LDA pixelXPosition
         STA a1BE8
         LDA colorRAMLineTableIndex
         STA a1BE9
@@ -2403,7 +2441,7 @@ b1AC5   LDA #$00
         STA currentColorToPaint
         JSR UpdateLineinColorRAMUsingIndex
         LDA a1BE8
-        STA offsetInLineToPaint
+        STA pixelXPosition
         LDA a1BE9
         STA colorRAMLineTableIndex
         LDA #$FF
@@ -2559,7 +2597,7 @@ b1BC6   LDA #>dynamicStorage
         STA currentColorToPaint
         JSR UpdateLineinColorRAMUsingIndex
         LDA a1BE8
-        STA offsetInLineToPaint
+        STA pixelXPosition
         LDA a1BE9
         STA colorRAMLineTableIndex
         RTS 
@@ -2595,11 +2633,15 @@ DisplayCustomPreset
 
 b1C0B   LDA #$83
         STA currentVariableMode
+
+        ; Custome presets are stored between $C800 and
+        ; $CFFF.
         LDA #$00
-        STA a22
+        STA customPresetLoPtr
         STA a1BEB
-        LDA f0E6B,X
-        STA a23
+        LDA customPresetHiPtrArray,X
+        STA customPresetHiPtr
+
         TXA 
         CLC 
         ADC #$08
@@ -2616,15 +2658,15 @@ b1C28   LDA txtDefineAllLevelPixels,X
         STA a25
         LDY #$00
         TYA 
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         INY 
         LDA #$55
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         LDY #$81
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         DEY 
         LDA #$00
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         LDA #$07
         STA a24
         LDA #$01
@@ -2638,20 +2680,20 @@ b1C28   LDA txtDefineAllLevelPixels,X
 ;-------------------------------------------------------
 UpdateStuffAndReenterMainPaint    
         LDA #<p0C13
-        STA offsetInLineToPaint
+        STA pixelXPosition
         LDA #>p0C13
         STA colorRAMLineTableIndex
         JSR ReinitializeScreen
 b1C68   LDA a1BEA
-        STA a0E52
+        STA dataPtrIndex
         LDA a25
-        STA a04
+        STA currentIndexToColorValues
         LDA #$00
         STA a14
         LDA #<p0C13
-        STA offsetInLineToPaintZP
+        STA pixelXPositionZP
         LDA #>p0C13
-        STA colorRamTableIndexZP
+        STA pixelYPositionZP
         JSR LoopThroughPixelsAndPaint
         LDA a25
         BNE b1C68
@@ -2688,20 +2730,20 @@ b1CA2   LDA lastKeyPressed
 b1CB6   INC a26
         LDA #$00
         LDY a26
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         PHA 
         TYA 
         CLC 
         ADC #$80
         TAY 
         PLA 
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         INY 
         LDA #$55
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         LDY a26
         INY 
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         STY a26
         LDA #$07
         STA a24
@@ -2723,13 +2765,13 @@ j1CEF
         CMP #$39
         BNE b1CEE
         LDY a26
-        LDA offsetInLineToPaint
+        LDA pixelXPosition
         SEC 
         SBC #$13
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         INY 
         LDA #$55
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         STY a26
         TYA 
         CLC 
@@ -2738,10 +2780,10 @@ j1CEF
         LDA colorRAMLineTableIndex
         SEC 
 b1D0D   SBC #$0C
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         INY 
         LDA #$55
-        STA (p22),Y
+        STA (customPresetLoPtr),Y
         DEC a24
         BEQ b1D1B
         RTS 
@@ -3108,6 +3150,11 @@ f1FE1=*-$01
         .BYTE $38,$30,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+;-------------------------------------------------------
+; This is the main data driving the sequences in
+; Psychedelia.
+;-------------------------------------------------------
 f2000
         .BYTE $0C,$02,$1F,$01,$01,$07,$04,$01
         .BYTE $07,$00,$06,$02,$04,$05,$03,$07

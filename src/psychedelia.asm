@@ -115,15 +115,15 @@ ROM_CLALL = $FFE7
 
         * = $0801
 
-;-----------------------------------------------------------
+;-----------------------------------------------------------------------------------
 ; Start program at InitializeProgram (SYS 2064)
-;-----------------------------------------------------------
+;-----------------------------------------------------------------------------------
         .BYTE $0B,$08,$C1,$07,$9E,$32,$30,$36,$34 ; SYS 2064
         .BYTE $00,$00,$00,$F9
         .BYTE $02,$F9    ;JAM 
-;-------------------------------
+;-------------------------------------------------------
 ; InitializeProgram
-;-------------------------------
+;-------------------------------------------------------
 InitializeProgram
         ; Set border and background to black
         LDA #$00
@@ -180,9 +180,9 @@ colorRAMLineTableHiPtrArray
       .BYTE $00,$00,$00,$00,$00,$00,$00,$00     ; $0881:               
       .BYTE $00,$00,$00,$00,$00,$00,$00     ; $0889:               
 
-;-------------------------------
+;-------------------------------------------------------
 ; InitializeScreenWithInitCharacter
-;-------------------------------
+;-------------------------------------------------------
 InitializeScreenWithInitCharacter 
         LDX #$00 
 
@@ -205,9 +205,9 @@ presetKeyCodes
         .BYTE $39,$38,$3B,$08,$0B,$10,$13,$18
         .BYTE $1B,$20,$23,$28,$2B,$30,$33,$00
 
-;-------------------------------
+;-------------------------------------------------------
 ; GetColorRAMPtrFromLineTable
-;-------------------------------
+;-------------------------------------------------------
 GetColorRAMPtrFromLineTable   
         LDX colorRamTableIndexZP
         LDA colorRAMLineTableLoPtrArray,X
@@ -217,9 +217,9 @@ GetColorRAMPtrFromLineTable
         LDY offsetInLineToPaintZP
 b08D0   RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; PaintPixel
-;-------------------------------
+;-------------------------------------------------------
 PaintPixel   
         ; Return early if the index or offset are invalid
         LDA offsetInLineToPaintZP
@@ -262,9 +262,9 @@ b090D   LDX a04
         STA (colorRamTableLoPtr2),Y
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; LoopThroughPixelsAndPaint
-;-------------------------------
+;-------------------------------------------------------
 LoopThroughPixelsAndPaint   
         JSR PushOffsetAndIndexAndPaintPixel
         LDY #$00
@@ -335,9 +335,9 @@ b0973   LDA a08
 
 a09CA   .BYTE $00
 
-;-------------------------------
+;-------------------------------------------------------
 ; PutRandomByteInAccumulator
-;-------------------------------
+;-------------------------------------------------------
 PutRandomByteInAccumulator   
 a09CC   =*+$01
         LDA fE199,X
@@ -345,9 +345,9 @@ a09CC   =*+$01
         RTS 
 
         BRK #$00
-;-------------------------------
+;-------------------------------------------------------
 ; PushOffsetAndIndexAndPaintPixel
-;-------------------------------
+;-------------------------------------------------------
 PushOffsetAndIndexAndPaintPixel   
         LDA offsetInLineToPaintZP
         PHA 
@@ -483,9 +483,9 @@ f0BB6
        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF      ; $0BE9:  
        .BYTE $FF,$FF,$FF,$FF,$FF                  ; $0BF1:  
 
-;-------------------------------
+;-------------------------------------------------------
 ; ReinitializeSequences
-;-------------------------------
+;-------------------------------------------------------
 ReinitializeSequences
         LDX #$00
         TXA 
@@ -509,9 +509,9 @@ p0C13   CPX #$40
         STA currentSymmetrySetting
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; LaunchPsychedelia
-;-------------------------------
+;-------------------------------------------------------
 LaunchPsychedelia    
         JSR SetUpInterruptHandlers
 
@@ -525,9 +525,9 @@ b0C29   TXA
         JSR ReinitializeSequences
         JSR ClearLastLineOfScreen
 
-;-------------------------------
+;-------------------------------------------------------
 ; MainPaintRoutine
-;-------------------------------
+;-------------------------------------------------------
 MainPaintRoutine    
         INC a0CBB
 
@@ -600,9 +600,9 @@ b0CBC
         ; Loops back to MainPaintRoutine
         JMP ResetAndReenterMainPaint
 
-;-------------------------------
+;-------------------------------------------------------
 ; SetUpInterruptHandlers
-;-------------------------------
+;-------------------------------------------------------
 SetUpInterruptHandlers
         SEI
         LDA #<MainInterruptHandler
@@ -625,9 +625,9 @@ SetUpInterruptHandlers
         RTS 
 
 a0CE6   .BYTE $02,$00
-;-------------------------------
+;-------------------------------------------------------
 ; MainInterruptHandler
-;-------------------------------
+;-------------------------------------------------------
 MainInterruptHandler
         LDA stepsRemainingInSequencerSequence
         BEQ b0CFB
@@ -770,16 +770,16 @@ j0E0E
         STA currentColorToPaint
         JSR UpdateLineinColorRAMUsingIndex
 
-;-------------------------------
+;-------------------------------------------------------
 ; JumpToCheckKeyboardInput
-;-------------------------------
+;-------------------------------------------------------
 JumpToCheckKeyboardInput    
         JSR CheckKeyboardInput
         JMP eEA31
 
-;-------------------------------
+;-------------------------------------------------------
 ; GetColorRAMPtrFromLineTableUsingIndex
-;-------------------------------
+;-------------------------------------------------------
 GetColorRAMPtrFromLineTableUsingIndex   
         LDX colorRAMLineTableIndex
         LDA colorRAMLineTableLoPtrArray,X
@@ -789,9 +789,9 @@ GetColorRAMPtrFromLineTableUsingIndex
         LDY offsetInLineToPaint
 b0E2B   RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; UpdateLineinColorRAMUsingIndex
-;-------------------------------
+;-------------------------------------------------------
 UpdateLineinColorRAMUsingIndex   
         LDA a1BEB
         BNE b0E2B
@@ -884,9 +884,9 @@ a0F0E
        .BYTE $02,$FE,$02,$55,$00,$55                  ; $0F89:          
 
 
-;-------------------------------
+;-------------------------------------------------------
 ; CheckKeyboardInput
-;-------------------------------
+;-------------------------------------------------------
 CheckKeyboardInput   
         LDA currentVariableMode
         BEQ b0F97
@@ -1241,9 +1241,9 @@ f1201
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00    ; $1211:  
 
 
-;-------------------------------
+;-------------------------------------------------------
 ; ClearLastLineOfScreen
-;-------------------------------
+;-------------------------------------------------------
 ClearLastLineOfScreen   
         
         LDX #$28
@@ -1254,9 +1254,9 @@ b121B   LDA #$20
         BNE b121B
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; WriteLastLineBufferToScreen
-;-------------------------------
+;-------------------------------------------------------
 WriteLastLineBufferToScreen    
         LDX #$28
 b1229   LDA lastLineBufferPtrMinusOne,X
@@ -1327,9 +1327,9 @@ txtSymmetrySettingDescriptions
         ; ' '
         .BYTE $A0
 
-;-------------------------------
+;-------------------------------------------------------
 ; ResetAndReenterMainPaint
-;-------------------------------
+;-------------------------------------------------------
 ResetAndReenterMainPaint 
         LDA a04
         AND #$7F
@@ -1386,9 +1386,9 @@ lineModeSettingDescriptions
         .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
         ; 'Eº ON   '
         .BYTE $C5,$BA,$A0,$CF,$CE,$A0,$A0,$A0
-;-------------------------------
+;-------------------------------------------------------
 ; DrawColorValueBar
-;-------------------------------
+;-------------------------------------------------------
 DrawColorValueBar
         ; Shift the pointer from SCREEN_RAM ($0400) to COLOR_RAM ($D800)
         LDA a19
@@ -1447,9 +1447,9 @@ ResetSelectedVariableAndReturn
         STA currentVariableMode
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; CheckKeyboardInputForActiveVariable
-;-------------------------------
+;-------------------------------------------------------
 CheckKeyboardInputForActiveVariable    
         AND #$80
         BEQ b13F4
@@ -1547,9 +1547,9 @@ b1473   CPX #$05 ; Color Mode?
 b1482   JSR DisplayVariableSelection
         JMP CheckIfEnterPressed
 
-;-------------------------------
+;-------------------------------------------------------
 ; DisplayVariableSelection
-;-------------------------------
+;-------------------------------------------------------
 DisplayVariableSelection    
         ; Set the pointers to the position on screen for the color bar.
         LDA #>SCREEN_RAM + $03D0
@@ -1610,9 +1610,9 @@ b14D1   LDA txtVariableLabels,Y
 b14EC   JSR WriteLastLineBufferToScreen
         JMP DrawColorValueBar
 
-;-------------------------------
+;-------------------------------------------------------
 ; CheckIfEnterPressed
-;-------------------------------
+;-------------------------------------------------------
 CheckIfEnterPressed    
         LDA lastKeyPressed
         CMP #$01
@@ -1714,9 +1714,9 @@ txtTrackingOnOff
         .BYTE $A0
 
 
-;-------------------------------
+;-------------------------------------------------------
 ; DisplayPresetMessage
-;-------------------------------
+;-------------------------------------------------------
 DisplayPresetMessage    
         LDA shiftPressed
         AND #$04
@@ -1775,9 +1775,9 @@ txtPresetActivatedStored
 shiftPressed
         .BYTE $00
 
-;-------------------------------
+;-------------------------------------------------------
 ; DrawPresetActivatedMessage
-;-------------------------------
+;-------------------------------------------------------
 DrawPresetActivatedMessage    
         LDA shiftPressed
         AND #$01
@@ -1857,9 +1857,9 @@ b16E1   LDA (p1B),Y
         STA currentSymmetrySetting
         JMP j163B
 
-;-------------------------------
+;-------------------------------------------------------
 ; UpdatePointersForPreset
-;-------------------------------
+;-------------------------------------------------------
 UpdatePointersForPreset   
         LDA #>pC000
         STA a1C
@@ -1878,9 +1878,9 @@ b1702   LDA a1B
         BNE b1702
 b1712   RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; ResetCurrentActiveMode
-;-------------------------------
+;-------------------------------------------------------
 ResetCurrentActiveMode   
         LDA #$FF
         STA currentModeActive
@@ -1889,9 +1889,9 @@ ResetCurrentActiveMode
         RTS 
 
 currentModeActive  .BYTE $00
-;-------------------------------
+;-------------------------------------------------------
 ; ReinitializeScreen
-;-------------------------------
+;-------------------------------------------------------
 ReinitializeScreen
         LDA #$00
         STA a0CBB
@@ -1912,9 +1912,9 @@ b172a   STA f0AB6,X
 a173A   .BYTE $00
 functionKeyIndex   .BYTE $00
 
-;-------------------------------
+;-------------------------------------------------------
 ; UpdateSequencer
-;-------------------------------
+;-------------------------------------------------------
 UpdateSequencer   
         JSR ClearLastLineOfScreen
         LDA shiftPressed
@@ -1971,9 +1971,9 @@ functionKeys
 
 a179B   .BYTE $FF,$60
 
-;-------------------------------
+;-------------------------------------------------------
 ; CheckKeyboardWhilePromptActive
-;-------------------------------
+;-------------------------------------------------------
 CheckKeyboardWhilePromptActive 
         LDA currentVariableMode
         CMP #$83
@@ -2079,9 +2079,9 @@ j184E
         DEC a179B
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; ReturnPressed
-;-------------------------------
+;-------------------------------------------------------
 ReturnPressed    
         JSR ResetSomeData
         LDA #$FF
@@ -2095,9 +2095,9 @@ ReturnPressed
         RTS 
 
 a1884   .BYTE $00
-;-------------------------------
+;-------------------------------------------------------
 ; ResetSomeData
-;-------------------------------
+;-------------------------------------------------------
 ResetSomeData
         LDA a11F7
         STA a07C6
@@ -2107,9 +2107,9 @@ ResetSomeData
         STA a07C8
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; InitializeSequencer
-;-------------------------------
+;-------------------------------------------------------
 InitializeSequencer    
         LDA #$00
         STA currentVariableMode
@@ -2177,9 +2177,9 @@ b1919   LDA #$00
 a191F   .BYTE $00
 a1920   .BYTE $00
 sequencerActive   .BYTE $00
-;-------------------------------
+;-------------------------------------------------------
 ; ActivateSequencer
-;-------------------------------
+;-------------------------------------------------------
 ActivateSequencer 
         LDA #$C3
         STA a1E
@@ -2230,9 +2230,9 @@ b1973   LDA txtSequFree,X
         JSR WriteLastLineBufferToScreen
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; UpdatePointersFromSequenceData
-;-------------------------------
+;-------------------------------------------------------
 UpdatePointersFromSequenceData   
         INC a0E3B
         LDA a0E3B
@@ -2297,9 +2297,9 @@ txtSequFree
         ; '° FREE  '
         .BYTE $B0,$A0,$C6,$D2,$C5,$C5,$A0,$A0
 
-;-------------------------------
+;-------------------------------------------------------
 ; DisplaySequencerState
-;-------------------------------
+;-------------------------------------------------------
 DisplaySequencerState    
         LDA sequencerActive
         AND #$01
@@ -2338,9 +2338,9 @@ a1A49
 a1A4A
       .BYTE $00
 
-;-------------------------------
+;-------------------------------------------------------
 ; StopOrStartRecording
-;-------------------------------
+;-------------------------------------------------------
 StopOrStartRecording    
         LDA #>dynamicStorage
         STA a20
@@ -2380,9 +2380,9 @@ b1A81   LDA txtPlayBackRecord,Y
         CMP #$03
         BNE b1AC5
 
-;-------------------------------
+;-------------------------------------------------------
 ; InitializeDynamicStorage
-;-------------------------------
+;-------------------------------------------------------
 InitializeDynamicStorage   
         LDA #<dynamicStorage
         STA aFB
@@ -2432,9 +2432,9 @@ txtPlayBackRecord
         ; '®®®®®'
         .BYTE $AE,$AE,$AE,$AE,$AE
 
-;-------------------------------
+;-------------------------------------------------------
 ; DisplayStoppedRecording
-;-------------------------------
+;-------------------------------------------------------
 DisplayStoppedRecording    
         LDA #$00
         STA playbackOrRecordActive
@@ -2460,9 +2460,9 @@ txtStopped
 playbackOrRecordActive
         .BYTE $00
 
-;-------------------------------
+;-------------------------------------------------------
 ; RecordJoystickMovements
-;-------------------------------
+;-------------------------------------------------------
 RecordJoystickMovements    
         LDA $DC00    ;CIA1: Data Port Register A
         STA lastJoystickInput
@@ -2513,9 +2513,9 @@ b1B70   INY
         BEQ b1B37
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; GetJoystickInput
-;-------------------------------
+;-------------------------------------------------------
 GetJoystickInput   
         LDA playbackOrRecordActive
         BEQ b1B8C
@@ -2594,9 +2594,9 @@ txtDefineAllLevelPixels
         ; 'XELS'
         .BYTE $D8,$C5,$CC,$D3
 
-;-------------------------------
+;-------------------------------------------------------
 ; DisplayCustomPreset
-;-------------------------------
+;-------------------------------------------------------
 DisplayCustomPreset 
         TXA
         AND #$08
@@ -2643,9 +2643,9 @@ b1C28   LDA txtDefineAllLevelPixels,X
         STA currentModeActive
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; UpdateStuffAndReenterMainPaint
-;-------------------------------
+;-------------------------------------------------------
 UpdateStuffAndReenterMainPaint    
         LDA #<p0C13
         STA offsetInLineToPaint
@@ -2670,9 +2670,9 @@ b1C68   LDA a1BEA
         STA currentModeActive
         JMP MainPaintRoutine
 
-;-------------------------------
+;-------------------------------------------------------
 ; CheckKeyboardInputForOtherPrompts
-;-------------------------------
+;-------------------------------------------------------
 CheckKeyboardInputForOtherPrompts    
         LDA a1884
         BEQ b1CA2
@@ -2758,9 +2758,9 @@ b1D0D   SBC #$0C
 
 b1D1B   JMP b1CB6
 
-;-------------------------------
+;-------------------------------------------------------
 ; GetCustomPatternElement
-;-------------------------------
+;-------------------------------------------------------
 GetCustomPatternElement    
         JSR ClearLastLineOfScreen
 
@@ -2792,9 +2792,9 @@ pixelShapeArray
         .BYTE $47,$4F,$41,$54,$53,$53,$48,$45      ; $1D59:   
         .BYTE $45,$50
 
-;-------------------------------
+;-------------------------------------------------------
 ; DisplaySavePromptScreen
-;-------------------------------
+;-------------------------------------------------------
 DisplaySavePromptScreen 
         LDA #$13
         JSR $FFD2
@@ -2883,9 +2883,9 @@ j1E08
 
         RTS 
 
-;-------------------------------
+;-------------------------------------------------------
 ; PromptToSave
-;-------------------------------
+;-------------------------------------------------------
 PromptToSave    
         LDA stepsRemainingInSequencerSequence
         BNE b1E43
@@ -2910,9 +2910,9 @@ b1E43   RTS
 
 txtSavePrompt   .TEXT " SAVE (P)ARAMETERS, (M)OTION, (A)BORT?  "
 
-;-------------------------------
+;-------------------------------------------------------
 ; CheckKeyboardInputWhileSavePromptActive
-;-------------------------------
+;-------------------------------------------------------
 CheckKeyboardInputWhileSavePromptActive    
         LDA currentVariableMode
         CMP #$84
@@ -2949,9 +2949,9 @@ b1E98   CMP #$29
 b1EA9   RTS 
 
 a1EAA   .BYTE $00
-;-------------------------------
+;-------------------------------------------------------
 ; DisplayLoadOrAbort
-;-------------------------------
+;-------------------------------------------------------
 DisplayLoadOrAbort    
         
         LDA stepsRemainingInSequencerSequence
@@ -2971,9 +2971,9 @@ b1EBE   LDA txtContinueLoadOrAbort,X
         STA a1EAA
         JMP WriteLastLineBufferToScreen
 
-;-------------------------------
+;-------------------------------------------------------
 ; CheckKeyboardInputWhileLoadAbortActive
-;-------------------------------
+;-------------------------------------------------------
 CheckKeyboardInputWhileLoadAbortActive    
         LDA lastKeyPressed
         CMP #$0A ; 'A'
@@ -3018,9 +3018,9 @@ a1F25
 a1F26
         .BYTE $10
 
-;-------------------------------
+;-------------------------------------------------------
 ; PerformRandomJoystickMovement
-;-------------------------------
+;-------------------------------------------------------
 PerformRandomJoystickMovement 
         DEC a1F25
         BEQ b1F2D
@@ -3054,9 +3054,9 @@ b1F56   ADC #$20
         JMP SelectNewPreset
         ; Returns
 
-;-------------------------------
+;-------------------------------------------------------
 ; DisplayDemoModeMessage
-;-------------------------------
+;-------------------------------------------------------
 DisplayDemoModeMessage   
         LDA demoModeActive
         BNE b1F71
@@ -3082,9 +3082,9 @@ NMIInterruptHandler
         .BYTE $30,$48,$A9,$23,$48,$40
 
 
-;-------------------------------
+;-------------------------------------------------------
 ; CopyDataFrom2000ToC000
-;-------------------------------
+;-------------------------------------------------------
 CopyDataFrom2000ToC000   
         LDY #$00
         TYA 

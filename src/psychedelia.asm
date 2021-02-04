@@ -289,6 +289,8 @@ b0921   LDA #$07
         LDA pixelYPositionHiPtrArray,X
         STA data2HiPtr
 
+        ; Paint pixels in the sequence until hitting a break
+        ; at $55
 b0945   LDA previousPixelXPositionZP
         CLC 
         ADC (dataLoPtr),Y
@@ -297,12 +299,18 @@ b0945   LDA previousPixelXPositionZP
         CLC 
         ADC (data2LoPtr),Y
         STA pixelYPositionZP
+
+        ; Push Y to the stack.
         TYA 
         PHA 
+
         JSR PushOffsetAndIndexAndPaintPixel
+
+        ; Pull Y back from the stack and increment
         PLA 
         TAY 
         INY 
+
         LDA (dataLoPtr),Y
         CMP #$55
         BNE b0945
@@ -329,7 +337,9 @@ f097C
         .BYTE $55,$00,$03,$00,$FD,$55,$00,$04
         .BYTE $00,$FC,$55,$FF,$01,$05,$05,$01
         .BYTE $FF,$FB,$FB,$55,$00,$07,$00,$F9
-        .BYTE $55,$55,$FF,$FF,$00,$01,$01,$01
+        .BYTE $55,$55
+f09A3
+        .BYTE $FF,$FF,$00,$01,$01,$01
         .BYTE $00,$FF,$55,$FE,$00,$02,$00,$55
         .BYTE $FD,$00,$03,$00,$55,$FC,$00,$04
         .BYTE $00,$55,$FB,$FB,$FF,$01,$05,$05
@@ -579,12 +589,15 @@ b0C86   STA currentIndexToColorValues
         BNE b0CB8
         LDA f0AF6,X
         STA f0B36,X
+
         LDA pixelXPositionArray,X
         STA pixelXPositionZP
         LDA pixelYPositionArray,X
         STA pixelYPositionZP
+
         LDA nextPixelYPositionArray,X
         STA dataPtrIndex
+
         LDA f0BB6,X
         STA a14
         LDA currentIndexToColorValues
@@ -867,48 +880,57 @@ pixelXPositionHiPtrArray .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
 
 customPresetHiPtrArray   .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
 
+; A pair of arrays together consituting a list of pointers
+; to positions in memory containing Y position data.
+; (i.e. $097C, $0E93,$0EC3, $0F07, $0F23, $0F57, $1161, $11B1)
 pixelYPositionLoPtrArray .BYTE $A3,$AB,$E5,$15,$3D,$73,$89,$D1
                          .BYTE $80,$80,$80,$80,$80,$80,$80,$80
 pixelYPositionHiPtrArray .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
+f0E6B                    .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
 
-;$0E93
-       .BYTE $C8,$C9,$CA,$CB,$CC,$CD
-       .BYTE $CE,$CF,$00,$55,$01,$02,$55,$01
-       .BYTE $02,$03,$55,$01,$02,$03,$04,$55
-       .BYTE $00,$00,$00,$55,$FF,$FE,$55,$FF
-       .BYTE $55,$55,$FF,$55,$FF,$FE,$55,$00
-       .BYTE $00,$00,$55,$01,$02,$03,$04,$55
-       .BYTE $01,$02,$03,$55,$01,$02,$55,$00
-       .BYTE $55,$55,$00,$FF,$00,$55,$00,$00
-       .BYTE $55,$01,$02,$03,$00,$01,$02,$03
-       .BYTE $55,$04,$05,$06,$04,$00,$01,$02
-       .BYTE $55,$04,$00,$04,$00,$04,$55,$FF
-       .BYTE $03,$55,$00,$55,$FF,$00,$01,$55
-       .BYTE $02,$03,$55,$03,$03,$03,$04
-f0EF0   
-       .BYTE $04
-       .BYTE $04,$04,$55,$03,$02,$03,$04,$05
-       .BYTE $05,$05,$55,$05,$06,$06,$07,$07
-       .BYTE $55,$07,$07,$55,$00,$55,$FF,$55
-       .BYTE $00,$55,$02,$55,$01
-a0F0E   
-       .BYTE $55,$FD,$55
-       .BYTE $FE,$55,$00,$55,$FF,$55,$FE,$55
-       .BYTE $FF,$55,$02,$55,$01,$55,$FC,$55
-       .BYTE $00,$55,$00,$01,$FF,$55,$00,$55
-       .BYTE $00,$01,$02,$FE,$FF,$55,$00,$03
-       .BYTE $FD,$55,$00,$04,$FC,$55,$00,$06
-       .BYTE $FA,$55,$00,$55,$FF,$00,$00,$55
-       .BYTE $00,$55,$FE,$FF,$00,$00,$FF,$55
-       .BYTE $FD,$01,$01,$55,$FC,$02,$02,$55
-       .BYTE $FA,$04,$04,$55,$00,$55,$FF,$01
-       .BYTE $55,$FE,$02,$55,$FD,$03,$55,$FC
-       .BYTE $04,$FC,$FC,$04,$04,$55,$FB,$05
-       .BYTE $55,$FA,$06,$FA,$FA,$06,$06,$55
-       .BYTE $00,$55,$01,$FF,$55,$FE,$02,$55
-       .BYTE $03,$FD,$55,$FC,$04,$FF,$01,$FF
-       .BYTE $01,$55,$05,$FB,$55,$FA,$06,$FE
-       .BYTE $02,$FE,$02,$55,$00,$55
+f0E93 .BYTE $00,$55,$01,$02,$55,$01
+      .BYTE $02,$03,$55,$01,$02,$03,$04,$55
+      .BYTE $00,$00,$00,$55,$FF,$FE,$55,$FF
+      .BYTE $55,$55
+f0EAB .BYTE $FF,$55,$FF,$FE,$55,$00
+      .BYTE $00,$00,$55,$01,$02,$03,$04,$55
+      .BYTE $01,$02,$03,$55,$01,$02,$55,$00
+      .BYTE $55,$55
+
+f0EC3 .BYTE $00,$FF,$00,$55,$00,$00
+      .BYTE $55,$01,$02,$03,$00,$01,$02,$03
+      .BYTE $55,$04,$05,$06,$04,$00,$01,$02
+      .BYTE $55,$04,$00,$04,$00,$04,$55,$FF
+      .BYTE $03,$55,$00,$55
+f0EE5 .BYTE $FF,$00,$01,$55
+      .BYTE $02,$03,$55,$03,$03,$03,$04,$04
+      .BYTE $04,$04,$55,$03,$02,$03,$04,$05
+      .BYTE $05,$05,$55,$05,$06,$06,$07,$07
+      .BYTE $55,$07,$07,$55,$00,$55
+
+f0F07 .BYTE $FF,$55
+      .BYTE $00,$55,$02,$55,$01
+a0F0E .BYTE $55,$FD,$55
+f0F15 .BYTE $FE,$55,$00,$55
+      .BYTE $FF,$55,$FE,$55
+      .BYTE $FF,$55,$02,$55,$01,$55,$FC,$55
+f0F23 .BYTE $00,$55,$00,$01,$FF,$55,$00,$55
+      .BYTE $00,$01,$02,$FE,$FF,$55,$00,$03
+      .BYTE $FD,$55,$00,$04,$FC,$55,$00,$06
+      .BYTE $FA,$55,$00,$55
+f0F3D .BYTE $FF,$00,$00,$55
+      .BYTE $00,$55,$FE,$FF,$00,$00,$FF,$55
+      .BYTE $FD,$01,$01,$55,$FC,$02,$02,$55
+      .BYTE $FA,$04,$04,$55,$00,$55
+f0F57 .BYTE $FF,$01
+      .BYTE $55,$FE,$02,$55,$FD,$03,$55,$FC
+      .BYTE $04,$FC,$FC,$04,$04,$55,$FB,$05
+      .BYTE $55,$FA,$06,$FA,$FA,$06,$06,$55
+      .BYTE $00,$55
+f0F73 .BYTE $01,$FF,$55,$FE,$02,$55
+      .BYTE $03,$FD,$55,$FC,$04,$FF,$01,$FF
+      .BYTE $01,$55,$05,$FB,$55,$FA,$06,$FE
+      .BYTE $02,$FE,$02,$55,$00,$55
 
 
 ;-------------------------------------------------------
@@ -1226,20 +1248,24 @@ b115F   RTS
 
 a1160
         .BYTE $10
+f1161
         .BYTE $01,$01,$FF,$FF,$55,$02,$02,$FE
         .BYTE $FE,$55,$01,$03,$03,$01,$FF,$FD
         .BYTE $FD,$FF,$55,$03,$03,$FD,$FD,$55
         .BYTE $04,$04,$FC,$FC,$55,$03,$05,$05
         .BYTE $03,$FD,$FB,$FB,$FD,$55,$00,$55
+f1189
         .BYTE $FF,$01,$01,$FF,$55,$FE,$02,$02
         .BYTE $FE,$55,$FD,$FF,$01,$03,$03,$01
         .BYTE $FF,$FD,$55,$FD,$03,$03,$FD,$55
         .BYTE $FC,$04,$04,$FC,$55,$FB,$FD,$03
         .BYTE $05,$05,$03,$FD,$FB,$55,$00,$55
+f11B1
         .BYTE $00,$01,$00,$FF,$55,$00,$02,$00
         .BYTE $FE,$55,$00,$03,$00,$FD,$55,$00
         .BYTE $04,$00,$FC,$55,$00,$05,$00,$FB
         .BYTE $55,$00,$06,$00,$FA,$55,$00,$55
+f11D1
         .BYTE $FF,$00,$01,$00,$55,$FE,$00,$02
         .BYTE $00,$55,$FD,$00,$03,$00,$55,$FC
         .BYTE $00,$04,$00,$55,$FB,$00,$05,$00

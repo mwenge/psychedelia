@@ -2,10 +2,12 @@
 
 XVIC = xvic
 XVIC_IMAGE = "bin/psychedelia-vic20.prg"
+C16_IMAGE = "bin/psychedelia-c16.prg"
 D64_IMAGE = "bin/psychedelia.d64"
 D64_ORIG_IMAGE = "orig/psychedelia.d64"
 X64 = x64
 X64SC = x64sc
+XPLUS4 = xplus4
 C1541 = c1541
 XATARI_IMAGE = "bin/colourspace.xex"
 XATARI = atari800
@@ -27,6 +29,10 @@ psychedelia-vic20.prg: src/vic20/psychedelia.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-vic20.prg -L bin/list-co1.txt -l bin/labels.txt src/vic20/psychedelia.asm
 	md5sum bin/psychedelia-vic20.prg orig/psychedelia-vic20.prg
 
+psychedelia-c16.prg: src/c16/psychedelia.asm
+	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-c16.prg -L bin/list-co1.txt -l bin/labels.txt src/c16/psychedelia.asm
+	md5sum bin/psychedelia-c16.prg orig/psychedelia-c16.prg
+
 d64: psychedelia.prg
 	$(C1541) -format "psychedelia,rq" d64 $(D64_IMAGE)
 	$(C1541) $(D64_IMAGE) -write bin/psychedelia.prg "psychedelia"
@@ -42,6 +48,9 @@ run: d64
 
 runvic: gridrunner-vic20.prg
 	$(XVIC) -verbose $(XVIC_IMAGE)
+
+runc16: gridrunner-c16.prg
+	$(XPLUS4) -verbose $(C16_IMAGE)
 
 run_orig: d64
 	$(X64) -verbose -moncommands bin/labels.txt $(D64_ORIG_IMAGE)

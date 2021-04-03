@@ -128,9 +128,9 @@ InitializeProgram
         STA a13
 
         ; Create a Hi/Lo pointer to $D800
-        LDA #$D8
+        LDA #>COLOR_RAM
         STA aFC
-        LDA #$00
+        LDA #<COLOR_RAM
         STA aFB
 
         ; Populate a table of hi/lo ptrs to the color RAM

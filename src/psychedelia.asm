@@ -38,8 +38,8 @@ a14                       = $14
 currentSymmetrySetting    = $15
 a16                       = $16
 a17                       = $17
-a18                       = $18
-a19                       = $19
+colorBarColorRamLoPtr                       = $18
+colorBarColorRamHiPtr                       = $19
 currentColorSet           = $1A
 a1B                       = $1B
 a1C                       = $1C
@@ -63,7 +63,6 @@ aFF                       = $FF
 ; **** ZP POINTERS **** 
 ;
 p01 = $01
-p18 = $18
 p1B = $1B
 p1F = $1F
 pFB = $FB
@@ -375,8 +374,7 @@ b09E1   PLA
         STA pixelXPositionZP
         RTS 
 
-        RTS 
-
+        .BYTE $60
 b09E9   CMP #$03
         BEQ b0A1B
         LDA #$27
@@ -1444,22 +1442,22 @@ lineModeSettingDescriptions
 ;-------------------------------------------------------
 DrawColorValueBar
         ; Shift the pointer from SCREEN_RAM ($0400) to COLOR_RAM ($D800)
-        LDA a19
+        LDA colorBarColorRamHiPtr
         PHA 
         CLC 
         ADC #$D4
-        STA a19
+        STA colorBarColorRamHiPtr
 
         ; Draw the colors from the bar to color ram.
         LDY #$00
 b138F   LDA colorBarValues,Y
-        STA (p18),Y
+        STA (colorBarColorRamLoPtr),Y
         INY 
         CPY #$10
         BNE b138F
 
         PLA 
-        STA a19
+        STA colorBarColorRamHiPtr
         LDA #$00
         STA a13DA
         STA a13DC
@@ -1474,7 +1472,7 @@ b13AC   LDA a13DD
         LDX a13DD
         LDY a13DA
         LDA f13DE,X
-        STA (p18),Y
+        STA (colorBarColorRamLoPtr),Y
         CPX #$08
         BNE b13CD
         LDA #$00
@@ -1561,9 +1559,9 @@ b1417   LDA f0AB6,X
         STA a0E3B
 
 b143F   LDA #>SCREEN_RAM + $03D0
-        STA a19
+        STA colorBarColorRamHiPtr
         LDA #<SCREEN_RAM + $03D0
-        STA a18
+        STA colorBarColorRamLoPtr
 
         LDX currentVariableMode
         LDA lastKeyPressed
@@ -1607,9 +1605,9 @@ b1482   JSR DisplayVariableSelection
 DisplayVariableSelection    
         ; Set the pointers to the position on screen for the color bar.
         LDA #>SCREEN_RAM + $03D0
-        STA a19
+        STA colorBarColorRamHiPtr
         LDA #<SCREEN_RAM + $03D0
-        STA a18
+        STA colorBarColorRamLoPtr
 
         LDX currentVariableMode
         CPX #$05
@@ -1804,7 +1802,7 @@ b1635   DEX
 
 b1638   JMP DrawPresetActivatedMessage
 
-j163B    
+WriteLastLineBufferAndReturn    
         JSR WriteLastLineBufferToScreen
         RTS 
 
@@ -1871,7 +1869,7 @@ b169B   LDA colorBarCurrentValueForModePtr,X
         INY 
         LDA currentSymmetrySetting
         STA (p1B),Y
-        JMP j163B
+        JMP WriteLastLineBufferAndReturn
 
 j16B2    
         PLA 
@@ -1909,7 +1907,7 @@ b16E1   LDA (p1B),Y
         INY 
         LDA (p1B),Y
         STA currentSymmetrySetting
-        JMP j163B
+        JMP WriteLastLineBufferAndReturn
 
 ;-------------------------------------------------------
 ; UpdatePointersForPreset

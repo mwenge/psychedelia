@@ -15,8 +15,8 @@ XATARI = atari800
 all: clean d64 run
 original: clean d64_orig run_orig
 
-psychedelia.prg: src/psychedelia.asm
-	64tass -Wall --cbm-prg -Wno-implied-reg -o bin/psychedelia.prg -L bin/list-co1.txt -l bin/labels.txt src/psychedelia.asm
+psychedelia.prg: src/c64/psychedelia.asm
+	64tass -Wall --cbm-prg -Wno-implied-reg -o bin/psychedelia.prg -L bin/list-co1.txt -l bin/labels.txt src/c64/psychedelia.asm
 	md5sum bin/psychedelia.prg orig/psychedelia-crack-removed.prg
 
 colourspace.xex: src/atari800/colourspace.asm

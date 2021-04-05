@@ -883,7 +883,7 @@ customPresetHiPtrArray   .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
 pixelYPositionLoPtrArray .BYTE $A3,$AB,$E5,$15,$3D,$73,$89,$D1
                          .BYTE $80,$80,$80,$80,$80,$80,$80,$80
 pixelYPositionHiPtrArray .BYTE $09,$0E,$0E,$0F,$0F,$0F,$11,$11
-f0E6B                    .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
+                         .BYTE $C8,$C9,$CA,$CB,$CC,$CD,$CE,$CF
 
 f0E93 .BYTE $00,$55,$01,$02,$55,$01
       .BYTE $02,$03,$55,$01,$02,$03,$04,$55

@@ -28,11 +28,11 @@ previousPixelYPosition        = $09
 colorRamTableLoPtr            = $0A
 colorRamTableHiPtr            = $0B
 currentColorToPaint           = $0C
-dataLoPtr                     = $0D
-dataHiPtr                     = $0E
+xPosLoPtr                     = $0D
+xPosHiPtr                     = $0E
 currentPatternElement         = $0F
-dataLoPtr2                    = $10
-dataHiPtr2                    = $11
+yPosLoPtr                    = $10
+yPosHiPtr                    = $11
 timerBetweenKeyStrokes        = $12
 shouldDrawCursor              = $13
 currentSymmetrySettingForStep = $14
@@ -77,6 +77,13 @@ VIA1PA2    = $911F
 VIA2PB     = $9120
 VIA2DDRB   = $9122
 ROM_IRQ    = $EABF
+
+.enc "petscii"  ;define an ascii->petscii encoding
+        .cdef "  ", $a0  ;characters
+        .cdef "--", $ad  ;characters
+        .cdef "..", $ae  ;characters
+        .cdef "AZ", $c1
+        .cdef "az", $41
 
 * = $1001
 
@@ -144,8 +151,8 @@ b104F   LDA #$CF
         BNE b104F
         RTS 
 
-presetKeyCodes   .BYTE $08,$00,$38,$01,$39,$02,$3A,$03
-        .BYTE $3B,$04,$3C,$05,$3D,$06,$3E,$07
+presetKeyCodes .BYTE $08,$00,$38,$01,$39,$02,$3A,$03
+               .BYTE $3B,$04,$3C,$05,$3D,$06,$3E,$07
 ;-------------------------------------------------------------------------
 ; GetColorRAMPtrFromLineTable
 ;-------------------------------------------------------------------------
@@ -222,26 +229,26 @@ b10D2   LDA #$07
         LDA pixelYPosition
         STA previousPixelYPosition
 
-        LDX dataPtrIndex
+        LDX patternIndex
         LDA pixelXPositionLoPtrArray,X
-        STA dataLoPtr
+        STA xPosLoPtr
         LDA pixelXPositionHiPtrArray,X
-        STA dataHiPtr
+        STA xPosHiPtr
         LDA pixelYPositionLoPtrArray,X
-        STA dataLoPtr2
+        STA yPosLoPtr
         LDA pixelYPositionHiPtrArray,X
-        STA dataHiPtr2
+        STA yPosHiPtr
 
         ; Paint pixels in the sequence until hitting a break
         ; at $55
 PaintPixelsLoop   
         LDA previousPixelXPosition
         CLC 
-        ADC (dataLoPtr),Y
+        ADC (xPosLoPtr),Y
         STA pixelXPosition
         LDA previousPixelYPosition
         CLC 
-        ADC (dataLoPtr2),Y
+        ADC (yPosLoPtr),Y
         STA pixelYPosition
 
         ; Push Y to the stack.
@@ -255,7 +262,7 @@ PaintPixelsLoop
         TAY 
         INY 
 
-        LDA (dataLoPtr),Y
+        LDA (xPosLoPtr),Y
         CMP #$55
         BNE PaintPixelsLoop
 
@@ -274,13 +281,13 @@ b1124   LDA previousPixelXPosition
         STA pixelYPosition
         RTS 
 
-f112D
+starOneXPosArray
         .BYTE $00,$01,$01,$01,$00,$FF,$FF,$FF
         .BYTE $55,$00,$02,$00,$FE,$55,$00,$03
         .BYTE $00,$FD,$55,$00,$04,$00,$FC,$55
         .BYTE $FF,$01,$05,$05,$01,$FF,$FB,$FB
         .BYTE $55,$00,$07,$00,$F9,$55,$55
-f1154
+starOneYPosArray
         .BYTE $FF
         .BYTE $FF,$00,$01,$01,$01,$00,$FF,$55
         .BYTE $FE,$00,$02,$00,$55,$FD,$00,$03
@@ -476,7 +483,7 @@ b1333   STA currentIndexToColorValues
         STA pixelYPosition
 
         LDA nextPixelYPositionArray,X
-        STA dataPtrIndex
+        STA patternIndex
 
         LDA symmetrySettingForStepCount,X
         STA currentSymmetrySettingForStep
@@ -649,14 +656,11 @@ b1455   LDA pixelXPositionMain
         STA currentIndexForCurrentStepArray,X
         JMP j147F
 
-b1474   LDA a14C6
+b1474   LDA presetForCurrentColorIndex
         STA currentIndexForCurrentStepArray,X
         LDA currentPatternElement
         STA nextPixelYPositionArray,X
 
-;-------------------------------------------------------------------------
-; j147F
-;-------------------------------------------------------------------------
 j147F
         LDA seedValue
         STA initialFramesRemainingToNextPaintForStep,X
@@ -704,74 +708,87 @@ UpdateLineInColorRamUsingIndex
 
 pixelXPositionMain              .BYTE $0F
 colorRamLineTableIndex          .BYTE $12
-currentStepCount             .BYTE $10
+currentStepCount                .BYTE $10
 stepsSincePressedFire           .BYTE $00
 a14BC                           .BYTE $00
 colorBarCurrentValueForModePtr  .BYTE $00
-seedValue                           .BYTE $0C
-initialValueForSteps                           .BYTE $02
+seedValue                       .BYTE $0C
+initialValueForSteps            .BYTE $02
 maxStepCount                    .BYTE $1F
 displayCursorInitialValue       .BYTE $01
-a14C2                           .BYTE $07,$07,$04
+indexForPresetColorValues       .BYTE $07,$07,$04
 shouldUpdatePatternInitialValue .BYTE $01
-a14C6                           .BYTE $07
+presetForCurrentColorIndex      .BYTE $07
 presetColorValuesArray          .BYTE $00,$06,$02,$03,$04,$05,$07,$01
 trackingActivated               .BYTE $00
 lineModeActivated               .BYTE $00
-dataPtrIndex                    .BYTE $04
+patternIndex                    .BYTE $04
 
 ; A pair of arrays together consituting a list of pointers
 ; to positions in memory containing X position data.
-pixelXPositionLoPtrArray   .BYTE <f112D,<f14F2,<f1522,<f1566,<f1582,<f15B6,<f16FD,<f174D
-pixelXPositionHiPtrArray   .BYTE >f112D,>f14F2,>f1522,>f1566,>f1582,>f15B6,>f16FD,>f174D
+pixelXPositionLoPtrArray   .BYTE <starOneXPosArray,<theTwistXPosArray
+                           .BYTE <laLlamitaXPosArray,<starTwoXPosArray
+                           .BYTE <deltoidXPosArray,<diffusedXPosArray
+                           .BYTE <multicrossXPosArray,<pulsarXPosArray
+pixelXPositionHiPtrArray   .BYTE >starOneXPosArray,>theTwistXPosArray
+                           .BYTE >laLlamitaXPosArray,>starTwoXPosArray
+                           .BYTE >deltoidXPosArray,>diffusedXPosArray
+                           .BYTE >multicrossXPosArray,>pulsarXPosArray
 
 ; A pair of arrays together consituting a list of pointers
 ; to positions in memory containing Y position data.
-pixelYPositionLoPtrArray   .BYTE <f1154,<f150A,<f1544,<f1574,<f159C,<f15D2,<f1725,<f176D
-pixelYPositionHiPtrArray   .BYTE >f1154,>f150A,>f1544,>f1574,>f159C,>f15D2,>f1725,>f176D
-f14F2
+pixelYPositionLoPtrArray   .BYTE <starOneYPosArray,<theTwistYPosArray
+                           .BYTE <laLlamitaYPosArray,<starTwoYPosArray
+                           .BYTE <deltoidYPosArray,<diffusedYPosArray
+                           .BYTE <multicrossYPosArray,<pulsarYPosArray
+pixelYPositionHiPtrArray   .BYTE >starOneYPosArray,>theTwistYPosArray
+                           .BYTE >laLlamitaYPosArray,>starTwoYPosArray
+                           .BYTE >deltoidYPosArray,>diffusedYPosArray
+                           .BYTE >multicrossYPosArray,>pulsarYPosArray
+
+theTwistXPosArray
         .BYTE $00,$55,$01,$02,$55,$01,$02,$03
         .BYTE $55,$01,$02,$03,$04,$55,$00,$00
         .BYTE $00,$55,$FF,$FE,$55,$FF,$55,$55
-f150A
+theTwistYPosArray
         .BYTE $FF,$55,$FF,$FE,$55,$00,$00,$00
         .BYTE $55,$01,$02,$03,$04,$55,$01,$02
         .BYTE $03,$55,$01,$02,$55,$00,$55,$55
-f1522
+laLlamitaXPosArray
         .BYTE $00,$FF,$00,$55,$00,$00,$55,$01
         .BYTE $02,$03,$00,$01,$02,$03,$55,$04
         .BYTE $05,$06,$04,$00,$01,$02,$55,$04
         .BYTE $00,$04,$00,$04,$55,$FF,$03,$55
         .BYTE $00,$55
-f1544
+laLlamitaYPosArray
         .BYTE $FF,$00,$01,$55,$02,$03
         .BYTE $55,$03,$03,$03,$04,$04,$04,$04
         .BYTE $55,$03,$02,$03,$04,$05,$05,$05
         .BYTE $55,$05,$06,$06,$07,$07,$55,$07
         .BYTE $07,$55,$00,$55
-f1566
+starTwoXPosArray
         .BYTE $FF,$55,$00,$55
         .BYTE $02,$55,$01,$55,$FD,$55,$FE,$55
         .BYTE $00,$55
-f1574
+starTwoYPosArray
         .BYTE $FF,$55,$FE,$55,$FF,$55
         .BYTE $02,$55,$01,$55,$FC,$55,$00,$55
-f1582
+deltoidXPosArray
         .BYTE $00,$01,$FF,$55,$00,$55,$00,$01
         .BYTE $02,$FE,$FF,$55,$00,$03,$FD,$55
         .BYTE $00,$04,$FC,$55,$00,$06,$FA,$55
         .BYTE $00,$55
-f159C
+deltoidYPosArray
         .BYTE $FF,$00,$00,$55,$00,$55
         .BYTE $FE,$FF,$00,$00,$FF,$55,$FD,$01
         .BYTE $01,$55,$FC,$02,$02,$55,$FA,$04
         .BYTE $04,$55,$00,$55
-f15B6
+diffusedXPosArray
         .BYTE $FF,$01,$55,$FE
         .BYTE $02,$55,$FD,$03,$55,$FC,$04,$FC
         .BYTE $FC,$04,$04,$55,$FB,$05,$55,$FA
         .BYTE $06,$FA,$FA,$06,$06,$55,$00,$55
-f15D2
+diffusedYPosArray
         .BYTE $01,$FF,$55,$FE,$02,$55,$03,$FD
         .BYTE $55,$FC,$04,$FF,$01,$FF,$01,$55
         .BYTE $05,$FB,$55,$FA,$06,$FE,$02,$FE
@@ -801,7 +818,7 @@ b15FE   LDA lastKeyPressed
 b160B   RTS 
 
         ; A key was pressed. Figure out which one.
-b160C   LDY a16FC
+b160C   LDY initialTimeBetweenKeyStrokes
         STY timerBetweenKeyStrokes
         LDY shiftKey
         STY shiftPressed
@@ -929,6 +946,12 @@ b1699   LDA txtTrackingOnOff,Y
         RTS 
 
         ; Check if one of the presets has been selected.
+        ; Variations: Try pressing any of the top row of keys from Left-Arrow up
+        ; to Inst/Del. This calls in one of the 16 presets, stored Lightsynth
+        ; parameters which give different effects. Try them all out io see some
+        ; uf the multitude of effects which you cai achieve using the system.
+        ; Some are fast, some slow, some pulse, others swirl. Play with them all,
+        ; try them to different music.
 b16A9   LDX #$00
 b16AB   CMP presetKeyCodes,X
         BEQ b16B8
@@ -991,28 +1014,28 @@ b16EE   CMP #$11 ; A pressed
 
 b16FB   RTS 
 
-a16FC   .BYTE $10
-f16FD
+initialTimeBetweenKeyStrokes   .BYTE $10
+multicrossXPosArray
         .BYTE $01,$01,$FF,$FF,$55,$02,$02
         .BYTE $FE,$FE,$55,$01,$03,$03,$01,$FF
         .BYTE $FD,$FD,$FF,$55,$03,$03,$FD,$FD
         .BYTE $55,$04,$04,$FC,$FC,$55,$03,$05
         .BYTE $05,$03,$FD,$FB,$FB,$FD,$55,$00
         .BYTE $55
-f1725
+multicrossYPosArray
         .BYTE $FF,$01,$01,$FF,$55,$FE,$02
         .BYTE $02,$FE,$55,$FD,$FF,$01,$03,$03
         .BYTE $01,$FF,$FD,$55,$FD,$03,$03,$FD
         .BYTE $55,$FC,$04,$04,$FC,$55,$FB,$FD
         .BYTE $03,$05,$05,$03,$FD,$FB,$55,$00
         .BYTE $55
-f174D
+pulsarXPosArray
         .BYTE $00,$01,$00,$FF,$55,$00,$02
         .BYTE $00,$FE,$55,$00,$03,$00,$FD,$55
         .BYTE $00,$04,$00,$FC,$55,$00,$05,$00
         .BYTE $FB,$55,$00,$06,$00,$FA,$55,$00
         .BYTE $55
-f176D
+pulsarYPosArray
         .BYTE $FF,$00,$01,$00,$55,$FE,$00
         .BYTE $02,$00,$55,$FD,$00,$03,$00,$55
         .BYTE $FC,$00,$04,$00,$55,$FB,$00,$05
@@ -1050,16 +1073,7 @@ b17B3   LDA lastLineTextBuffer,X
         BNE b17B3
         RTS 
 
-.enc "petscii"  ;define an ascii->petscii encoding
-        .cdef "  ", $a0  ;characters
-        .cdef "AZ", $c1
-        .cdef "az", $41
-
-txtSymmetrySettingDescriptions   .BYTE $CE,$CF,$A0,$D3,$D9,$CD,$A0,$A0
-        .BYTE $D9,$AD,$D3,$D9,$CD,$A0,$A0,$A0
-        .BYTE $D8,$AD,$D9,$A0,$D3,$D9,$CD,$A0
-        .BYTE $D8,$AD,$D3,$D9,$CD,$A0,$A0,$A0
-        .BYTE $D1,$D5,$C1,$C4,$A0,$D3,$D9,$CD
+txtSymmetrySettingDescriptions   .TEXT 'NO SYM  Y-SYM   X-Y SYM X-SYM   QUAD SYM'
 
 ;-------------------------------------------------------------------------
 ; DrawColorValueBar
@@ -1083,38 +1097,41 @@ b17F6   LDA colorBarValues,Y
         PLA 
         STA colorBarColorRamHiPtr
         LDA #$00
-        STA a1841
-        STA a1843
-        STA a1844
-        LDA a1842
+        STA currentNodeInColorBar
+        STA currentCountInDrawingColorBar
+        STA offsetToColorBar
+        LDA maxToDrawOnColorBar
         BEQ b183F
 
-b1813   LDA a1844
+b1813   LDA offsetToColorBar
         CLC 
-        ADC a1840
-        STA a1844
-        LDX a1844
-        LDY a1841
-        LDA f1845,X
+        ADC currentColorBarOffset
+        STA offsetToColorBar
+        LDX offsetToColorBar
+        LDY currentNodeInColorBar
+        LDA nodeTypeArray,X
         STA (colorBarColorRamLoPtr),Y
         CPX #$08
         BNE b1834
         LDA #$00
-        STA a1844
-        INC a1841
-b1834   INC a1843
-        LDA a1843
-        CMP a1842
+        STA offsetToColorBar
+        INC currentNodeInColorBar
+b1834   INC currentCountInDrawingColorBar
+        LDA currentCountInDrawingColorBar
+        CMP maxToDrawOnColorBar
         BNE b1813
+
 b183F   RTS 
 
-a1840   .BYTE $08
-a1841   .BYTE $02
-a1842   .BYTE $02
-a1843   .BYTE $02
-a1844   .BYTE $00
-f1845   .BYTE $20,$65,$74,$75,$61,$F6,$EA,$E7
-        .BYTE $A0
+currentColorBarOffset         .BYTE $08
+currentNodeInColorBar         .BYTE $02
+maxToDrawOnColorBar           .BYTE $02
+currentCountInDrawingColorBar .BYTE $02
+offsetToColorBar              .BYTE $00
+
+; Different size of nodes for the color bar, graded from a full cell to an empty cell.
+nodeTypeArray                 .BYTE $20,$65,$74,$75,$61,$F6,$EA,$E7
+                              .BYTE $A0
 
 ResetSelectedVariableAndReturn
         LDA #$00
@@ -1198,7 +1215,7 @@ b18B5   CMP #$1D
         INC colorBarCurrentValueForModePtr,X
 b18C7   CPX #$05
         BNE b18D6
-        LDX a14C2
+        LDX indexForPresetColorValues
         LDY currentColorSet
         LDA colorValuesPtr,X
         STA presetColorValuesArray,Y
@@ -1228,13 +1245,13 @@ b18F2   CMP colorValuesPtr,Y
         INY 
         CPY #$10
         BNE b18F2
-b18FC   STY a14C2
+b18FC   STY indexForPresetColorValues
         LDX currentVariableMode
 
 b1902   LDA colorBarIncreaseOffsetForModeArray,X
-        STA a1840
+        STA currentColorBarOffset
         LDA colorBarCurrentValueForModePtr,X
-        STA a1842
+        STA maxToDrawOnColorBar
         TXA 
         PHA 
         LDA enterWasPressed
@@ -1255,13 +1272,16 @@ b1924   LDA txtVariableLabels,Y
         INX 
         CPX #$08
         BNE b1924
+
         LDA currentVariableMode
         CMP #$05
         BNE b193F
+
         LDA #$30
         CLC 
         ADC currentColorSet
         STA a1794
+
 b193F   JSR WriteLastLineBufferToScreen
         JMP DrawColorValueBar
 
@@ -1352,10 +1372,10 @@ WriteLastLineBufferAndReturn
         JSR WriteLastLineBufferToScreen
         RTS 
 
-txtPreset   .BYTE $D0,$D2,$C5,$D3,$C5,$D4,$B0,$B0
-txtPresetActivatedStored   .BYTE $A0,$C1,$C3,$D4,$C9,$D6,$C5,$A0
-        .BYTE $A0,$D3,$C5,$D4,$A0,$D5,$D0,$A0
-shiftPressed   .BYTE $00
+txtPreset                .BYTE $D0,$D2,$C5,$D3,$C5,$D4,$B0,$B0
+txtPresetActivatedStored .BYTE $A0,$C1,$C3,$D4,$C9,$D6,$C5,$A0
+                         .BYTE $A0,$D3,$C5,$D4,$A0,$D5,$D0,$A0
+shiftPressed             .BYTE $00
 ;-------------------------------------------------------------------------
 ; DrawPresetActivatedMessage
 ;-------------------------------------------------------------------------
@@ -1366,6 +1386,7 @@ DrawPresetActivatedMessage
         ASL 
         ASL 
         TAY 
+
         LDX #$00
 b1A44   LDA txtPresetActivatedStored,Y
         STA f1795,X
@@ -1381,7 +1402,7 @@ b1A44   LDA txtPresetActivatedStored,Y
 
 b1A5A   PLA 
         TAX 
-        JSR UpdatePointersForPreset
+        JSR GetPresetPointersUsingXRegister
         LDY #$00
         LDX #$00
 b1A63   LDA colorBarCurrentValueForModePtr,X
@@ -1403,7 +1424,7 @@ b1A63   LDA colorBarCurrentValueForModePtr,X
 DrawPreset
         PLA 
         TAX 
-        JSR UpdatePointersForPreset
+        JSR GetPresetPointersUsingXRegister
         LDY #$03
         LDA (presetSequenceDataLoPtr),Y
         CMP maxStepCount
@@ -1442,15 +1463,19 @@ b1AA9   LDA (presetSequenceDataLoPtr),Y
         JMP WriteLastLineBufferAndReturn
 
 ;-------------------------------------------------------------------------
-; UpdatePointersForPreset
+; GetPresetPointersUsingXRegister
 ;-------------------------------------------------------------------------
-UpdatePointersForPreset
+GetPresetPointersUsingXRegister
         LDA #>presetSequenceData
         STA presetSequenceDataHiPtr
         LDA #<presetSequenceData
         STA presetSequenceDataLoPtr
         TXA 
         BEQ b1ADA
+
+        ; Skip through the preset data until we get to the position
+        ; storing the preset data for the sequence indicated by the X
+        ; register.
 b1ACA   LDA presetSequenceDataLoPtr
         CLC 
         ADC #$20
@@ -1460,6 +1485,7 @@ b1ACA   LDA presetSequenceDataLoPtr
         STA presetSequenceDataHiPtr
         DEX 
         BNE b1ACA
+
 b1ADA   RTS 
 
 ;-------------------------------------------------------------------------
@@ -1548,10 +1574,7 @@ b1B63   LDA demoMessage,X
         BNE b1B63
         JMP WriteLastLineBufferToScreen
 
-              ; "Psychedelia by Jeff..."
-demoMessage   .BYTE $D0,$D3,$D9,$C3,$C8,$C5,$C4,$C5
-              .BYTE $CC,$C9,$C1,$A0,$C2,$D9,$A0,$CA
-              .BYTE $C5,$C6,$C6,$AE,$AE,$AE
+demoMessage   .TEXT "PSYCHEDELIA BY JEFF..."
 RandomLowByte .BYTE $20
 
 ;-------------------------------------------------------------------------
@@ -1599,66 +1622,102 @@ a1BC5   .BYTE $00
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$4B
-presetSequenceData   .BYTE $00,$0C,$02,$1F,$01,$01,$07,$04
+
+;--------------------------------------------------------------------------
+; The data for the 16 presets. Each chunk contains the following values:
+;  colorBarCurrentValueForModePtr  
+;  seedValue                       
+;  initialValueForSteps            
+;  maxStepCount                    
+;  displayCursorInitialValue       
+;  indexForPresetColorValues       
+;  shouldUpdatePatternInitialValue 
+;  presetForCurrentColorIndex      
+;  presetColorValuesArray          
+;  trackingActivated               
+;  lineModeActivated               
+;  patternIndex                    
+;  currentPatternElement
+;  currentSymmetrySetting
+;--------------------------------------------------------------------------
+
+presetSequenceData
+preset0
+        .BYTE $00,$0C,$02,$1F,$01,$01,$07,$04
         .BYTE $01,$07,$00,$06,$02,$04,$05,$03
         .BYTE $07,$01,$FF,$00,$05,$00,$01,$0F
         .BYTE $F0,$0F,$FF,$00,$FF,$00,$FF,$00
+preset1
         .BYTE $00,$0C,$02,$1F,$01,$03,$07,$04
         .BYTE $01,$07,$00,$02,$04,$06,$05,$06
         .BYTE $02,$04,$FF,$00,$01,$01,$04,$8F
         .BYTE $70,$0F,$FF,$00,$FF,$00,$DF,$00
+preset2
         .BYTE $00,$0C,$02,$1F,$01,$01,$07,$04
         .BYTE $01,$07,$00,$06,$03,$05,$07,$03
         .BYTE $05,$06,$FF,$00,$05,$05,$01,$6F
         .BYTE $D0,$2F,$FF,$00,$FF,$00,$FF,$00
+preset3
         .BYTE $00,$0C,$01,$1F,$01,$03,$07,$04
         .BYTE $02,$07,$00,$02,$04,$03,$06,$05
         .BYTE $07,$04,$FF,$00,$03,$03,$02,$1F
         .BYTE $F0,$0F,$BF,$00,$FF,$00,$FA,$20
+preset4
         .BYTE $00,$0C,$02,$1F,$01,$07,$07,$04
         .BYTE $01,$07,$00,$06,$02,$03,$04,$05
         .BYTE $07,$01,$00,$00,$04,$04,$01,$00
         .BYTE $FF,$00,$D0,$4F,$70,$4F,$70,$1F
+preset5
         .BYTE $00,$0C,$03,$1F,$01,$06,$07,$04
         .BYTE $02,$07,$00,$02,$04,$06,$03,$02
         .BYTE $04,$07,$00,$00,$06,$06,$03,$00
         .BYTE $FF,$00,$E0,$0F,$F0,$0F,$F0,$07
+preset6
         .BYTE $00,$07,$02,$1F,$01,$07,$07,$04
         .BYTE $01,$07,$00,$06,$02,$04,$05,$03
         .BYTE $07,$01,$FF,$00,$07,$07,$00,$40
         .BYTE $FF,$00,$D0,$0F,$D0,$8F,$F0,$0F
+preset7
         .BYTE $00,$07,$01,$1F,$02,$06,$07,$04
         .BYTE $01,$07,$00,$04,$02,$06,$02,$05
         .BYTE $03,$07,$00,$00,$07,$07,$01,$00
         .BYTE $FF,$00,$D0,$8F,$60,$4F,$F5,$8F
+preset8
         .BYTE $00,$0A,$01,$1F,$03,$07,$07,$04
         .BYTE $01,$03,$00,$02,$07,$06,$05,$03
         .BYTE $07,$01,$FF,$00,$04,$04,$04,$0F
         .BYTE $C0,$2F,$FF,$00,$FF,$00,$FF,$00
+preset9
         .BYTE $00,$0A,$02,$1F,$04,$07,$07,$04
         .BYTE $05,$07,$00,$02,$07,$06,$04,$07
         .BYTE $03,$01,$FF,$00,$05,$05,$04,$0F
         .BYTE $F0,$0F,$FF,$00,$FF,$00,$FF,$00
+preset10
         .BYTE $00,$0C,$02,$1F,$01,$06,$07,$04
         .BYTE $01,$07,$00,$02,$04,$06,$06,$04
         .BYTE $02,$07,$FF,$00,$07,$07,$02,$02
         .BYTE $FE,$00,$F6,$16,$FC,$0F,$FD,$01
+preset11
         .BYTE $00,$0C,$01,$1F,$02,$01,$07,$04
         .BYTE $01,$07,$00,$06,$02,$04,$05,$03
         .BYTE $07,$01,$FF,$00,$03,$03,$04,$0F
         .BYTE $70,$0F,$FF,$00,$FF,$00,$FA,$00
+preset12
         .BYTE $00,$0C,$01,$1F,$08,$01,$07,$04
         .BYTE $05,$07,$00,$06,$02,$03,$07,$04
         .BYTE $02,$06,$FF,$00,$03,$03,$04,$00
         .BYTE $FF,$00,$F0,$0F,$F0,$8F,$D0,$0F
+preset13
         .BYTE $00,$07,$01,$1F,$08,$01,$07,$04
         .BYTE $01,$07,$00,$06,$02,$04,$05,$03
         .BYTE $07,$01,$FF,$00,$04,$04,$04,$00
         .BYTE $FF,$00,$F0,$0F,$F0,$4F,$50,$4F
+preset14
         .BYTE $00,$0C,$01,$1F,$03,$01,$07,$04
         .BYTE $02,$07,$00,$06,$03,$05,$07,$03
         .BYTE $05,$06,$FF,$00,$07,$07,$02,$00
         .BYTE $FF,$10,$D0,$4F,$E0,$9F,$70,$2F
+preset15
         .BYTE $00,$07,$01,$07,$01,$01,$07,$04
         .BYTE $01,$07,$00,$06,$02,$04,$05,$03
         .BYTE $07,$01,$FF,$00,$04,$04,$04,$00

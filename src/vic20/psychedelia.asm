@@ -1050,6 +1050,11 @@ b17B3   LDA lastLineTextBuffer,X
         BNE b17B3
         RTS 
 
+.enc "petscii"  ;define an ascii->petscii encoding
+        .cdef "  ", $a0  ;characters
+        .cdef "AZ", $c1
+        .cdef "az", $41
+
 txtSymmetrySettingDescriptions   .BYTE $CE,$CF,$A0,$D3,$D9,$CD,$A0,$A0
         .BYTE $D9,$AD,$D3,$D9,$CD,$A0,$A0,$A0
         .BYTE $D8,$AD,$D9,$A0,$D3,$D9,$CD,$A0

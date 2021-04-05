@@ -41,8 +41,8 @@ a17                       = $17
 colorBarColorRamLoPtr                       = $18
 colorBarColorRamHiPtr                       = $19
 currentColorSet           = $1A
-a1B                       = $1B
-a1C                       = $1C
+presetSequenceDataLoPtr                       = $1B
+presetSequenceDataHiPtr                       = $1C
 currentSequencePtrLo      = $1D
 currentSequencePtrHi      = $1E
 a1F                       = $1F
@@ -63,7 +63,6 @@ aFF                       = $FF
 ; **** ZP POINTERS **** 
 ;
 p01 = $01
-p1B = $1B
 p1F = $1F
 pFB = $FB
 pFD = $FD
@@ -1858,17 +1857,17 @@ b1692   PLA
         LDY #$00
         LDX #$00
 b169B   LDA colorBarCurrentValueForModePtr,X
-        STA (p1B),Y
+        STA (presetSequenceDataLoPtr),Y
         INY 
         INX 
         CPX #$15
         BNE b169B
 
         LDA currentPatternElement
-        STA (p1B),Y
+        STA (presetSequenceDataLoPtr),Y
         INY 
         LDA currentSymmetrySetting
-        STA (p1B),Y
+        STA (presetSequenceDataLoPtr),Y
         JMP WriteLastLineBufferAndReturn
 
 j16B2    
@@ -1876,7 +1875,7 @@ j16B2
         TAX 
         JSR UpdatePointersForPreset
         LDY #$03
-        LDA (p1B),Y
+        LDA (presetSequenceDataLoPtr),Y
         CMP a0E41
         BEQ b16C6
         JSR ResetCurrentActiveMode
@@ -1884,7 +1883,7 @@ j16B2
 
 b16C6   LDX #$00
         LDY #$07
-b16CA   LDA (p1B),Y
+b16CA   LDA (presetSequenceDataLoPtr),Y
         CMP presetColorValuesArray,X
         BNE j16DA
         INY 
@@ -1897,15 +1896,15 @@ j16DA
         LDA #$FF
         STA currentModeActive
         LDY #$00
-b16E1   LDA (p1B),Y
+b16E1   LDA (presetSequenceDataLoPtr),Y
         STA colorBarCurrentValueForModePtr,Y
         INY 
         CPY #$15
         BNE b16E1
-        LDA (p1B),Y
+        LDA (presetSequenceDataLoPtr),Y
         STA currentPatternElement
         INY 
-        LDA (p1B),Y
+        LDA (presetSequenceDataLoPtr),Y
         STA currentSymmetrySetting
         JMP WriteLastLineBufferAndReturn
 
@@ -1914,18 +1913,18 @@ b16E1   LDA (p1B),Y
 ;-------------------------------------------------------
 UpdatePointersForPreset   
         LDA #>pC000
-        STA a1C
+        STA presetSequenceDataHiPtr
         LDA #<pC000
-        STA a1B
+        STA presetSequenceDataLoPtr
         TXA 
         BEQ b1712
-b1702   LDA a1B
+b1702   LDA presetSequenceDataLoPtr
         CLC 
         ADC #$20
-        STA a1B
-        LDA a1C
+        STA presetSequenceDataLoPtr
+        LDA presetSequenceDataHiPtr
         ADC #$00
-        STA a1C
+        STA presetSequenceDataHiPtr
         DEX 
         BNE b1702
 b1712   RTS 

@@ -46,7 +46,7 @@ d64_orig:
 run: d64
 	$(X64) -verbose $(D64_IMAGE)
 
-runvic: gridrunner-vic20.prg
+runvic: psychedelia-vic20.prg
 	$(XVIC) -verbose $(XVIC_IMAGE)
 
 runc16: gridrunner-c16.prg

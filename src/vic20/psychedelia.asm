@@ -16,8 +16,6 @@
 ;    May you find forgiveness for yourself and forgive others.
 ;    May you share freely, never taking more than you give.
 ;
-; **** ZP ABSOLUTE ADRESSES **** 
-;
 pixelXPosition                = $02
 pixelYPosition                = $03
 currentIndexToColorValues     = $04

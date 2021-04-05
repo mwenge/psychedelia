@@ -108,7 +108,7 @@ reflected in various planes, or not at all according to the setting).
 Press SPACE to alter the pattern element. There are eight
 permanent ones, and eight you can define for yourself (more on
 this later!). The latter eight are all set up when you load, so you can
-always choose from 16 shapes. Press UP-ARROW to change the
+always choose from 16 shapes. Press UP-ARROW [this is the Page-Down key on a PC] to change the
 shape of the little pixels on the screen. Press L to turn on and off the
 Line Mode - a bit like drawing with the Aurora Borealis.
 

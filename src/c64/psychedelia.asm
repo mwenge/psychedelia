@@ -15,95 +15,60 @@
 ;    May you do good and not evil.
 ;    May you find forgiveness for yourself and forgive others.
 ;    May you share freely, never taking more than you give.
+pixelXPositionZP              = $02
+pixelYPositionZP              = $03
+currentIndexToColorValues     = $04
+colorRamTableLoPtr2           = $05
+colorRamTableHiPtr2           = $06
+previousPixelXPositionZP      = $08
+previousPixelYPositionZP      = $09
+colorRamTableLoPtr            = $0A
+colorRamTableHiPtr            = $0B
+currentColorToPaint           = $0C
+xPosLoPtr                     = $0D
+xPosHiPtr                     = $0E
+currentPatternElement         = $0F
+yPosLoPtr                     = $10
+yPosHiPtr                     = $11
+timerBetweenKeyStrokes        = $12
+shouldDrawCursor              = $13
+currentSymmetrySettingForStep = $14
+currentSymmetrySetting        = $15
+a16                           = $16
+a17                           = $17
+colorBarColorRamLoPtr         = $18
+colorBarColorRamHiPtr         = $19
+currentColorSet               = $1A
+presetSequenceDataLoPtr       = $1B
+presetSequenceDataHiPtr       = $1C
+currentSequencePtrLo          = $1D
+currentSequencePtrHi          = $1E
+lastJoystickInput             = $21
+customPresetLoPtr             = $22
+customPresetHiPtr             = $23
+a24                           = $24
+a25                           = $25
+a26                           = $26
+lastKeyPressed                = $C5
+presetLoPtr                   = $FE
+presetHiPtr                   = $FF
 
+SCREEN_RAM                    = $0400
+COLOR_RAM                     = $D800
+CURRENT_CHAR_COLOR            = $0286
+shiftKey                      = $028D
+a7FFF                         = $7FFF
+customPresetSequenceData      = $C000
 
-pixelXPositionZP          = $02
-pixelYPositionZP          = $03
-currentIndexToColorValues = $04
-colorRamTableLoPtr2       = $05
-colorRamTableHiPtr2       = $06
-previousPixelXPositionZP  = $08
-previousPixelYPositionZP  = $09
-colorRamTableLoPtr        = $0A
-colorRamTableHiPtr        = $0B
-currentColorToPaint       = $0C
-xPosLoPtr                 = $0D
-xPosHiPtr                 = $0E
-currentPatternElement     = $0F
-yPosLoPtr                = $10
-yPosHiPtr                = $11
-timerBetweenKeyStrokes    = $12
-a13                       = $13
-a14                       = $14
-currentSymmetrySetting    = $15
-a16                       = $16
-a17                       = $17
-colorBarColorRamLoPtr                       = $18
-colorBarColorRamHiPtr                       = $19
-currentColorSet           = $1A
-presetSequenceDataLoPtr                       = $1B
-presetSequenceDataHiPtr                       = $1C
-currentSequencePtrLo      = $1D
-currentSequencePtrHi      = $1E
-a1F                       = $1F
-a20                       = $20
-lastJoystickInput         = $21
-customPresetLoPtr         = $22
-customPresetHiPtr         = $23
-a24                       = $24
-a25                       = $25
-a26                       = $26
-lastKeyPressed            = $C5
-aFB                       = $FB
-aFC                       = $FC
-aFD                       = $FD
-aFE                       = $FE
-aFF                       = $FF
-;
-; **** ZP POINTERS **** 
-;
-p01 = $01
-p1F = $1F
-pFB = $FB
-pFD = $FD
-;
-; **** FIELDS **** 
-;
-SCREEN_RAM  = $0400
-COLOR_RAM = $D800
-;
-; **** ABSOLUTE ADRESSES **** 
-;
-a0286 = $0286
-shiftKey = $028D
-a0291 = $0291
-a07C6 = $07C6
-a07C7 = $07C7
-a07C8 = $07C8
-a07D1 = $07D1
-a7FFF = $7FFF
-aC300 = $C300
-aC301 = $C301
-;
-; **** POINTERS **** 
-;
-p01FF = $01FF
-customPresetSequenceData = $C000
-;
-; **** EXTERNAL JUMPS **** 
-;
-eEA31 = $EA31
+eEA31                         = $EA31
 
-;
-; **** PREDEFINED LABELS **** 
-;
-ROM_IOINIT = $FF84
-ROM_READST = $FFB7
-ROM_SETLFS = $FFBA
-ROM_SETNAM = $FFBD
-ROM_LOAD = $FFD5
-ROM_SAVE = $FFD8
-ROM_CLALL = $FFE7
+ROM_IOINIT                    = $FF84
+ROM_READST                    = $FFB7
+ROM_SETLFS                    = $FFBA
+ROM_SETNAM                    = $FFBD
+ROM_LOAD                      = $FFD5
+ROM_SAVE                      = $FFD8
+ROM_CLALL                     = $FFE7
 
 * = $0801
 ;-----------------------------------------------------------------------------------
@@ -112,6 +77,9 @@ ROM_CLALL = $FFE7
         .BYTE $0B,$08,$C1,$07,$9E,$32,$30,$36,$34
         .BYTE $00,$00,$00,$F9
         .BYTE $02,$F9
+
+colorRamLoPtr = $FB
+colorRamHiPtr = $FC
 ;-------------------------------------------------------
 ; InitializeProgram
 ;-------------------------------------------------------
@@ -123,13 +91,13 @@ InitializeProgram
 
         JSR CopyDataFrom2000ToC000
 
-        STA a13
+        STA shouldDrawCursor
 
         ; Create a Hi/Lo pointer to $D800
         LDA #>COLOR_RAM
-        STA aFC
+        STA colorRamHiPtr
         LDA #<COLOR_RAM
-        STA aFB
+        STA colorRamLoPtr
 
         ; Populate a table of hi/lo ptrs to the color RAM
         ; of each line on the screen (e.g. $D800,
@@ -137,16 +105,16 @@ InitializeProgram
         ; line 40 bytes long and there are nineteen lines.
         ; The last line is reserved for configuration messages.
         LDX #$00
-b0827   LDA aFC
+b0827   LDA colorRamHiPtr
         STA colorRAMLineTableHiPtrArray,X
-        LDA aFB
+        LDA colorRamLoPtr
         STA colorRAMLineTableLoPtrArray,X
         CLC 
         ADC #$28
-        STA aFB
-        LDA aFC
+        STA colorRamLoPtr
+        LDA colorRamHiPtr
         ADC #$00
-        STA aFC
+        STA colorRamHiPtr
         INX 
         CPX #$19
         BNE b0827
@@ -212,6 +180,7 @@ GetColorRAMPtrFromLineTable
         LDY pixelXPositionZP
 b08D0   RTS 
 
+tempIndex = $FD
 ;-------------------------------------------------------
 ; PaintPixel
 ;-------------------------------------------------------
@@ -245,10 +214,10 @@ b08F6   CMP presetColorValuesArray,X
         BNE b08F6
 
 b0900   TXA 
-        STA aFD
+        STA tempIndex
         LDX currentIndexToColorValues
         INX 
-        CPX aFD
+        CPX tempIndex
         BEQ b090D
         BPL b090D
         RTS 
@@ -270,7 +239,7 @@ LoopThroughPixelsAndPaint
         RTS 
 
 b0921   LDA #$07
-        STA a09CA
+        STA countToMatchCurrentIndex
 
         LDA pixelXPositionZP
         STA previousPixelXPositionZP
@@ -313,8 +282,8 @@ b0945   LDA previousPixelXPositionZP
         CMP #$55
         BNE b0945
 
-        DEC a09CA
-        LDA a09CA
+        DEC countToMatchCurrentIndex
+        LDA countToMatchCurrentIndex
         CMP currentIndexToColorValues
         BEQ b0973
         CMP #$01
@@ -328,7 +297,6 @@ b0973   LDA previousPixelXPositionZP
         STA pixelYPositionZP
         RTS 
 
-; Redundant data?
 starOneXPosArray
         .BYTE $00,$01,$01,$01,$00
         .BYTE $FF,$FF,$FF,$55,$00,$02,$00,$FE
@@ -344,15 +312,15 @@ starOneYPosArray
         .BYTE $01,$FF,$55,$F9,$00,$07,$00,$55
         .BYTE $55
 
-a09CA   .BYTE $00
+countToMatchCurrentIndex   .BYTE $00
 
 ;-------------------------------------------------------
 ; PutRandomByteInAccumulator
 ;-------------------------------------------------------
 PutRandomByteInAccumulator   
-a09CC   =*+$01
+randomByteAddress   =*+$01
         LDA $E199,X
-        INC a09CC
+        INC randomByteAddress
         RTS 
 
         BRK #$00
@@ -365,7 +333,7 @@ PushOffsetAndIndexAndPaintPixel
         LDA pixelYPositionZP
         PHA 
         JSR PaintPixel
-        LDA a14
+        LDA currentSymmetrySettingForStep
         BNE b09E9
 b09E1   PLA 
         STA pixelYPositionZP
@@ -380,11 +348,11 @@ b09E9   CMP #$03
         SEC 
         SBC pixelXPositionZP
         STA pixelXPositionZP
-        LDY a14
+        LDY currentSymmetrySettingForStep
         CPY #$02
         BEQ b0A25
         JSR PaintPixel
-        LDA a14
+        LDA currentSymmetrySettingForStep
         CMP #$01
         BEQ b09E1
         LDA #$17
@@ -513,7 +481,7 @@ p0C13   CPX #$40
         BNE b0BF9
         STA timerBetweenKeyStrokes
         STA currentPatternElement
-        STA a13
+        STA shouldDrawCursor
         STA a17
         LDA #$01
         STA currentSymmetrySetting
@@ -578,7 +546,7 @@ b0C77   LDX stepCount
         LDA f0AB6,X
         CMP #$FF
         BNE b0C86
-        STX a13
+        STX shouldDrawCursor
         JMP MainPaintRoutine
 
 b0C86   STA currentIndexToColorValues
@@ -596,7 +564,7 @@ b0C86   STA currentIndexToColorValues
         STA dataPtrIndex
 
         LDA f0BB6,X
-        STA a14
+        STA currentSymmetrySettingForStep
         LDA currentIndexToColorValues
         AND #$80
         BNE b0CBC
@@ -770,7 +738,7 @@ b0DBC   TAX
         LDA f0AB6,X
         CMP #$FF
         BEQ b0DD6
-        LDA a13
+        LDA shouldDrawCursor
         AND trackingActivated
         BEQ DrawWhiteCursor
         TAX 
@@ -980,7 +948,7 @@ b0F9F   LDA lastKeyPressed
 b0FAC   RTS 
 
         ; A key was pressed. Figure out which one.
-b0FAD   LDY a1160
+b0FAD   LDY initialTimeBetweenKeyStrokes
         STY timerBetweenKeyStrokes
         LDY shiftKey
         STY shiftPressed
@@ -1268,8 +1236,7 @@ b1152   CMP #$0A ; 'A' pressed
 b115F   RTS 
 
 
-a1160
-        .BYTE $10
+initialTimeBetweenKeyStrokes   .BYTE $10
 multicrossXPosArray
         .BYTE $01,$01,$FF,$FF,$55,$02,$02,$FE
         .BYTE $FE,$55,$01,$03,$03,$01,$FF,$FD
@@ -1449,7 +1416,7 @@ j134B
 
 b135B   LDA #$FF
         STA f0AB6,X
-        STX a13
+        STX shouldDrawCursor
         JMP MainPaintRoutine
 
 lineModeSettingDescriptions
@@ -1720,7 +1687,6 @@ colorBarMaxValueForModePtr
         .BYTE $20,$10,$08
 colorBarMinValueForModePtr   
         .BYTE $00,$00,$00,$00,$00
-
         .BYTE $00,$00,$00,$00,$00
 f1526   
         .BYTE $00,$01,$08
@@ -1971,7 +1937,7 @@ currentModeActive  .BYTE $00
 ReinitializeScreen
         LDA #$00
         STA stepCount
-        STA a13
+        STA shouldDrawCursor
 
         LDX #$00
         LDA #$FF
@@ -2176,11 +2142,11 @@ a1884   .BYTE $00
 ;-------------------------------------------------------
 ResetSomeData
         LDA a11F7
-        STA a07C6
+        STA SCREEN_RAM + $03C6
         LDA a11F8
-        STA a07C7
+        STA SCREEN_RAM + $03C7
         LDA a11F9
-        STA a07C8
+        STA SCREEN_RAM + $03C8
         RTS 
 
 ;-------------------------------------------------------
@@ -2208,7 +2174,7 @@ b18BB   LDX a0E3B
         LDA f0AB6,X
         CMP #$FF
         BEQ b18D7
-        LDA a13
+        LDA shouldDrawCursor
         AND trackingActivated
         BEQ b1901
         STA a0E3B
@@ -2320,7 +2286,7 @@ b1992   TAX
         LDA f0AB6,X
         CMP #$FF
         BEQ b19A9
-        LDA a13
+        LDA shouldDrawCursor
         AND trackingActivated
         BEQ b19D9
         TAX 
@@ -2333,10 +2299,10 @@ b19A9   LDY #$02
         BEQ b19D9
         LDA a0E47
         STA f0AB6,X
-        LDA aC301
+        LDA customPresetSequenceData + $0301
         STA f0AF6,X
         STA f0B36,X
-        LDA aC300
+        LDA customPresetSequenceData + $0300
         STA f0BB6,X
         LDY #$02
         LDA (currentSequencePtrLo),Y
@@ -2360,9 +2326,9 @@ b19D9   LDA currentSequencePtrLo
         BEQ b19EF
         RTS 
 
-b19EF   LDA #<aC300
+b19EF   LDA #<customPresetSequenceData + $0300
         STA currentSequencePtrLo
-        LDA #>aC300
+        LDA #>customPresetSequenceData + $0300
         STA currentSequencePtrHi
         RTS 
 
@@ -2414,14 +2380,16 @@ a1A49
 a1A4A
       .BYTE $00
 
+recordingStorageLoPtr = $1F
+recordingStorageHiPtr = $20
 ;-------------------------------------------------------
 ; StopOrStartRecording
 ;-------------------------------------------------------
 StopOrStartRecording    
         LDA #>dynamicStorage
-        STA a20
+        STA recordingStorageHiPtr
         LDA #<dynamicStorage
-        STA a1F
+        STA recordingStorageLoPtr
         LDA #$01
         STA a1BE7
         LDA shiftPressed
@@ -2456,29 +2424,31 @@ b1A81   LDA txtPlayBackRecord,Y
         CMP #$03
         BNE b1AC5
 
+dynamicStorageLoPtr                       = $FB
+dynamicStorageHiPtr                       = $FC
 ;-------------------------------------------------------
 ; InitializeDynamicStorage
 ;-------------------------------------------------------
 InitializeDynamicStorage   
         LDA #<dynamicStorage
-        STA aFB
+        STA dynamicStorageLoPtr
         LDA #>dynamicStorage
-        STA aFC
+        STA dynamicStorageHiPtr
         LDY #$00
         TYA 
 
         LDX #$50
-b1AA4   STA (pFB),Y
+b1AA4   STA (dynamicStorageLoPtr),Y
         DEY 
         BNE b1AA4
-        INC aFC
+        INC dynamicStorageHiPtr
         DEX 
 b1AAC   BNE b1AA4
 
-        LDA #<p01FF
+        LDA #$FF
         STA dynamicStorage
-        LDA #>p01FF
-        STA a3001
+        LDA #$01
+        STA dynamicStorage + $01
         LDA pixelXPosition
         STA a1BE8
         LDA colorRAMLineTableIndex
@@ -2543,15 +2513,15 @@ RecordJoystickMovements
         LDA $DC00    ;CIA1: Data Port Register A
         STA lastJoystickInput
         LDY #$00
-        CMP (p1F),Y
+        CMP (recordingStorageLoPtr),Y
         BEQ b1B70
-b1B37   LDA a1F
+b1B37   LDA recordingStorageLoPtr
         CLC 
         ADC #$02
-        STA a1F
-        LDA a20
+        STA recordingStorageLoPtr
+        LDA recordingStorageHiPtr
         ADC #$00
-        STA a20
+        STA recordingStorageHiPtr
         CMP #$80
         BNE b1B50
         LDA #$00
@@ -2560,11 +2530,11 @@ b1B37   LDA a1F
 
 b1B50   LDY #$01
         TYA 
-        STA (p1F),Y
+        STA (recordingStorageLoPtr),Y
         LDA $DC00    ;CIA1: Data Port Register A
         DEY 
-        STA (p1F),Y
-        LDA a20
+        STA (recordingStorageLoPtr),Y
+        LDA recordingStorageHiPtr
         SEC 
         SBC #$30
         CLC 
@@ -2581,10 +2551,10 @@ b1B50   LDY #$01
         RTS 
 
 b1B70   INY 
-        LDA (p1F),Y
+        LDA (recordingStorageLoPtr),Y
         CLC 
         ADC #$01
-        STA (p1F),Y
+        STA (recordingStorageLoPtr),Y
         CMP #$FF
         BEQ b1B37
         RTS 
@@ -2613,32 +2583,32 @@ PlaybackRecordedJoystickInputs
         DEC a1BE7
         BEQ b1BA6
         LDY #$00
-        LDA (p1F),Y
+        LDA (recordingStorageLoPtr),Y
         STA lastJoystickInput
         RTS 
 
-b1BA6   LDA a1F
+b1BA6   LDA recordingStorageLoPtr
         CLC 
         ADC #$02
-        STA a1F
-        LDA a20
+        STA recordingStorageLoPtr
+        LDA recordingStorageHiPtr
         ADC #$00
-        STA a20
+        STA recordingStorageHiPtr
         CMP #$80
         BEQ b1BC6
         LDY #$01
-        LDA (p1F),Y
+        LDA (recordingStorageLoPtr),Y
         BEQ b1BC6
         STA a1BE7
         DEY 
-        LDA (p1F),Y
+        LDA (recordingStorageLoPtr),Y
         STA lastJoystickInput
         RTS 
 
 b1BC6   LDA #>dynamicStorage
-        STA a20
+        STA recordingStorageHiPtr
         LDA #<dynamicStorage
-        STA a1F
+        STA recordingStorageLoPtr
         LDA #$01
         STA a1BE7
         LDA #$00
@@ -2737,7 +2707,7 @@ b1C68   LDA a1BEA
         LDA a25
         STA currentIndexToColorValues
         LDA #$00
-        STA a14
+        STA currentSymmetrySettingForStep
         LDA #<p0C13
         STA pixelXPositionZP
         LDA #>p0C13
@@ -2801,7 +2771,7 @@ b1CB6   INC a26
         EOR #$07
         CLC 
         ADC #$31
-        STA a07D1
+        STA SCREEN_RAM + $03D1
         RTS 
 
 b1CE6   LDA #$00
@@ -2872,6 +2842,8 @@ pixelShapeArray
         .BYTE $47,$4F,$41,$54,$53,$53,$48,$45
         .BYTE $45,$50
 
+presetTempLoPtr                       = $FB
+presetTempHiPtr                       = $FC
 ;-------------------------------------------------------
 ; DisplaySavePromptScreen
 ;-------------------------------------------------------
@@ -2894,11 +2866,11 @@ b1D70   LDA a1EAA
         LDY #$1D
         JSR ROM_SETNAM ;$FFBD - set file name                    
         LDA #$01
-        STA a0286
+        STA CURRENT_CHAR_COLOR
         LDA #>customPresetSequenceData
-        STA aFF
+        STA presetHiPtr
         LDA #<customPresetSequenceData
-        STA aFE
+        STA presetLoPtr
         LDX #$FF
         LDY #$CF
         LDA #$FE
@@ -2916,23 +2888,23 @@ b1DA4   CMP #$02
         LDY #$1D
         JSR ROM_SETNAM ;$FFBD - set file name                    
         LDA #$01
-        STA a0286
+        STA CURRENT_CHAR_COLOR
         LDA #$30
-        STA aFF
-        STA aFC
+        STA presetHiPtr
+        STA presetTempHiPtr
         LDA #$00
-        STA aFE
-        STA aFB
+        STA presetLoPtr
+        STA presetTempLoPtr
         LDY #$00
-b1DCD   LDA (pFB),Y
+b1DCD   LDA (presetTempLoPtr),Y
         BEQ b1DDA
-        INC aFB
+        INC presetTempLoPtr
         BNE b1DCD
-        INC aFC
+        INC presetTempHiPtr
         JMP b1DCD
 
-b1DDA   LDX aFB
-        LDY aFC
+b1DDA   LDX presetTempLoPtr
+        LDY presetTempHiPtr
         LDA #$FE
         JSR ROM_SAVE ;$FFD8 - save after call SETLFS,SETNAM    
         JMP j1E08
@@ -2944,7 +2916,7 @@ b1DE6   LDA #$01
         LDA #$00
         JSR ROM_SETNAM ;$FFBD - set file name                    
         LDA #$01
-        STA a0286
+        STA CURRENT_CHAR_COLOR
         LDA #$00
         JSR ROM_LOAD ;$FFD5 - load after call SETLFS,SETNAM    
         JSR ROM_READST ;$FFB7 - read I/O status byte             
@@ -3165,24 +3137,29 @@ NMIInterruptHandler
 ;-------------------------------------------------------
 ; CopyDataFrom2000ToC000
 ;-------------------------------------------------------
+copyFromLoPtr = $FB
+copyFromHiPtr = $FC
+copyToLoPtr   = $FD
+copyToHiPtr   = $FE
+
 CopyDataFrom2000ToC000   
         LDY #$00
         TYA 
-        STA aFB
-        STA aFD
+        STA copyFromLoPtr
+        STA copyToLoPtr
         LDA #$20
-        STA aFC
+        STA copyFromHiPtr
         LDA #$C0
-        STA aFE
+        STA copyToHiPtr
 
         LDX #$10
-b1FC8   LDA (pFB),Y
-        STA (pFD),Y
+b1FC8   LDA (copyFromLoPtr),Y
+        STA (copyToLoPtr),Y
         DEY 
         BNE b1FC8
 
-        INC aFC
-        INC aFE
+        INC copyFromHiPtr
+        INC copyToHiPtr
         DEX 
         BNE b1FC8
 
@@ -3752,4 +3729,3 @@ a2AA0   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $FF
 dynamicStorage
         .BYTE $00
-a3001

@@ -20,10 +20,10 @@ psychedelia.prg: src/c64/psychedelia.asm
 	md5sum bin/psychedelia.prg orig/psychedelia-crack-removed.prg
 
 colourspace.xex: src/atari800/colourspace.asm
-	64tass -Wall -Wno-implied-reg --atari-xex -o bin/colourspace.xex -L bin/list-co1.txt -l bin/labels.txt src/atari800/cs.asm
+	64tass -Wall -Wno-implied-reg --atari-xex -o bin/colourspace.xex -L bin/list-co1.txt -l bin/labels.txt src/atari800/colourspace.asm
 	# the original xex file has an incorrect end-byte which we need to patch here.
-	#dd if=bin/patch-atari-end-byte.bin of=bin/colourspace.xex bs=1 seek=4 count=1 conv=notrunc
-	md5sum bin/colourspace.xex orig/colourspace.xex
+	dd if=bin/patch-atari-end-byte.bin of=bin/colourspace.xex bs=1 seek=4 count=1 conv=notrunc
+	md5sum bin/colourspace.xex bin/colourspace-bench.xex
 
 psychedelia-vic20.prg: src/vic20/psychedelia.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-vic20.prg -L bin/list-co1.txt -l bin/labels.txt src/vic20/psychedelia.asm

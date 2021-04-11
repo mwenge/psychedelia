@@ -1,7 +1,26 @@
-# Psychedelia/Colourspace (1984 - 199X) by Jeff Minter
+# Psychedelia/Colourspace (1984 - 1987) by Jeff Minter
 
 <img src="https://user-images.githubusercontent.com/58846/103469199-9e685d80-4d59-11eb-96c8-386b3a530809.png" height=300><img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" height=300>
 
+
+<!-- vim-markdown-toc GFM -->
+
+* [Play in your Browser](#play-in-your-browser)
+* [Building Psychedelia for the C64](#building-psychedelia-for-the-c64)
+  * [Requirements](#requirements)
+  * [Setup](#setup)
+  * [Compiling](#compiling)
+* [Building Psychedelia for the Vic20](#building-psychedelia-for-the-vic20)
+  * [Requirements](#requirements-1)
+  * [Compiling](#compiling-1)
+* [Building Psychedelia for the C16](#building-psychedelia-for-the-c16)
+  * [Requirements](#requirements-2)
+  * [Compiling](#compiling-2)
+* [Building Colourspace (1985) for the Atari 800](#building-colourspace-1985-for-the-atari-800)
+  * [Requirements](#requirements-3)
+  * [Compiling](#compiling-3)
+
+<!-- vim-markdown-toc -->
 This repository collects the reverse-engineered and [commented source code] for the "light-synthesizer" projects by Jeff Minter. 
 
 [Psychedelia] was Minter's [first realized concept] for a light synthesizer and
@@ -22,7 +41,7 @@ To get the most out of Psychedelia, you should read [the manual](MANUAL.md).
 
 
 ## Building Psychedelia for the C64
-<img src="https://www.mobygames.com/images/covers/l/34991-psychedelia-commodore-64-front-cover.jpg" height=300><img src="https://user-images.githubusercontent.com/58846/103443482-9fb16180-4c57-11eb-9403-4968bd16287f.gif" height=300>
+<img src="https://user-images.githubusercontent.com/58846/103469199-9e685d80-4d59-11eb-96c8-386b3a530809.png" height=300><img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" height=300>
 
 ### Requirements
 * [VICE][vice] - The most popular C64 emulator
@@ -67,7 +86,7 @@ $ make psychedelia-vic20.prg
 ```
 
 ## Building Psychedelia for the C16
-<img src="https://user-images.githubusercontent.com/58846/114322304-4c349680-9b17-11eb-9fb1-610d6d0715a3.png" height=300><img src="https://user-images.githubusercontent.com/58846/114268079-27e19880-99f7-11eb-9e1a-87995309b96b.gif" height=300>
+<img src="https://user-images.githubusercontent.com/58846/114322304-4c349680-9b17-11eb-9fb1-610d6d0715a3.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322413-00ceb800-9b18-11eb-88a5-387b2dbbea83.gif" height=300>
 ### Requirements
 * [VICE][vice] - The most popular C64/Vic20 emulator
 * [64tass][64tass] - An assembler for 6502 source code.
@@ -85,7 +104,7 @@ To just compile the game and get a binary (`psychedelia-c16.prg`) do:
 $ make psychedelia-c16.prg
 
 ```
-## Building Colourspace for the Atari 800
+## Building Colourspace (1985) for the Atari 800
 <img src="https://user-images.githubusercontent.com/58846/114322266-142d5380-9b17-11eb-8a55-316121c5803b.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322429-1e9c1d00-9b18-11eb-8b5a-d97bc1aa52c4.gif" height=300>
 
 ### Requirements

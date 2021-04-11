@@ -6,19 +6,19 @@
 <!-- vim-markdown-toc GFM -->
 
 * [Play in your Browser](#play-in-your-browser)
-* [Building Psychedelia for the C64](#building-psychedelia-for-the-c64)
+* [Psychedelia for the C64](#psychedelia-for-the-c64)
   * [Requirements](#requirements)
   * [Setup](#setup)
   * [Compiling](#compiling)
-* [Building Psychedelia for the Vic20](#building-psychedelia-for-the-vic20)
+* [Psychedelia for the Vic20](#psychedelia-for-the-vic20)
   * [Requirements](#requirements-1)
   * [Compiling](#compiling-1)
-* [Building Psychedelia for the C16](#building-psychedelia-for-the-c16)
+* [Psychedelia for the C16](#psychedelia-for-the-c16)
   * [Requirements](#requirements-2)
   * [Compiling](#compiling-2)
-* [Building Colourspace (1985) for the Atari 800](#building-colourspace-1985-for-the-atari-800)
-  * [Requirements](#requirements-3)
-  * [Compiling](#compiling-3)
+* [Colourspace (1985) for the Atari 800](#colourspace-1985-for-the-atari-800)
+    * [Requirements](#requirements-3)
+    * [Compiling](#compiling-3)
 
 <!-- vim-markdown-toc -->
 This repository collects the reverse-engineered and [commented source code] for the "light-synthesizer" projects by Jeff Minter. 
@@ -30,7 +30,7 @@ the Commodore 16. He then developed the idea further with Colourspace on the Ata
 The subsequent version of Colourspace for the Atari ST took the concept even further. This
 was followed by [Trip-a-Tron] on the Atari ST and [Neon] , which was built into the X360 XBox console.
 
-## Play in your Browser
+# Play in your Browser
 To get the most out of Psychedelia, you should read [the manual](MANUAL.md).
 
 [C64:](https://mwenge.github.io/psychedelia/c64/) (Ctrl key is 'Fire', Arrow Keys to move.)
@@ -40,20 +40,20 @@ To get the most out of Psychedelia, you should read [the manual](MANUAL.md).
 [Atari800:](https://mwenge.github.io/psychedelia/atari800/?disk_filename=colourspace.atr) (Alt key is 'Fire', Arrow Keys to move.)
 
 
-## Building Psychedelia for the C64
+# Psychedelia for the C64
 <img src="https://user-images.githubusercontent.com/58846/103469199-9e685d80-4d59-11eb-96c8-386b3a530809.png" height=300><img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" height=300>
 
-### Requirements
+## Requirements
 * [VICE][vice] - The most popular C64 emulator
 * [64tass][64tass] - An assembler for 6502 source code.
 
-### Setup
+## Setup
 On Ubuntu you can install [VICE] as follows:
 ```
 sudo apt install vice
 ```
 
-### Compiling
+## Compiling
 To compile and run:
 
 ```sh
@@ -66,13 +66,13 @@ To just compile the game and get a binary (`psychedelia.prg`) do:
 $ make psychedelia.prg
 ```
 
-## Building Psychedelia for the Vic20
+# Psychedelia for the Vic20
 <img src="https://user-images.githubusercontent.com/58846/114322304-4c349680-9b17-11eb-9fb1-610d6d0715a3.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322413-00ceb800-9b18-11eb-88a5-387b2dbbea83.gif" height=300>
-### Requirements
+## Requirements
 * [VICE][vice] - The most popular C64/Vic20 emulator
 * [64tass][64tass] - An assembler for 6502 source code.
 
-### Compiling
+## Compiling
 To compile and run:
 
 ```sh
@@ -85,13 +85,13 @@ To just compile the game and get a binary (`psychedelia-vic20.prg`) do:
 $ make psychedelia-vic20.prg
 ```
 
-## Building Psychedelia for the C16
+# Psychedelia for the C16
 <img src="https://user-images.githubusercontent.com/58846/114322304-4c349680-9b17-11eb-9fb1-610d6d0715a3.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322413-00ceb800-9b18-11eb-88a5-387b2dbbea83.gif" height=300>
-### Requirements
+## Requirements
 * [VICE][vice] - The most popular C64/Vic20 emulator
 * [64tass][64tass] - An assembler for 6502 source code.
 
-### Compiling
+## Compiling
 To compile and run:
 
 ```sh
@@ -104,7 +104,7 @@ To just compile the game and get a binary (`psychedelia-c16.prg`) do:
 $ make psychedelia-c16.prg
 
 ```
-## Building Colourspace (1985) for the Atari 800
+# Colourspace (1985) for the Atari 800
 <img src="https://user-images.githubusercontent.com/58846/114322266-142d5380-9b17-11eb-8a55-316121c5803b.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322429-1e9c1d00-9b18-11eb-8b5a-d97bc1aa52c4.gif" height=300>
 
 ### Requirements

@@ -1,6 +1,6 @@
 # Psychedelia/Colourspace (1984 - 1987) by Jeff Minter
 
-<img src="https://user-images.githubusercontent.com/58846/103469199-9e685d80-4d59-11eb-96c8-386b3a530809.png" height=300><img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" height=300>
+<img src="https://user-images.githubusercontent.com/58846/114322625-29a37d00-9b19-11eb-988a-7869a3c54060.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322575-e3e6b480-9b18-11eb-8371-2cbcb760330b.gif" height=300>
 
 
 <!-- vim-markdown-toc GFM -->
@@ -132,4 +132,5 @@ $ make colourspace.xex
 [Neon]: https://en.wikipedia.org/wiki/Neon_(light_synthesizer)
 [first realized concept]: http://www.minotaurproject.co.uk/psychedelia.php
 [Psychedelia]: https://en.wikipedia.org/wiki/Psychedelia_(light_synthesizer)
-
+[atari800]: https://atari800.github.io/
+[hatari]: https://hatari.tuxfamily.org/download.html

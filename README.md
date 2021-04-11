@@ -9,16 +9,16 @@
 * [Psychedelia for the C64](#psychedelia-for-the-c64)
   * [Requirements](#requirements)
   * [Setup](#setup)
-  * [Compiling](#compiling)
+  * [Build Instructions](#build-instructions)
 * [Psychedelia for the Vic20](#psychedelia-for-the-vic20)
   * [Requirements](#requirements-1)
-  * [Compiling](#compiling-1)
+  * [Build Instructions](#build-instructions-1)
 * [Psychedelia for the C16](#psychedelia-for-the-c16)
   * [Requirements](#requirements-2)
-  * [Compiling](#compiling-2)
+  * [Build Instructions](#build-instructions-2)
 * [Colourspace (1985) for the Atari 800](#colourspace-1985-for-the-atari-800)
-    * [Requirements](#requirements-3)
-    * [Compiling](#compiling-3)
+  * [Requirements](#requirements-3)
+  * [Build Instructions](#build-instructions-3)
 
 <!-- vim-markdown-toc -->
 This repository collects the reverse-engineered and [commented source code] for the "light-synthesizer" projects by Jeff Minter. 
@@ -53,7 +53,7 @@ On Ubuntu you can install [VICE] as follows:
 sudo apt install vice
 ```
 
-## Compiling
+## Build Instructions
 To compile and run:
 
 ```sh
@@ -72,7 +72,7 @@ $ make psychedelia.prg
 * [VICE][vice] - The most popular C64/Vic20 emulator
 * [64tass][64tass] - An assembler for 6502 source code.
 
-## Compiling
+## Build Instructions
 To compile and run:
 
 ```sh
@@ -91,7 +91,7 @@ $ make psychedelia-vic20.prg
 * [VICE][vice] - The most popular C64/Vic20 emulator
 * [64tass][64tass] - An assembler for 6502 source code.
 
-## Compiling
+## Build Instructions
 To compile and run:
 
 ```sh
@@ -107,11 +107,11 @@ $ make psychedelia-c16.prg
 # Colourspace (1985) for the Atari 800
 <img src="https://user-images.githubusercontent.com/58846/114322266-142d5380-9b17-11eb-8a55-316121c5803b.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322429-1e9c1d00-9b18-11eb-8b5a-d97bc1aa52c4.gif" height=300>
 
-### Requirements
+## Requirements
 * [Atari800 Emulator][atari800] - An Atari 400/8000 emulator
 * [64tass][64tass] - An assembler for 6502 source code.
 
-### Compiling
+## Build Instructions
 To compile and run:
 
 ```sh

@@ -31,7 +31,7 @@ The subsequent version of Colourspace for the Atari ST took the concept even fur
 was followed by [Trip-a-Tron] on the Atari ST and [Neon] , which was built into the X360 XBox console.
 
 # Play in your Browser
-To get the most out of Psychedelia, you should read [the manual](MANUAL.md).
+To get the most out of Psychedelia, you should read [the manual](MANUAL-C64.md).
 
 [C64:](https://mwenge.github.io/psychedelia/c64/) (Ctrl key is 'Fire', Arrow Keys to move.)
 
@@ -86,7 +86,7 @@ $ make psychedelia-vic20.prg
 ```
 
 # Psychedelia for the C16
-<img src="https://user-images.githubusercontent.com/58846/114454071-19030d80-9bd2-11eb-97bd-c8833e3df257.png" height=200><img src="https://user-images.githubusercontent.com/58846/114454575-ab0b1600-9bd2-11eb-98fc-9e7dbc427a10.gif" height=200>
+<img src="https://user-images.githubusercontent.com/58846/114454071-19030d80-9bd2-11eb-97bd-c8833e3df257.png" height=250><img src="https://user-images.githubusercontent.com/58846/114454575-ab0b1600-9bd2-11eb-98fc-9e7dbc427a10.gif" height=250>
 ## Requirements
 * [VICE][vice] - The most popular C64/Vic20 emulator
 * [64tass][64tass] - An assembler for 6502 source code.

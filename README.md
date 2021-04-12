@@ -86,7 +86,7 @@ $ make psychedelia-vic20.prg
 ```
 
 # Psychedelia for the C16
-<img src="https://user-images.githubusercontent.com/58846/114454071-19030d80-9bd2-11eb-97bd-c8833e3df257.png" height=300><img src="https://user-images.githubusercontent.com/58846/114454575-ab0b1600-9bd2-11eb-98fc-9e7dbc427a10.gif" height=300>
+<img src="https://user-images.githubusercontent.com/58846/114454071-19030d80-9bd2-11eb-97bd-c8833e3df257.png" height=200><img src="https://user-images.githubusercontent.com/58846/114454575-ab0b1600-9bd2-11eb-98fc-9e7dbc427a10.gif" height=200>
 ## Requirements
 * [VICE][vice] - The most popular C64/Vic20 emulator
 * [64tass][64tass] - An assembler for 6502 source code.

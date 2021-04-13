@@ -39,6 +39,7 @@ To get the most out of Psychedelia, you should read [the manual](MANUAL-C64.md).
 
 [Atari800:](https://mwenge.github.io/psychedelia/atari800/?disk_filename=colourspace.atr) (Alt key is 'Fire', Arrow Keys to move.)
 
+You can also take a look at the [demo wall for the Vic 20](https://mwenge.github.io/psychedelia/vic20/wall.html).
 
 # Psychedelia for the C64
 <img src="https://user-images.githubusercontent.com/58846/103469199-9e685d80-4d59-11eb-96c8-386b3a530809.png" height=300><img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" height=300>

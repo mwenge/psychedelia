@@ -29,6 +29,9 @@ psychedelia-vic20.prg: src/vic20/psychedelia.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-vic20.prg -L bin/list-co1.txt -l bin/labels.txt src/vic20/psychedelia.asm
 	md5sum bin/psychedelia-vic20.prg orig/psychedelia-vic20.prg
 
+psychedelia-vic20-demo.prg: src/vic20/psychedelia-demo.asm
+	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-vic20-demo.prg src/vic20/psychedelia-demo.asm
+
 psychedelia-c16.prg: src/c16/psychedelia.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-c16.prg -L bin/list-co1.txt -l bin/labels.txt src/c16/psychedelia.asm
 	md5sum bin/psychedelia-c16.prg orig/psychedelia-c16.prg

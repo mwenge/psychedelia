@@ -18,6 +18,14 @@ function loadPrgFileData(bindatas) {
         for (var cnt = 2; cnt < bindata.length; cnt++)
             mem[from + cnt - 2] = bindata[cnt];
     }
+
+    // For Psychedelia, populate some randomish data in the
+    // 'source of random bytes' ptr at $117D
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+    mem[0x117D] = getRandomArbitrary(0,256);
+
     if (from == 0xA000) {
         vic20.softreset();
     } else {

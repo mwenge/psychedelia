@@ -128,7 +128,7 @@ $ make colourspace.xex
 [64tass]: http://tass64.sourceforge.net/
 [vice]: http://vice-emu.sourceforge.net/
 [play in your browser can be found here]: https://mwenge.github.io/psychedelia
-[commented source code]:https://github.com/mwenge/psychedelia/blob/master/src/psychedelia.asm
+[commented source code]:https://github.com/mwenge/psychedelia/blob/master/src/
 [Trip-a-Tron]: https://en.wikipedia.org/wiki/Trip-a-Tron
 [Neon]: https://en.wikipedia.org/wiki/Neon_(light_synthesizer)
 [first realized concept]: http://www.minotaurproject.co.uk/psychedelia.php

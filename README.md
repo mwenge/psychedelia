@@ -21,7 +21,9 @@
   * [Build Instructions](#build-instructions-3)
 
 <!-- vim-markdown-toc -->
-This repository collects the reverse-engineered and [commented source code] for the "light-synthesizer" projects by Jeff Minter. 
+This repository collects the reverse-engineered and [commented source code] for the early "light-synthesizer" projects by Jeff Minter. 
+
+This repository is part of the [llamasource project](https://mwenge.github.io/llamaSource/). For other light synthesizer projects see llamasource's [Virtual Light Machine](https://github.com/mwenge/vlm) repository, which contains the reconstructed source code for the second-generation of Minter's light synthesizer work on the Atari Jaguar.
 
 [Psychedelia] was Minter's [first realized concept] for a light synthesizer and
 was implemented originally on the C64. The idea is that you manipulate the

@@ -17,7 +17,7 @@ original: clean d64_orig run_orig
 
 psychedelia.prg: src/c64/psychedelia.asm
 	64tass -Wall --cbm-prg -Wno-implied-reg -o bin/psychedelia.prg -L bin/list-co1.txt -l bin/labels.txt src/c64/psychedelia.asm
-	md5sum bin/psychedelia.prg orig/psychedelia-crack-removed.prg
+	echo "4b67db818f0203829595d58a5f613d37  bin/psychedelia.prg" | md5sum -c
 
 colourspace.xex: src/atari800/colourspace.asm
 	64tass -Wall -Wno-implied-reg --atari-xex -o bin/colourspace.xex -L bin/list-co1.txt -l bin/labels.txt src/atari800/colourspace.asm

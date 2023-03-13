@@ -391,15 +391,14 @@ b0A25   LDA #$17
         RTS 
 
 pixelXPositionArray
-       .BYTE $00,$00,$FF
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$FF
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00
+        .BYTE $00,$00,$FF,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$FF,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 pixelYPositionArray
        .BYTE $00,$00,$FD
        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -1310,64 +1309,33 @@ b1229   LDA lastLineBufferPtrMinusOne,X
         BNE b1229
         RTS 
 
+.enc "petscii"  ;define an ascii->petscii encoding
+        .cdef "  ", $A0  ;characters
+        .cdef "--", $AD  ;characters
+        .cdef ",,", $2c  ;characters
+        .cdef "..", $ae  ;characters
+        .cdef "AZ", $c1
+        .cdef "az", $41
+        .cdef "11", $31
+.enc "none"
+
 txtPresetPatternNames
-        ; 'STAR ON'
-        .BYTE $D3,$D4,$C1,$D2,$A0,$CF,$CE
-        ; 'E       '
-        .BYTE $C5,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; ' THE TWI'
-        .BYTE $A0,$D4,$C8,$C5,$A0,$D4,$D7,$C9
-        ; 'ST      '
-        .BYTE $D3,$D4,$A0,$A0,$A0,$A0,$A0,$A0
-        ; ' LA LLAM'
-        .BYTE $A0,$CC,$C1,$A0,$CC,$CC,$C1,$CD
-        ; 'ITA     '
-        .BYTE $C9,$D4,$C1,$A0,$A0,$A0,$A0,$A0
-        ; ' STAR TW'
-        .BYTE $A0,$D3,$D4,$C1,$D2,$A0,$D4,$D7
-        ; 'O       '
-        .BYTE $CF,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; ' DELTOID'
-        .BYTE $A0,$C4,$C5,$CC,$D4,$CF,$C9,$C4
-        ; 'S       '
-        .BYTE $D3,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; ' DIFFUSE'
-        .BYTE $A0,$C4,$C9,$C6,$C6,$D5,$D3,$C5
-        ; 'D       '
-        .BYTE $C4,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; ' MULTICR'
-        .BYTE $A0,$CD,$D5,$CC,$D4,$C9,$C3,$D2
-        ; 'OSS     '
-        .BYTE $CF,$D3,$D3,$A0,$A0,$A0,$A0,$A0
-        ; ' PULSAR '
-        .BYTE $A0,$D0,$D5,$CC,$D3,$C1,$D2,$A0
-        ; '        '
-        .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; ' '
-        .BYTE $A0
+.enc "petscii" 
+        .TEXT 'STAR ONE        '
+        .TEXT 'THE TWIST       '
+        .TEXT 'LA LLAMITA      '
+        .TEXT 'STAR TWO        '
+        .TEXT 'DELTOIDS        '
+        .TEXT 'DIFFUSED        '
+        .TEXT 'MULTICROSS      '
+        .TEXT 'PULSAR          '
 txtSymmetrySettingDescriptions 
-        ; 'NO SYMM'
-        .BYTE $CE,$CF,$A0,$D3,$D9,$CD,$CD
-        ; 'ETRY    '
-        .BYTE $C5,$D4,$D2,$D9,$A0,$A0,$A0,$A0
-        ; ' Y­AXIS '
-        .BYTE $A0,$D9,$AD,$C1,$D8,$C9,$D3,$A0
-        ; 'SYMMETRY'
-        .BYTE $D3,$D9,$CD,$CD,$C5,$D4,$D2,$D9
-        ; ' X­Y SYM'
-        .BYTE $A0,$D8,$AD,$D9,$A0,$D3,$D9,$CD
-        ; 'METRY   '
-        .BYTE $CD,$C5,$D4,$D2,$D9,$A0,$A0,$A0
-        ; ' X­AXIS '
-        .BYTE $A0,$D8,$AD,$C1,$D8,$C9,$D3,$A0
-        ; 'SYMMETRY'
-        .BYTE $D3,$D9,$CD,$CD,$C5,$D4,$D2,$D9
-        ; ' QUAD SY'
-        .BYTE $A0,$D1,$D5,$C1,$C4,$A0,$D3,$D9
-        ; 'MMETRY  '
-        .BYTE $CD,$CD,$C5,$D4,$D2,$D9,$A0,$A0
-        ; ' '
-        .BYTE $A0
+        .TEXT 'NO SYMMETRY     '
+        .TEXT 'Y-AXIS SYMMETRY '
+        .TEXT 'X-Y SYMMETRY    '
+        .TEXT 'X-AXIS SYMMETRY '
+        .TEXT 'QUAD SYMMETRY   '
+.enc "none"
 
 ;-------------------------------------------------------
 ; ResetAndReenterMainPaint
@@ -1419,15 +1387,11 @@ b135B   LDA #$FF
         STX shouldDrawCursor
         JMP MainPaintRoutine
 
+.enc "petscii" 
 lineModeSettingDescriptions
-        ; 'LINE MOD'
-        .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
-        ; 'Eº OFF  '
-        .BYTE $C5,$BA,$A0,$CF,$C6,$C6,$A0,$A0
-        ; 'LINE MOD'
-        .BYTE $CC,$C9,$CE,$C5,$A0,$CD,$CF,$C4
-        ; 'Eº ON   '
-        .BYTE $C5,$BA,$A0,$CF,$CE,$A0,$A0,$A0
+        .TEXT 'LINE MODE',$BA,' OFF  '
+        .TEXT 'LINE MODE',$BA,' ON   '
+.enc "none"
 ;-------------------------------------------------------
 ; DrawColorValueBar
 ;-------------------------------------------------------
@@ -1696,47 +1660,18 @@ currentVariableMode
 a1531   
         .BYTE $01
 txtVariableLabels   
-        ; '       '
-        .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; '        '
-        .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; ' SMOOTHI'
-        .BYTE $A0,$D3,$CD,$CF,$CF,$D4,$C8,$C9
-        ; 'NG DELAY'
-        .BYTE $CE,$C7,$A0,$C4,$C5,$CC,$C1,$D9
-        ; 'ºCURSOR '
-        .BYTE $BA,$C3,$D5,$D2,$D3,$CF,$D2,$A0
-        ; 'SPEED   '
-        .BYTE $D3,$D0,$C5,$C5,$C4,$A0,$A0,$A0
-        ; 'ºBUFFER '
-        .BYTE $BA,$C2,$D5,$C6,$C6,$C5,$D2,$A0
-        ; 'LENGTH  '
-        .BYTE $CC,$C5,$CE,$C7,$D4,$C8,$A0,$A0
-        ; 'ºPULSE S'
-        .BYTE $BA,$D0,$D5,$CC,$D3,$C5,$A0,$D3
-        ; 'PEED    '
-        .BYTE $D0,$C5,$C5,$C4,$A0,$A0,$A0,$A0
-        ; 'ºCOLOUR '
-        .BYTE $BA,$C3,$CF,$CC,$CF,$D5,$D2,$A0
-        ; '° SET   '
-        .BYTE $B0,$A0,$D3,$C5,$D4,$A0,$A0,$A0
-        ; 'ºWIDTH O'
-        .BYTE $BA,$D7,$C9,$C4,$D4,$C8,$A0,$CF
-        ; 'F LINE  '
-        .BYTE $C6,$A0,$CC,$C9,$CE,$C5,$A0,$A0
-        ; 'ºSEQUENC'
-        .BYTE $BA,$D3,$C5,$D1,$D5,$C5,$CE,$C3
-        ; 'ER SPEED'
-        .BYTE $C5,$D2,$A0,$D3,$D0,$C5,$C5,$C4
-        ; 'ºPULSE W'
-        .BYTE $BA,$D0,$D5,$CC,$D3,$C5,$A0,$D7
-        ; 'IDTH    '
-        .BYTE $C9,$C4,$D4,$C8,$A0,$A0,$A0,$A0
-        ; 'ºBASE LE'
-        .BYTE $BA,$C2,$C1,$D3,$C5,$A0,$CC,$C5
-        ; 'VEL     '
-        .BYTE $D6,$C5,$CC,$A0,$A0,$A0,$A0,$A0
-        .BYTE $BA
+.enc "petscii" 
+        .TEXT '                '
+        .TEXT 'SMOOTHING DELAY',$BA
+        .TEXT 'CURSOR SPEED   ',$BA
+        .TEXT 'BUFFER LENGTH  ',$BA
+        .TEXT 'PULSE SPEED    ',$BA
+        .TEXT 'COLOUR ',$B0,' SET   ',$BA
+        .TEXT 'WIDTH OF LINE  ',$BA
+        .TEXT 'SEQUENCER SPEED',$BA
+        .TEXT 'PULSE WIDTH    ',$BA
+        .TEXT 'BASE LEVEL     ',$BA
+.enc "none" 
 colorValuesPtr   
         .BYTE $00
 colorBarValues   
@@ -1744,16 +1679,10 @@ colorBarValues
         .BYTE $01,$08,$09,$0A,$0B,$0C,$0D,$0E
         .BYTE $0F
 txtTrackingOnOff   
-        ; 'TRACKIN'
-        .BYTE $D4,$D2,$C1,$C3,$CB,$C9,$CE
-        ; 'Gº OFF  '
-        .BYTE $C7,$BA,$A0,$CF,$C6,$C6,$A0,$A0
-        ; ' TRACKIN'
-        .BYTE $A0,$D4,$D2,$C1,$C3,$CB,$C9,$CE
-        ; 'Gº ON   '
-        .BYTE $C7,$BA,$A0,$CF,$CE,$A0,$A0,$A0
-        ; ' '
-        .BYTE $A0
+.enc "petscii" 
+        .TEXT 'TRACKING',$BA,' OFF   '
+        .TEXT 'TRACKING',$BA,' ON    '
+.enc "none" 
 
 
 ;-------------------------------------------------------
@@ -1796,24 +1725,13 @@ WriteLastLineBufferAndReturn
         JSR WriteLastLineBufferToScreen
         RTS 
 
+.enc "petscii" 
 txtPreset
-        ; 'PR'
-        .BYTE $D0,$D2
-        ; 'ESET °° '
-        .BYTE $C5,$D3,$C5,$D4,$A0,$B0,$B0,$A0
-        ; '     º'
-        .BYTE $A0,$A0,$A0,$A0,$A0,$BA
+        .TEXT 'PRESET ',$B0,$B0,'      ',$BA
 txtPresetActivatedStored
-        ; ' A'
-        .BYTE $A0,$C1
-        ; 'CTIVATED'
-        .BYTE $C3,$D4,$C9,$D6,$C1,$D4,$C5,$C4
-        ; '       D'
-        .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$C4
-        ; 'ATA STOR'
-        .BYTE $C1,$D4,$C1,$A0,$D3,$D4,$CF,$D2
-        ; 'ED    '
-        .BYTE $C5,$C4,$A0,$A0,$A0,$A0
+        .TEXT ' ACTIVATED       '
+        .TEXT 'DATA STORED    '
+.enc "none" 
 shiftPressed
         .BYTE $00
 
@@ -2000,13 +1918,10 @@ b177B   LDA #$FF
 
 functionKeyToSequenceArray   .BYTE $00,$20,$40,$60
 
+.enc "petscii" 
 txtDataFree
-        ; 'DA'
-        .BYTE $C4,$C1
-        ; 'TAº °°° '
-        .BYTE $D4,$C1,$BA,$A0,$B0,$B0,$B0,$A0
-        ; 'FREE  '
-        .BYTE $C6,$D2,$C5,$C5,$A0,$A0
+        .TEXT 'DATA',$BA,' ',$B0,$B0,$B0,' FREE  '
+.enc "none" 
 functionKeys
         .BYTE $04,$05
         .BYTE $06,$03
@@ -2333,11 +2248,10 @@ b19EF   LDA #<customPresetSequenceData + $0300
         RTS 
 
 stepsRemainingInSequencerSequence   .BYTE $00
+.enc "petscii" 
 txtSequFree
-        ; 'SEQUº °°'
-        .BYTE $D3,$C5,$D1,$D5,$BA,$A0,$B0,$B0
-        ; '° FREE  '
-        .BYTE $B0,$A0,$C6,$D2,$C5,$C5,$A0,$A0
+        .TEXT 'SEQU',$BA,' ',$B0,$B0,$B0,' FREE  '
+.enc "none" 
 
 ;-------------------------------------------------------
 ; DisplaySequencerState
@@ -2360,17 +2274,11 @@ b1A18   LDA txtSequencer,Y
         BNE b1A18
         JMP WriteLastLineBufferToScreen
 
+.enc "petscii" 
 txtSequencer
-      ; 'SE'
-      .BYTE $D3,$C5
-      ; 'QUENCER '
-      .BYTE $D1,$D5,$C5,$CE,$C3,$C5,$D2,$A0
-      ; 'OFF   SE'
-      .BYTE $CF,$C6,$C6,$A0,$A0,$A0,$D3,$C5
-      ; 'QUENCER '
-      .BYTE $D1,$D5,$C5,$CE,$C3,$C5,$D2,$A0
-      ; 'ON    '
-      .BYTE $CF,$CE,$A0,$A0,$A0,$A0
+      .TEXT 'SEQUENCER OFF   '
+      .TEXT 'SEQUENCER ON    '
+.enc "none" 
 a1A47
       .BYTE $00
 a1A48
@@ -2630,15 +2538,10 @@ a1BEA
         .BYTE $00
 a1BEB
         .BYTE $00
+.enc "petscii" 
 txtDefineAllLevelPixels
-        ; 'DEFIN'
-        .BYTE $C4,$C5,$C6,$C9,$CE
-        ; 'E ALL LE'
-        .BYTE $C5,$A0,$C1,$CC,$CC,$A0,$CC,$C5
-        ; 'VEL ² PI'
-        .BYTE $D6,$C5,$CC,$A0,$B2,$A0,$D0,$C9
-        ; 'XELS'
-        .BYTE $D8,$C5,$CC,$D3
+        .TEXT 'DEFINE ALL LEVEL ',$B2,' PIXELS'
+.enc "none" 
 
 ;-------------------------------------------------------
 ; DisplayCustomPreset
@@ -2829,11 +2732,11 @@ b1D23   LDA txtCustomPatterns,X
         JMP WriteLastLineBufferToScreen
         ; Returns
 
+.enc "petscii" 
 txtCustomPatterns
-        ; 'USER S'
-        .BYTE $D5,$D3,$C5,$D2,$A0,$D3
-        ; 'HAPE £°'
-        .BYTE $C8,$C1,$D0,$C5,$A0,$A3,$B0
+        .TEXT 'USER SHAPE '
+.enc "none" 
+        .BYTE $A3,$B0
 pixelShapeIndex
         .BYTE $00
 pixelShapeArray
@@ -3050,19 +2953,12 @@ b1EE5   CMP #$14 ; 'C'
 
 b1EFB   RTS 
 
+.enc "petscii" 
 txtContinueLoadOrAbort
-        ; '¨C©ON'
-        .BYTE $A8,$C3,$A9,$CF,$CE
-        ; 'TINUE LO'
-        .BYTE $D4,$C9,$CE,$D5,$C5,$A0,$CC,$CF
-        ; 'AD¬ OR ¨'
-        .BYTE $C1,$C4,$AC,$A0,$CF,$D2,$A0,$A8
-        ; 'A©BORT¿ '
-        .BYTE $C1,$A9,$C2,$CF,$D2,$D4,$BF,$A0
-        ; '        '
-        .BYTE $A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; '   '
-        .BYTE $A0,$A0,$A0
+        .TEXT $A8,'C',$A9,'ONTINUE LO'
+        .TEXT 'AD',$AC,' OR ',$A8,'A',$A9,'BORT',$BF,' '
+        .TEXT '           '
+.enc "none" 
 demoModeActive
         .BYTE $00
 a1F25

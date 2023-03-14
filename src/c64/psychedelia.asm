@@ -34,7 +34,7 @@ timerBetweenKeyStrokes        = $12
 shouldDrawCursor              = $13
 currentSymmetrySettingForStep = $14
 currentSymmetrySetting        = $15
-a16                           = $16
+offsetForYPos                           = $16
 a17                           = $17
 colorBarColorRamLoPtr         = $18
 colorBarColorRamHiPtr         = $19
@@ -58,7 +58,7 @@ COLOR_RAM                     = $D800
 CURRENT_CHAR_COLOR            = $0286
 shiftKey                      = $028D
 a7FFF                         = $7FFF
-customPresetSequenceData      = $C000
+presetSequenceData      = $C000
 
 eEA31                         = $EA31
 
@@ -70,6 +70,22 @@ ROM_LOAD                      = $FFD5
 ROM_SAVE                      = $FFD8
 ROM_CLALL                     = $FFE7
 
+BLACK        = $00
+WHITE        = $01
+RED          = $02
+CYAN         = $03
+PURPLE       = $04
+GREEN        = $05
+BLUE         = $06
+YELLOW       = $07
+ORANGE       = $08
+BROWN        = $09
+LTRED        = $0A
+GRAY1        = $0B
+GRAY2        = $0C
+LTGREEN      = $0D
+LTBLUE       = $0E
+GRAY3        = $0F
 * = $0801
 ;-----------------------------------------------------------------------------------
 ; Start program at InitializeProgram (SYS 2064)
@@ -89,7 +105,7 @@ InitializeProgram
         STA $D020    ;Border Color
         STA $D021    ;Background Color 0
 
-        JSR CopyDataFrom2000ToC000
+        JSR MovePresetDataIntoPosition
 
         STA shouldDrawCursor
 
@@ -132,16 +148,15 @@ b0827   LDA colorRamHiPtr
         JMP LaunchPsychedelia
 
 colorRAMLineTableLoPtrArray
-      .BYTE $00,$00,$00,$00,$00
-      .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-      .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-      .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-      .BYTE $00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00
 colorRAMLineTableHiPtrArray
-      .BYTE $00,$00,$00,$00,$00,$00,$BF
-      .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-      .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-      .BYTE $00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$BF,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00
 
 ;-------------------------------------------------------
 ; InitializeScreenWithInitCharacter
@@ -246,7 +261,7 @@ b0921   LDA #$07
         LDA pixelYPositionZP
         STA previousPixelYPositionZP
 
-        LDX dataPtrIndex
+        LDX patternIndex
         LDA pixelXPositionLoPtrArray,X
         STA xPosLoPtr
         LDA pixelXPositionHiPtrArray,X
@@ -298,19 +313,17 @@ b0973   LDA previousPixelXPositionZP
         RTS 
 
 starOneXPosArray
-        .BYTE $00,$01,$01,$01,$00
-        .BYTE $FF,$FF,$FF,$55,$00,$02,$00,$FE
-        .BYTE $55,$00,$03,$00,$FD,$55,$00,$04
-        .BYTE $00,$FC,$55,$FF,$01,$05,$05,$01
-        .BYTE $FF,$FB,$FB,$55,$00,$07,$00,$F9
-        .BYTE $55,$55
+        .BYTE $00,$01,$01,$01,$00,$FF,$FF,$FF
+        .BYTE $55,$00,$02,$00,$FE,$55,$00,$03
+        .BYTE $00,$FD,$55,$00,$04,$00,$FC,$55
+        .BYTE $FF,$01,$05,$05,$01,$FF,$FB,$FB
+        .BYTE $55,$00,$07,$00,$F9,$55,$55
 starOneYPosArray
-        .BYTE $FF,$FF,$00,$01,$01,$01
-        .BYTE $00,$FF,$55,$FE,$00,$02,$00,$55
-        .BYTE $FD,$00,$03,$00,$55,$FC,$00,$04
-        .BYTE $00,$55,$FB,$FB,$FF,$01,$05,$05
-        .BYTE $01,$FF,$55,$F9,$00,$07,$00,$55
-        .BYTE $55
+        .BYTE $FF,$FF,$00,$01,$01,$01,$00,$FF
+        .BYTE $55,$FE,$00,$02,$00,$55,$FD,$00
+        .BYTE $03,$00,$55,$FC,$00,$04,$00,$55
+        .BYTE $FB,$FB,$FF,$01,$05,$05,$01,$FF
+        .BYTE $55,$F9,$00,$07,$00,$55,$55
 
 countToMatchCurrentIndex   .BYTE $00
 
@@ -400,65 +413,59 @@ pixelXPositionArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 pixelYPositionArray
-       .BYTE $00,$00,$FD
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00
-f0AB6
-       .BYTE $00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00
-f0AF6
-       .BYTE $00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-       .BYTE $00,$00,$00,$00,$00,$00,$00,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF
-f0B36
-       .BYTE $FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF
+        .BYTE $00,$00,$FD,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+currentIndexForCurrentStepArray
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+initialFramesRemainingToNextPaintForStep
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+framesRemainingToNextPaintForStep
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 nextPixelYPositionArray
-       .BYTE $FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF
-f0BB6
-       .BYTE $FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-       .BYTE $FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+symmetrySettingForStepCount
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 
 ;-------------------------------------------------------
 ; ReinitializeSequences
@@ -469,12 +476,12 @@ ReinitializeSequences
 b0BF9   STA pixelXPositionArray,X
         STA pixelYPositionArray,X
         LDA #$FF
-        STA f0AB6,X
+        STA currentIndexForCurrentStepArray,X
         LDA #$00
-        STA f0AF6,X
-        STA f0B36,X
+        STA initialFramesRemainingToNextPaintForStep,X
+        STA framesRemainingToNextPaintForStep,X
         STA nextPixelYPositionArray,X
-        STA f0BB6,X
+        STA symmetrySettingForStepCount,X
         INX 
 p0C13   CPX #$40
         BNE b0BF9
@@ -537,22 +544,23 @@ b0C60   CMP #$18 ; Current Mode is 'Save/Prompt'
 
 b0C67   JSR ReinitializeScreen
 b0C6A   LDA stepCount
-        CMP a0E41
+        CMP bufferLength
         BNE b0C77
         LDA #$00
         STA stepCount
 b0C77   LDX stepCount
-        LDA f0AB6,X
+        LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BNE b0C86
         STX shouldDrawCursor
         JMP MainPaintRoutine
 
 b0C86   STA currentIndexToColorValues
-        DEC f0B36,X
+        DEC framesRemainingToNextPaintForStep,X
         BNE b0CB8
-        LDA f0AF6,X
-        STA f0B36,X
+
+        LDA initialFramesRemainingToNextPaintForStep,X
+        STA framesRemainingToNextPaintForStep,X
 
         LDA pixelXPositionArray,X
         STA pixelXPositionZP
@@ -560,9 +568,9 @@ b0C86   STA currentIndexToColorValues
         STA pixelYPositionZP
 
         LDA nextPixelYPositionArray,X
-        STA dataPtrIndex
+        STA patternIndex
 
-        LDA f0BB6,X
+        LDA symmetrySettingForStepCount,X
         STA currentSymmetrySettingForStep
         LDA currentIndexToColorValues
         AND #$80
@@ -572,10 +580,11 @@ b0C86   STA currentIndexToColorValues
         JSR LoopThroughPixelsAndPaint
         PLA 
         TAX 
-        DEC f0AB6,X
+        DEC currentIndexForCurrentStepArray,X
 b0CB8   JMP MainPaintRoutine
 
 stepCount   .BYTE $00
+
 b0CBC
         ; Loops back to MainPaintRoutine
         JMP ResetAndReenterMainPaint
@@ -614,7 +623,7 @@ MainInterruptHandler
         DEC stepsRemainingInSequencerSequence
         BNE b0CFB
 
-        LDA a0E45
+        LDA sequencerSpeed
         STA stepsRemainingInSequencerSequence
         JSR UpdatePointersFromSequenceData
 
@@ -627,7 +636,7 @@ b0CFB   DEC countStepsBeforeCheckingJoystickInput
         ; for input and act on it.
 b0D03   LDA #$00
         STA currentColorToPaint
-        LDA a0E40
+        LDA cursorSpeed
         STA countStepsBeforeCheckingJoystickInput
         JSR UpdateLineinColorRAMUsingIndex
 
@@ -699,53 +708,54 @@ b0D6D   LDA lastJoystickInput
         ; Player has pressed fire.
         LDA #$00
         STA stepsSincePressedFire
-        JMP DrawWhiteCursor
+        JMP DrawCursorAndReturnFromInterrupt
+        ; Returns
 
         ; Player hasn't pressed fire.
 b0D7B   LDA a0E3D
         BEQ b0D8B
         LDA stepsSincePressedFire
         BEQ b0D88
-        JMP DrawWhiteCursor
+        JMP DrawCursorAndReturnFromInterrupt
 
 b0D88   INC stepsSincePressedFire
-b0D8B   LDA a1A4A
+b0D8B   LDA patternUpdateDisplayInterval
         BEQ b0D98
-        DEC a1A4A
+        DEC patternUpdateDisplayInterval
         BEQ b0D98
         JMP UpdateDisplayedPattern
 
-b0D98   DEC a1531
+b0D98   DEC currentDrawCursorInterval
         BEQ b0DA0
-        JMP DrawWhiteCursor
+        JMP DrawCursorAndReturnFromInterrupt
 
-b0DA0   LDA a0E42
-        STA a1531
-        LDA a0E46
-        STA a1A4A
+b0DA0   LDA pulseSpeed
+        STA currentDrawCursorInterval
+        LDA pulseWidth
+        STA patternUpdateDisplayInterval
 
 UpdateDisplayedPattern    
-        INC a0E3B
-        LDA a0E3B
-        CMP a0E41
+        INC currentStepCount
+        LDA currentStepCount
+        CMP bufferLength
         BNE b0DBC
 
         LDA #$00
-        STA a0E3B
+        STA currentStepCount
 
 b0DBC   TAX 
-        LDA f0AB6,X
+        LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BEQ b0DD6
         LDA shouldDrawCursor
         AND trackingActivated
-        BEQ DrawWhiteCursor
+        BEQ DrawCursorAndReturnFromInterrupt
         TAX 
-        LDA f0AB6,X
+        LDA currentIndexForCurrentStepArray,X
         CMP #$FF
-        BNE DrawWhiteCursor
-        STX a0E3B
+        BNE DrawCursorAndReturnFromInterrupt
 
+        STX currentStepCount
 b0DD6   LDA pixelXPosition
         STA pixelXPositionArray,X
         LDA colorRAMLineTableIndex
@@ -756,22 +766,22 @@ b0DD6   LDA pixelXPosition
         SEC 
         SBC colorRAMLineTableIndex
         ORA #$80
-        STA f0AB6,X
+        STA currentIndexForCurrentStepArray,X
         JMP j0E00
 
-b0DF5   LDA a0E47
-        STA f0AB6,X
+b0DF5   LDA baseLevel
+        STA currentIndexForCurrentStepArray,X
         LDA currentPatternElement
         STA nextPixelYPositionArray,X
 
 j0E00    
-        LDA a0E3F
-a0E03   STA f0AF6,X
-        STA f0B36,X
+        LDA smoothingDelay
+a0E03   STA initialFramesRemainingToNextPaintForStep,X
+        STA framesRemainingToNextPaintForStep,X
         LDA currentSymmetrySetting
-        STA f0BB6,X
+        STA symmetrySettingForStepCount,X
 
-DrawWhiteCursor    
+DrawCursorAndReturnFromInterrupt    
         LDA #$01
         STA currentColorToPaint
         JSR UpdateLineinColorRAMUsingIndex
@@ -808,43 +818,59 @@ UpdateLineinColorRAMUsingIndex
         RTS 
 
 
-pixelXPosition            .BYTE $0A
-colorRAMLineTableIndex         .BYTE $0A
-a0E3B                          .BYTE $00
-stepsSincePressedFire                          .BYTE $00
-a0E3D                          .BYTE $00
+pixelXPosition                           .BYTE $0A
+colorRAMLineTableIndex                   .BYTE $0A
+currentStepCount                         .BYTE $00
+stepsSincePressedFire                    .BYTE $00
+a0E3D                                    .BYTE $00
+
+COLOR_BAR_CURRENT = $00
+SMOOTHING_DELAY   = $01
+CURSOR_SPEED      = $02
+BUFFER_LENGTH     = $03
+PULSE_SPEED       = $04
+COLOR_CHANGE      = $05
+LINE_WIDTH        = $06
+SEQUENCER_SPEED   = $07
+PULSE_WIDTH       = $08
+BASE_LEVEL        = $09
+; This is where the presets get loaded to. It represents
+; the data structure for the presets.
+; currentVariableMode is an index into this data structure
+; when the user adjusts settings.
+presetValueArray
 colorBarCurrentValueForModePtr .BYTE $00
-a0E3F                          .BYTE $0C
-a0E40                          .BYTE $02
-a0E41                          .BYTE $1F
-a0E42                          .BYTE $01
-a0E43                          .BYTE $01
-a0E44                          .BYTE $07
-a0E45                          .BYTE $04
-a0E46                          .BYTE $01
-a0E47                          .BYTE $07
-presetColorValuesArray         .BYTE $00,$06,$02,$04,$05,$03,$07,$01
+smoothingDelay                 .BYTE $0C
+cursorSpeed                    .BYTE $02
+bufferLength                   .BYTE $1F
+pulseSpeed                     .BYTE $01
+indexForPresetColorValues      .BYTE $01
+lineWidth                      .BYTE $07
+sequencerSpeed                 .BYTE $04
+pulseWidth                     .BYTE $01
+baseLevel                      .BYTE $07
+presetColorValuesArray         .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
 trackingActivated              .BYTE $FF
 lineModeActivated              .BYTE $00
-dataPtrIndex                          .BYTE $05
+patternIndex                   .BYTE $05
 
 
-preset0 = $C800
-preset1 = $C900
-preset2 = $CA00
-preset3 = $CB00
-preset4 = $CC00
-preset5 = $CD00
-preset6 = $CE00
-preset7 = $CF00
-preset8 = $C880
-preset9 = $C980
-preset10 = $CA80
-preset11 = $CB80
-preset12 = $CC80
-preset13 = $CD80
-preset14 = $CE80
-preset15 = $CF80
+customPreset0 = $C800
+customPreset1 = $C900
+customPreset2 = $CA00
+customPreset3 = $CB00
+customPreset4 = $CC00
+customPreset5 = $CD00
+customPreset6 = $CE00
+customPreset7 = $CF00
+customPreset8 = $C880
+customPreset9 = $C980
+customPreset10 = $CA80
+customPreset11 = $CB80
+customPreset12 = $CC80
+customPreset13 = $CD80
+customPreset14 = $CE80
+customPreset15 = $CF80
 
 ; A pair of arrays together consituting a list of pointers
 ; to positions in memory containing X position data.
@@ -853,13 +879,15 @@ pixelXPositionLoPtrArray .BYTE <starOneXPosArray,<theTwistXPosArray,<laLlamitaXP
                          .BYTE <starTwoXPosArray,<deltoidXPosArray,<diffusedXPosArray
                          .BYTE <multicrossXPosArray,<pulsarXPosArray
 
-customPresetLoPtrArray   .BYTE <preset0,<preset1,<preset2,<preset3,<preset4,<preset5,<preset6,<preset7
+customPresetLoPtrArray   .BYTE <customPreset0,<customPreset1,<customPreset2,<customPreset3
+                         .BYTE <customPreset4,<customPreset5,<customPreset6,<customPreset7
 
 pixelXPositionHiPtrArray .BYTE >starOneXPosArray,>theTwistXPosArray,>laLlamitaXPosArray
                          .BYTE >starTwoXPosArray,>deltoidXPosArray,>diffusedXPosArray
                          .BYTE >multicrossXPosArray,>pulsarXPosArray
 
-customPresetHiPtrArray   .BYTE >preset0,>preset1,>preset2,>preset3,>preset4,>preset5,>preset6,>preset7
+customPresetHiPtrArray   .BYTE >customPreset0,>customPreset1,>customPreset2,>customPreset3
+                         .BYTE >customPreset4,>customPreset5,>customPreset6,>customPreset7
 
 ; A pair of arrays together consituting a list of pointers
 ; to positions in memory containing Y position data.
@@ -868,58 +896,64 @@ pixelYPositionLoPtrArray .BYTE <starOneYPosArray,<theTwistYPosArray,<laLlamitaYP
                          .BYTE <starTwoYPosArray,<deltoidYPosArray,<diffusedYPosArray
                          .BYTE <multicrossYPosArray,<pulsarYPosArray
 
-                         .BYTE <preset8,<preset9,<preset10,<preset11,<preset12,<preset13,<preset14,<preset15
+                         .BYTE <customPreset8,<customPreset9,<customPreset10,<customPreset11
+                         .BYTE <customPreset12,<customPreset13,<customPreset14,<customPreset15
 
 pixelYPositionHiPtrArray .BYTE >starOneYPosArray,>theTwistYPosArray,>laLlamitaYPosArray
                          .BYTE >starTwoYPosArray,>deltoidYPosArray,>diffusedYPosArray
                          .BYTE >multicrossYPosArray,>pulsarYPosArray
 
-                         .BYTE >preset8,>preset9,>preset10,>preset11,>preset12,>preset13,>preset14,>preset15
+                         .BYTE >customPreset8,>customPreset9,>customPreset10,>customPreset11
+                         .BYTE >customPreset12,>customPreset13,>customPreset14,>customPreset15
 
-theTwistXPosArray  .BYTE $00,$55,$01,$02,$55,$01
-                   .BYTE $02,$03,$55,$01,$02,$03,$04,$55
-                   .BYTE $00,$00,$00,$55,$FF,$FE,$55,$FF
-                   .BYTE $55,$55
-theTwistYPosArray  .BYTE $FF,$55,$FF,$FE,$55,$00
-                   .BYTE $00,$00,$55,$01,$02,$03,$04,$55
-                   .BYTE $01,$02,$03,$55,$01,$02,$55,$00
-                   .BYTE $55,$55
+theTwistXPosArray
+        .BYTE $00,$55,$01,$02,$55,$01,$02,$03
+        .BYTE $55,$01,$02,$03,$04,$55,$00,$00
+        .BYTE $00,$55,$FF,$FE,$55,$FF,$55,$55
+theTwistYPosArray
+        .BYTE $FF,$55,$FF,$FE,$55,$00,$00,$00
+        .BYTE $55,$01,$02,$03,$04,$55,$01,$02
+        .BYTE $03,$55,$01,$02,$55,$00,$55,$55
 
-laLlamitaXPosArray .BYTE $00,$FF,$00,$55,$00,$00
-                   .BYTE $55,$01,$02,$03,$00,$01,$02,$03
-                   .BYTE $55,$04,$05,$06,$04,$00,$01,$02
-                   .BYTE $55,$04,$00,$04,$00,$04,$55,$FF
-                   .BYTE $03,$55,$00,$55
-laLlamitaYPosArray .BYTE $FF,$00,$01,$55
-                   .BYTE $02,$03,$55,$03,$03,$03,$04,$04
-                   .BYTE $04,$04,$55,$03,$02,$03,$04,$05
-                   .BYTE $05,$05,$55,$05,$06,$06,$07,$07
-                   .BYTE $55,$07,$07,$55,$00,$55
+laLlamitaXPosArray
+        .BYTE $00,$FF,$00,$55,$00,$00,$55,$01
+        .BYTE $02,$03,$00,$01,$02,$03,$55,$04
+        .BYTE $05,$06,$04,$00,$01,$02,$55,$04
+        .BYTE $00,$04,$00,$04,$55,$FF,$03,$55
+        .BYTE $00,$55
+laLlamitaYPosArray
+        .BYTE $FF,$00,$01,$55,$02,$03,$55,$03
+        .BYTE $03,$03,$04,$04,$04,$04,$55,$03
+        .BYTE $02,$03,$04,$05,$05,$05,$55,$05
+        .BYTE $06,$06,$07,$07,$55,$07,$07,$55
+        .BYTE $00,$55
 
-starTwoXPosArray   .BYTE $FF,$55
-                   .BYTE $00,$55,$02,$55,$01
-                   .BYTE $55,$FD,$55
-                   .BYTE $FE,$55,$00,$55
-starTwoYPosArray   .BYTE $FF,$55,$FE,$55
-                   .BYTE $FF,$55,$02,$55,$01,$55,$FC,$55
-                   .BYTE $00,$55
-deltoidXPosArray   .BYTE $00,$01,$FF,$55,$00,$55
-                   .BYTE $00,$01,$02,$FE,$FF,$55,$00,$03
-                   .BYTE $FD,$55,$00,$04,$FC,$55,$00,$06
-                   .BYTE $FA,$55,$00,$55
-deltoidYPosArray   .BYTE $FF,$00,$00,$55
-                   .BYTE $00,$55,$FE,$FF,$00,$00,$FF,$55
-                   .BYTE $FD,$01,$01,$55,$FC,$02,$02,$55
-                   .BYTE $FA,$04,$04,$55,$00,$55
-diffusedXPosArray  .BYTE $FF,$01
-                   .BYTE $55,$FE,$02,$55,$FD,$03,$55,$FC
-                   .BYTE $04,$FC,$FC,$04,$04,$55,$FB,$05
-                   .BYTE $55,$FA,$06,$FA,$FA,$06,$06,$55
-                   .BYTE $00,$55
-diffusedYPosArray  .BYTE $01,$FF,$55,$FE,$02,$55
-                   .BYTE $03,$FD,$55,$FC,$04,$FF,$01,$FF
-                   .BYTE $01,$55,$05,$FB,$55,$FA,$06,$FE
-                   .BYTE $02,$FE,$02,$55,$00,$55
+starTwoXPosArray
+        .BYTE $FF,$55,$00,$55,$02,$55,$01,$55
+        .BYTE $FD,$55,$FE,$55,$00,$55
+starTwoYPosArray
+        .BYTE $FF,$55,$FE,$55,$FF,$55,$02,$55
+        .BYTE $01,$55,$FC,$55,$00,$55
+deltoidXPosArray
+        .BYTE $00,$01,$FF,$55,$00,$55,$00,$01
+        .BYTE $02,$FE,$FF,$55,$00,$03,$FD,$55
+        .BYTE $00,$04,$FC,$55,$00,$06,$FA,$55
+        .BYTE $00,$55
+deltoidYPosArray
+        .BYTE $FF,$00,$00,$55,$00,$55,$FE,$FF
+        .BYTE $00,$00,$FF,$55,$FD,$01,$01,$55
+        .BYTE $FC,$02,$02,$55,$FA,$04,$04,$55
+        .BYTE $00,$55
+diffusedXPosArray
+        .BYTE $FF,$01,$55,$FE,$02,$55,$FD,$03
+        .BYTE $55,$FC,$04,$FC,$FC,$04,$04,$55
+        .BYTE $FB,$05,$55,$FA,$06,$FA,$FA,$06
+        .BYTE $06,$55,$00,$55
+diffusedYPosArray
+        .BYTE $01,$FF,$55,$FE,$02,$55,$03,$FD
+        .BYTE $55,$FC,$04,$FF,$01,$FF,$01,$55
+        .BYTE $05,$FB,$55,$FA,$06,$FE,$02,$FE
+        .BYTE $02,$55,$00,$55
 
 
 ;-------------------------------------------------------
@@ -927,33 +961,37 @@ diffusedYPosArray  .BYTE $01,$FF,$55,$FE,$02,$55
 ;-------------------------------------------------------
 CheckKeyboardInput   
         LDA currentVariableMode
-        BEQ b0F97
+        BEQ CheckForGeneralKeystrokes
         JMP CheckKeyboardInputForActiveVariable
 
         ; Allow a bit of time to elapse between detected key strokes.
-b0F97   LDA timerBetweenKeyStrokes
-        BEQ b0F9F
+CheckForGeneralKeystrokes   
+        LDA timerBetweenKeyStrokes
+        BEQ CheckForKeyStroke
         DEC timerBetweenKeyStrokes
-        BNE b0FAC
+        BNE ReturnFromKeyboardCheck
 
-b0F9F   LDA lastKeyPressed
+CheckForKeyStroke   
+        LDA lastKeyPressed
         CMP #$40
-        BNE b0FAD
+        BNE ProcessKeyStroke
 
         ; No key was pressed. Return early.
         LDA #$00
         STA timerBetweenKeyStrokes
         JSR DisplayDemoModeMessage
-b0FAC   RTS 
+ReturnFromKeyboardCheck   
+        RTS 
 
         ; A key was pressed. Figure out which one.
-b0FAD   LDY initialTimeBetweenKeyStrokes
+ProcessKeyStroke   
+        LDY initialTimeBetweenKeyStrokes
         STY timerBetweenKeyStrokes
         LDY shiftKey
         STY shiftPressed
 
         CMP #$3C ; Space pressed?
-        BNE b0FE6
+        BNE MaybeSPressed
 
         ; Space pressed. Selects a new pattern element. " There are eight permanent ones,
         ; and eight you can define for yourself (more on this later!). The latter eight
@@ -963,11 +1001,12 @@ b0FAD   LDY initialTimeBetweenKeyStrokes
         AND #$0F
         STA currentPatternElement
         AND #$08
-        BEQ b0FCB
+        BEQ UpdateCurrentPattern
         ; The first 8 patterns are standard, the rest are custom.
         JMP GetCustomPatternElement
 
-b0FCB   JSR ClearLastLineOfScreen
+UpdateCurrentPattern   
+        JSR ClearLastLineOfScreen
         LDA currentPatternElement
         ASL 
         ASL 
@@ -976,32 +1015,35 @@ b0FCB   JSR ClearLastLineOfScreen
         TAY 
 
         LDX #$00
-b0FD7   LDA txtPresetPatternNames,Y
+txtPresetLoop   
+        LDA txtPresetPatternNames,Y
         STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
-        BNE b0FD7
+        BNE txtPresetLoop
         JMP WriteLastLineBufferToScreen
         ; Returns
 
-b0FE6   CMP #$0D ; 'S' pressed.
-        BNE b101E
+MaybeSPressed   
+        CMP #$0D ; 'S' pressed.
+        BNE MaybeLPressed
 
         ; 'S' pressed. "This changes the 'symmetry'. The pattern gets reflected
         ; in various planes, or not at all according to the setting."
         LDA shiftPressed
         AND #$01
-        BEQ b0FF9
+        BEQ JustSPressed
         LDA a1EAA
-        BNE b0FF9
+        BNE JustSPressed
         ; Shift + S pressed, save.
         JMP PromptToSave
         ; Returns
 
         ; Just 'S' pressed.
         ; Briefly display the new symmetry setting on the bottom of the screen.
-b0FF9   INC currentSymmetrySetting
+JustSPressed   
+        INC currentSymmetrySetting
         LDA currentSymmetrySetting
         CMP #$05
         BNE b1005
@@ -1016,19 +1058,22 @@ b1005   ASL
 
         ; currentSymmetrySetting is in Y
         LDX #$00
-b100F   LDA txtSymmetrySettingDescriptions,Y
+txtSymmLoop   
+        LDA txtSymmetrySettingDescriptions,Y
         STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
-        BNE b100F
+        BNE txtSymmLoop
 
         JMP WriteLastLineBufferToScreen
         ;Returns
 
-b101E   CMP #$2A ; 'L' pressed?
-        BNE b1052
+MaybeLPressed   
+        CMP #$2A ; 'L' pressed?
+        BNE MaybeDPressed
 
+        ; 'L' pressed.
         LDA a1EAA
         BNE b1031
         LDA shiftPressed
@@ -1059,44 +1104,74 @@ b1043   LDA lineModeSettingDescriptions,Y
         JMP WriteLastLineBufferToScreen
         ; Returns
 
-b1052   CMP #$12 ; 'D' pressed?
-        BNE b105C
-        LDA #$01
+MaybeDPressed   
+        CMP #$12 ; 'D' pressed?
+        BNE MaybeCPressed
+
+        ; Smoothing Delay, D to activate: Because of the time taken to draw
+        ; larger patterns speed increase/decrease is not linear. You can adjust
+        ; the ‘compensating delay’ which often smooths out jerky patterns. Can
+        ; be used just for special FX, though. Suck it and see.
+        LDA #SMOOTHING_DELAY
         STA currentVariableMode
         RTS 
 
-b105C   CMP #$14 ; C pressed?
-        BNE b1066
+MaybeCPressed   
+        CMP #$14 ; C pressed?
+        BNE MaybeBPressed
         ; C pressed.
-        LDA #$02
+        ; Cursor Speed C to activate: Just that. Gives you a slow r fast little
+        ; cursor, according to setting.
+
+        LDA #CURSOR_SPEED
         STA currentVariableMode
         RTS 
 
-b1066   CMP #$1C ; B pressed?
-        BNE b1070
+MaybeBPressed   
+        CMP #$1C ; B pressed?
+        BNE MaybePPressed
+
         ; B pressed.
-        LDA #$03
+        ; Buffer Length B to activate: Larger patterns flow more smoothly with a
+        ; shorter Buffer Length - not so many positions are retained so less
+        ; plotting to do. Small patterns with a long Buffer Length are good for
+        ; ‘steamer’ effects. N.B. Cannot be adjusted whilst patterns are
+        ; actually onscreen.
+        LDA #BUFFER_LENGTH
         STA currentVariableMode
         RTS 
 
-b1070   CMP #$29 ; P pressed
-        BNE b107A
+MaybePPressed   
+        CMP #$29 ; P pressed
+        BNE MaybeHPressed
+
         ; P pressed.
-        LDA #$04
+        ; Pulse Speed P to activate: Usually if you hold down the button you
+        ; get a continuous stream. Setting the Pulse Speed allows you to
+        ; generate a pulsed stream, as if you were rapidly pressing and
+        ; releasing the FIRE button.
+        LDA #PULSE_SPEED
         STA currentVariableMode
         RTS 
 
-b107A   CMP #$1D ; H pressed.
-        BNE b1088
+MaybeHPressed   
+        CMP #$1D ; H pressed.
+        BNE MaybeTPressed
+
         ; H pressed. Select a change to the pattern colors.
+        ; COLOUR CHANGE H to activate: Allows you to set the colour for each of
+        ; the seven pattern steps. Set up the colour you want, press RETURN,
+        ; and the command offers the next colour along, up to no. 7, then ends.
+        ; Cannot be adjusted while patterns being generated.
         LDA #$01
         STA currentColorSet
-        LDA #$05
+        LDA #COLOR_CHANGE
         STA currentVariableMode
         RTS 
 
-b1088   CMP #$16 ; T pressed.
-        BNE b10B0
+MaybeTPressed   
+        CMP #$16 ; T pressed.
+        BNE CheckIfPresetKeysPressed
 
         ;"T: Controls whether logic-seeking is used in the buffer or not. The upshot of 
         ; this for you is a slightly different feel - continuous but fragmented when ON,
@@ -1113,100 +1188,127 @@ b1088   CMP #$16 ; T pressed.
         JSR ClearLastLineOfScreen
 
         LDX #$00
-b10A0   LDA txtTrackingOnOff,Y
+txtTrackingLoop   
+        LDA txtTrackingOnOff,Y
         STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
-        BNE b10A0
+        BNE txtTrackingLoop
 
         JMP WriteLastLineBufferToScreen
         RTS 
 
         ; Check if one of the presets has been selected.
-b10B0   LDX #$00
-b10B2   CMP presetKeyCodes,X
-        BEQ b10BF
+CheckIfPresetKeysPressed   
+        LDX #$00
+presetKeyLoop   
+        CMP presetKeyCodes,X
+        BEQ UpdateDisplayedPreset
         INX 
         CPX #$10
-        BNE b10B2
+        BNE presetKeyLoop
 
-        JMP j10C2
+        JMP MaybeWPressed
 
-b10BF   JMP DisplayPresetMessage
+UpdateDisplayedPreset   
+        JMP DisplayPresetMessage
 
-j10C2    
+MaybeWPressed    
         CMP #$09 ; W pressed?
-        BNE b10CC
+        BNE MaybeFunctionKeysPressed
+
         ; W pressed
-        LDA #$06
+        ; Line Width W to activate: Sets the width of the lines produced in
+        ; Line Mode.
+        LDA #LINE_WIDTH
         STA currentVariableMode
         RTS 
 
         ; Was one of the function keys pressed?
-b10CC   LDX #$00
-b10CE   CMP functionKeys,X
-        BEQ b10DB ; One of them was pressed!
+MaybeFunctionKeysPressed   
+        LDX #$00
+FnKeyLoop   
+        CMP functionKeys,X
+        BEQ FunctionKeyWasPressed ; One of them was pressed!
         INX 
         CPX #$04
-        BNE b10CE
+        BNE FnKeyLoop
         ; Continue checking
-        JMP j10EC
+        JMP MaybeQPressed
 
         ; A Function key was pressed, only valid if the sequencer is active.
-b10DB   STX functionKeyIndex
+FunctionKeyWasPressed   
+        STX functionKeyIndex
         LDA sequencerActive
-        BNE j10EC
+        BNE MaybeQPressed
         LDA #$80
         STA currentVariableMode
         JSR UpdateSequencer
         RTS 
 
-j10EC    
+MaybeQPressed    
         CMP #$3E ; Q pressed?
-        BNE b1108
+        BNE MaybeVPressed
+
         ; Q was presed. Toggle the sequencer on or off.
         LDA sequencerActive
-        BNE b10FD
+        BNE TurnSequenceOff
         LDA #$80
         STA currentVariableMode
         JMP ActivateSequencer
         ;Returns
 
         ;Turn the sequencer off.
-b10FD   LDA #$00
+TurnSequenceOff   
+        LDA #$00
         STA sequencerActive
         STA stepsRemainingInSequencerSequence
         JMP DisplaySequencerState
 
-b1108   CMP #$1F ; V pressed?
-        BNE b1112
+MaybeVPressed   
+        CMP #$1F ; V pressed?
+        BNE MaybeOPressed
+
         ; V pressed.
-        LDA #$07
+        ; Sequencer Speed V to activate: Controls the rate at which sequencer
+        ; feeds in its data. See the SEQUENCER bit.
+        LDA #SEQUENCER_SPEED
         STA currentVariableMode
         RTS 
 
-b1112   CMP #$26 ; O pressed.
-        BNE b111C
+MaybeOPressed   
+        CMP #$26 ; O pressed.
+        BNE MaybeAsteriskPressed
+
         ; O pressed.
-        LDA #$08
+        ; Pulse Width : Sets the length of the pulses in a pulsed
+        ; stream output. Don’t worry about what that means - just get in there
+        ; and mess with it.
+        LDA #PULSE_WIDTH
         STA currentVariableMode
         RTS 
 
-b111C   CMP #$31 ; * pressed?
-        BNE b1126
+MaybeAsteriskPressed   
+        CMP #$31 ; * pressed?
+        BNE MaybeRPressed
+
         ; * pressed.
-        LDA #$09
+        ; BASE LEVEL : Controls how many ‘levels’ of pattern are
+        ; plotted.
+        LDA #BASE_LEVEL
         STA currentVariableMode
         RTS 
 
-b1126   CMP #$11 ; R pressed?
-        BNE b112D
+MaybeRPressed   
+        CMP #$11 ; R pressed?
+        BNE MaybeUpArrowPressed
         ; R was pressed. Stop or start recording.
         JMP StopOrStartRecording
 
-b112D   CMP #$36 ; Up arrow
-        BNE b1152
+MaybeUpArrowPressed   
+        CMP #$36 ; Up arrow
+        BNE MaybeAPressed
         ; Up arrow pressed. "Press UP-ARROW to change the shape of the little pixels on the screen."
         INC pixelShapeIndex
         LDA pixelShapeIndex
@@ -1216,23 +1318,28 @@ b112D   CMP #$36 ; Up arrow
 
         ; Rewrite the screen using the new pixel.
         LDX #$00
-b113F   STA SCREEN_RAM + $0000,X
+UpdatePixelLoop   
+        STA SCREEN_RAM + $0000,X
         STA SCREEN_RAM + $0100,X
         STA SCREEN_RAM + $0200,X
         STA SCREEN_RAM + $02C0,X
         DEX 
-        BNE b113F
+        BNE UpdatePixelLoop
         STA currentPixel
         RTS 
 
-b1152   CMP #$0A ; 'A' pressed
-        BNE b115F
+MaybeAPressed   
+        CMP #$0A ; 'A' pressed
+        BNE FinalReturnFromKeyboardCheck
+
+        ; Activate demo mode.
         LDA demoModeActive
         EOR #$01
         STA demoModeActive
         RTS 
 
-b115F   RTS 
+FinalReturnFromKeyboardCheck   
+        RTS 
 
 
 initialTimeBetweenKeyStrokes   .BYTE $10
@@ -1262,21 +1369,15 @@ lastLineBufferPtrMinusOne
         .BYTE $55
 lastLineBufferPtr
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF
-a11F7
+dataFreeDigitOne
         .BYTE $FF
-a11F8
+dataFreeDigitTwo
         .BYTE $FF
-a11F9
-        .BYTE $FF
-        .BYTE $FF
-        .BYTE $FF
-        .BYTE $FF
-        .BYTE $FF
+dataFreeDigitThree
+        .BYTE $FF,$FF,$FF,$FF,$FF
 customPatternValueBufferPtr
-        .BYTE $FF
-        .BYTE $FF
-        .BYTE $FF
-f1201
+        .BYTE $FF,$FF,$FF
+customPatternValueBufferMessage
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -1343,10 +1444,10 @@ txtSymmetrySettingDescriptions
 ResetAndReenterMainPaint 
         LDA currentIndexToColorValues
         AND #$7F
-        STA a16
+        STA offsetForYPos
         LDA #$19
         SEC 
-        SBC a16
+        SBC offsetForYPos
         STA pixelYPositionZP
         DEC pixelYPositionZP
         LDA #$00
@@ -1357,7 +1458,7 @@ ResetAndReenterMainPaint
         INC pixelYPositionZP
         LDA #$00
         STA a17
-        LDA a0E44
+        LDA lineWidth
         EOR #$07
         STA currentIndexToColorValues
 b1331   JSR PushOffsetAndIndexAndPaintPixel
@@ -1376,14 +1477,14 @@ b1343   STA currentIndexToColorValues
 
 j134B    
         LDX stepCount
-        DEC f0AB6,X
-        LDA f0AB6,X
+        DEC currentIndexForCurrentStepArray,X
+        LDA currentIndexForCurrentStepArray,X
         CMP #$80
         BEQ b135B
         JMP MainPaintRoutine
 
 b135B   LDA #$FF
-        STA f0AB6,X
+        STA currentIndexForCurrentStepArray,X
         STX shouldDrawCursor
         JMP MainPaintRoutine
 
@@ -1414,39 +1515,39 @@ b138F   LDA colorBarValues,Y
         PLA 
         STA colorBarColorRamHiPtr
         LDA #$00
-        STA a13DA
-        STA a13DC
-        STA a13DD
-        LDA a13DB
+        STA currentNodeInColorBar
+        STA currentCountInDrawingColorBar
+        STA offsetToColorBar
+        LDA maxToDrawOnColorBar
         BEQ b13D8
 
-b13AC   LDA a13DD
+b13AC   LDA offsetToColorBar
         CLC 
-        ADC a13D9
-        STA a13DD
-        LDX a13DD
-        LDY a13DA
-        LDA f13DE,X
+        ADC currentColorBarOffset
+        STA offsetToColorBar
+        LDX offsetToColorBar
+        LDY currentNodeInColorBar
+        LDA nodeTypeArray,X
         STA (colorBarColorRamLoPtr),Y
         CPX #$08
         BNE b13CD
         LDA #$00
-        STA a13DD
-        INC a13DA
-b13CD   INC a13DC
-        LDA a13DC
-        CMP a13DB
+        STA offsetToColorBar
+        INC currentNodeInColorBar
+b13CD   INC currentCountInDrawingColorBar
+        LDA currentCountInDrawingColorBar
+        CMP maxToDrawOnColorBar
         BNE b13AC
 b13D8   RTS 
 
-a13D9   .BYTE $FF
-a13DA   .BYTE $FF
-a13DB   .BYTE $FF
-a13DC   .BYTE $FF
-a13DD   .BYTE $FF
-f13DE   .BYTE $20
-        .BYTE $65,$74
-        .BYTE $75,$61,$F6,$EA,$E7,$A0
+currentColorBarOffset         .BYTE $FF
+currentNodeInColorBar         .BYTE $FF
+maxToDrawOnColorBar           .BYTE $FF
+currentCountInDrawingColorBar .BYTE $FF
+offsetToColorBar              .BYTE $FF
+; Different size of nodes for the color bar, graded from a full cell to an empty cell.
+nodeTypeArray                 .BYTE $20,$65,$74,$75,$61,$F6,$EA,$E7
+                              .BYTE $A0
 
 ResetSelectedVariableAndReturn
         LDA #$00
@@ -1484,19 +1585,20 @@ b1406   LDA #$04
         STA timerBetweenKeyStrokes
 
         LDA currentVariableMode
-        CMP #$05 ; 'Color Change'
-        BEQ b1415
-        CMP #$03 ; 'Buffer Length'
-        BNE b143F
+        CMP #COLOR_CHANGE
+        BEQ UpdateColorChange
+        CMP #BUFFER_LENGTH
+        BNE UpdateVariableDisplay
 
-        ; The active mode is 'COlor Change'.
-b1415   LDX #$00
-b1417   LDA f0AB6,X
+        ; The active mode is 'Color Change'.
+UpdateColorChange   
+        LDX #$00
+b1417   LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BNE ResetSelectedVariableAndReturn
 
         INX 
-        CPX a0E41
+        CPX bufferLength
         BNE b1417
 
         ; Reset the selected variable if necessary.
@@ -1511,9 +1613,10 @@ b1417   LDA f0AB6,X
         LDA #$FF
         STA currentModeActive
         LDA #$00
-        STA a0E3B
+        STA currentStepCount
 
-b143F   LDA #>SCREEN_RAM + $03D0
+UpdateVariableDisplay   
+        LDA #>SCREEN_RAM + $03D0
         STA colorBarColorRamHiPtr
         LDA #<SCREEN_RAM + $03D0
         STA colorBarColorRamLoPtr
@@ -1521,38 +1624,43 @@ b143F   LDA #>SCREEN_RAM + $03D0
         LDX currentVariableMode
         LDA lastKeyPressed
         CMP #$2C ; > pressed?
-        BNE b1461
+        BNE MaybeLeftArrowPressed
 
         ; > pressed, increase the value bar.
-        INC colorBarCurrentValueForModePtr,X
-        LDA colorBarCurrentValueForModePtr,X
+        INC presetValueArray,X
+        LDA presetValueArray,X
         ; Make sure we don't exceed the max value.
-        CMP colorBarMaxValueForModePtr,X
-        BNE b1473
-        DEC colorBarCurrentValueForModePtr,X
-        JMP b1473
+        CMP maxValueForPresetValueArray,X
+        BNE MaybeInColorMode
+        DEC presetValueArray,X
+        JMP MaybeInColorMode
 
-b1461   CMP #$2F ; < pressed?
-        BNE b1473
+MaybeLeftArrowPressed   
+        CMP #$2F ; < pressed?
+        BNE MaybeInColorMode
+
         ; < pressed, decrease the value bar.
-        DEC colorBarCurrentValueForModePtr,X
-        LDA colorBarCurrentValueForModePtr,X
+        DEC presetValueArray,X
+        LDA presetValueArray,X
         ; Make sure we don't exceed the min value.
-        CMP colorBarMinValueForModePtr,X
-        BNE b1473
-        INC colorBarCurrentValueForModePtr,X
+        CMP minValueForPresetValueArray,X
+        BNE MaybeInColorMode
+        INC presetValueArray,X
 
-b1473   CPX #$05 ; Color Mode?
-        BNE b1482
+MaybeInColorMode   
+        CPX #$05 ; Color Mode?
+        BNE MaybeEnterPressed
 
         ; For Color Mode update some variables.
-        LDX a0E43
+        LDX indexForPresetColorValues
         LDY currentColorSet
         LDA colorValuesPtr,X
         STA presetColorValuesArray,Y
 
-b1482   JSR DisplayVariableSelection
+MaybeEnterPressed   
+        JSR DisplayVariableSelection
         JMP CheckIfEnterPressed
+        ;Returns
 
 ;-------------------------------------------------------
 ; DisplayVariableSelection
@@ -1577,19 +1685,20 @@ b149E   CMP colorValuesPtr,Y
         INY 
         CPY #$10
         BNE b149E
-b14A8   STY a0E43
+
+b14A8   STY indexForPresetColorValues
         LDX currentVariableMode
 
-b14AE   LDA f1526,X
-        STA a13D9
+b14AE   LDA increaseOffsetForPresetValueArray,X
+        STA currentColorBarOffset
         LDA colorBarCurrentValueForModePtr,X
-        STA a13DB
+        STA maxToDrawOnColorBar
         TXA 
         PHA 
-        LDA a173A
+        LDA enterWasPressed
         BNE b14C9
         LDA #$01
-        STA a173A
+        STA enterWasPressed
         JSR ClearLastLineOfScreen
 
 b14C9   PLA 
@@ -1613,7 +1722,7 @@ b14D1   LDA txtVariableLabels,Y
         LDA #$30
         CLC 
         ADC currentColorSet
-        STA a11F8
+        STA dataFreeDigitTwo
 b14EC   JSR WriteLastLineBufferToScreen
         JMP DrawColorValueBar
 
@@ -1642,22 +1751,22 @@ b14F9   LDA currentVariableMode
         ; Enter was pressed, so exit variable mode.
 b1509   LDA #$00
         STA currentVariableMode
-        STA a173A
+        STA enterWasPressed
         RTS 
 
 
-colorBarMaxValueForModePtr   
+maxValueForPresetValueArray   
         .BYTE $00,$40,$08,$40,$10,$10,$08
         .BYTE $20,$10,$08
-colorBarMinValueForModePtr   
+minValueForPresetValueArray   
         .BYTE $00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00
-f1526   
+increaseOffsetForPresetValueArray   
         .BYTE $00,$01,$08
         .BYTE $01,$04,$08,$08,$02,$04,$08
 currentVariableMode   
         .BYTE $00
-a1531   
+currentDrawCursorInterval   
         .BYTE $01
 txtVariableLabels   
 .enc "petscii" 
@@ -1709,17 +1818,17 @@ b1613   LDA txtPreset,X
         PHA 
         TAX 
         BEQ b1638
-b1623   INC a11F9
-        LDA a11F9
+b1623   INC dataFreeDigitThree
+        LDA dataFreeDigitThree
         CMP #$BA
         BNE b1635
         LDA #$30
-        STA a11F9
-        INC a11F8
+        STA dataFreeDigitThree
+        INC dataFreeDigitTwo
 b1635   DEX 
         BNE b1623
 
-b1638   JMP DrawPresetActivatedMessage
+b1638   JMP RefreshPresetDataActivatedMessage
 
 WriteLastLineBufferAndReturn    
         JSR WriteLastLineBufferToScreen
@@ -1736,9 +1845,9 @@ shiftPressed
         .BYTE $00
 
 ;-------------------------------------------------------
-; DrawPresetActivatedMessage
+; RefreshPresetDataActivatedMessage
 ;-------------------------------------------------------
-DrawPresetActivatedMessage    
+RefreshPresetDataActivatedMessage    
         LDA shiftPressed
         AND #$01
         ASL 
@@ -1749,7 +1858,7 @@ DrawPresetActivatedMessage
 
         LDX #$00
 b167C   LDA txtPresetActivatedStored,Y
-        STA f1201,X
+        STA customPatternValueBufferMessage,X
         INY 
         INX 
         CPX #$10
@@ -1758,14 +1867,15 @@ b167C   LDA txtPresetActivatedStored,Y
         LDA shiftPressed
         AND #$01
         BNE b1692
-        JMP j16B2
+        JMP RefreshPresetData
 
 b1692   PLA 
         TAX 
-        JSR UpdatePointersForPreset
+        JSR GetPresetPointersUsingXRegister
+
         LDY #$00
         LDX #$00
-b169B   LDA colorBarCurrentValueForModePtr,X
+b169B   LDA presetValueArray,X
         STA (presetSequenceDataLoPtr),Y
         INY 
         INX 
@@ -1779,54 +1889,74 @@ b169B   LDA colorBarCurrentValueForModePtr,X
         STA (presetSequenceDataLoPtr),Y
         JMP WriteLastLineBufferAndReturn
 
-j16B2    
+;-------------------------------------------------------------------------
+; RefreshPresetData
+;-------------------------------------------------------------------------
+RefreshPresetData    
         PLA 
         TAX 
-        JSR UpdatePointersForPreset
-        LDY #$03
+        JSR GetPresetPointersUsingXRegister
+        LDY #BUFFER_LENGTH
         LDA (presetSequenceDataLoPtr),Y
-        CMP a0E41
+        CMP bufferLength
         BEQ b16C6
-        JSR ResetCurrentActiveMode
-        JMP j16DA
 
+        JSR ResetCurrentActiveMode
+        JMP LoadSelectedPresetSequence
+        ; Returns
+
+        ; Check the preset against current data
+        ; and reload if different.
 b16C6   LDX #$00
-        LDY #$07
+        LDY #SEQUENCER_SPEED
 b16CA   LDA (presetSequenceDataLoPtr),Y
         CMP presetColorValuesArray,X
-        BNE j16DA
+        BNE LoadSelectedPresetSequence
         INY 
         INX 
         CPX #$08
         BNE b16CA
-        JMP j16DA
 
-j16DA    
+        JMP LoadSelectedPresetSequence
+
+;-------------------------------------------------------------------------
+; LoadSelectedPresetSequence
+;-------------------------------------------------------------------------
+LoadSelectedPresetSequence    
         LDA #$FF
         STA currentModeActive
-        LDY #$00
+
+        ; Copy the value from the preset sequence into 
+        ; current storage.
+        LDY #COLOR_BAR_CURRENT
 b16E1   LDA (presetSequenceDataLoPtr),Y
-        STA colorBarCurrentValueForModePtr,Y
+        STA presetValueArray,Y
         INY 
         CPY #$15
         BNE b16E1
+
         LDA (presetSequenceDataLoPtr),Y
         STA currentPatternElement
         INY 
         LDA (presetSequenceDataLoPtr),Y
         STA currentSymmetrySetting
         JMP WriteLastLineBufferAndReturn
+        ; Returns
 
 ;-------------------------------------------------------
-; UpdatePointersForPreset
+; GetPresetPointersUsingXRegister
 ;-------------------------------------------------------
-UpdatePointersForPreset   
-        LDA #>customPresetSequenceData
+GetPresetPointersUsingXRegister   
+        LDA #>presetSequenceData
         STA presetSequenceDataHiPtr
-        LDA #<customPresetSequenceData
+        LDA #<presetSequenceData
         STA presetSequenceDataLoPtr
         TXA 
         BEQ b1712
+
+        ; Skip through the preset data until we get to the position
+        ; storing the preset data for the sequence indicated by the X
+        ; register.
 b1702   LDA presetSequenceDataLoPtr
         CLC 
         ADC #$20
@@ -1845,7 +1975,7 @@ ResetCurrentActiveMode
         LDA #$FF
         STA currentModeActive
         LDA #$00
-        STA a0E3B
+        STA currentStepCount
         RTS 
 
 currentModeActive  .BYTE $00
@@ -1859,7 +1989,7 @@ ReinitializeScreen
 
         LDX #$00
         LDA #$FF
-b172a   STA f0AB6,X
+b172a   STA currentIndexForCurrentStepArray,X
         INX
         CPX #$40
         BNE b172A
@@ -1869,7 +1999,7 @@ b172a   STA f0AB6,X
         JMP InitializeScreenWithInitCharacter
         ; Returns
 
-a173A   .BYTE $00
+enterWasPressed   .BYTE $00
 functionKeyIndex   .BYTE $00
 
 ;-------------------------------------------------------
@@ -1899,7 +2029,7 @@ b1756   LDA #$C2
         AND #$01
         BEQ b177B
         LDA #$10
-        STA a179B
+        STA sequenceCounterOfSomeSort
 
         ; Store the current symmetry setting at one of $C200,
         ; $C220, $C240, $C260 depending on the Function key
@@ -1907,7 +2037,7 @@ b1756   LDA #$C2
         LDY #$00
         LDA currentSymmetrySetting
         STA (currentSequencePtrLo),Y
-        LDA a0E3F
+        LDA smoothingDelay
         INY 
         STA (currentSequencePtrLo),Y
         RTS 
@@ -1926,7 +2056,7 @@ functionKeys
         .BYTE $04,$05
         .BYTE $06,$03
 
-a179B   .BYTE $FF,$60
+sequenceCounterOfSomeSort   .BYTE $FF,$60
 
 ;-------------------------------------------------------
 ; CheckKeyboardWhilePromptActive
@@ -1947,30 +2077,31 @@ b17AE   CMP #$85 ; Display Load/Abort
         ;Returns
 
 b17B5   LDA #$30
-        STA a11F7
-        STA a11F8
-        STA a11F9
-        LDX a179B
+        STA dataFreeDigitOne
+        STA dataFreeDigitTwo
+        STA dataFreeDigitThree
+        LDX sequenceCounterOfSomeSort
         BNE b17C8
         JMP ReturnPressed
         ; Returns
 
-b17C8   INC a11F9
-        LDA a11F9
+b17C8   INC dataFreeDigitThree
+        LDA dataFreeDigitThree
         CMP #$3A
         BNE b17E9
         LDA #$30
-        STA a11F9
-        INC a11F8
-        LDA a11F8
+        STA dataFreeDigitThree
+        INC dataFreeDigitTwo
+        LDA dataFreeDigitTwo
         CMP #$3A
         BNE b17E9
         LDA #$30
-        STA a11F8
-        INC a11F7
+        STA dataFreeDigitTwo
+        INC dataFreeDigitOne
 b17E9   DEX 
         BNE b17C8
-        JSR ResetSomeData
+
+        JSR UpdateDataFreeDisplay
         LDA a1884
         BEQ b1801
         LDA lastKeyPressed
@@ -1993,13 +2124,13 @@ b1801   LDA lastKeyPressed
         BEQ ReturnPressed
         CMP #$3C
         BNE b183C
-        JSR ResetSomeData
-        LDA a179B
-        STA a1A47
+        JSR UpdateDataFreeDisplay
+        LDA sequenceCounterOfSomeSort
+        STA currentSequenceCounterMaybe
         LDA currentSequencePtrLo
-        STA a1A48
+        STA prevSequencePtrLo
         LDA currentSequencePtrHi
-        STA a1A49
+        STA prevSequencePtrHi
         LDA #$00
         STA currentVariableMode
         STA a1884
@@ -2033,34 +2164,34 @@ j184E
         LDA currentSequencePtrHi
         ADC #$00
         STA currentSequencePtrHi
-        DEC a179B
+        DEC sequenceCounterOfSomeSort
         RTS 
 
 ;-------------------------------------------------------
 ; ReturnPressed
 ;-------------------------------------------------------
 ReturnPressed    
-        JSR ResetSomeData
+        JSR UpdateDataFreeDisplay
         LDA #$FF
         LDY #$02
         STA (currentSequencePtrLo),Y
         LDA #$00
         STA currentVariableMode
         STA a1884
-        STA a1A47
+        STA currentSequenceCounterMaybe
         STA sequencerActive
         RTS 
 
 a1884   .BYTE $00
 ;-------------------------------------------------------
-; ResetSomeData
+; UpdateDataFreeDisplay
 ;-------------------------------------------------------
-ResetSomeData
-        LDA a11F7
+UpdateDataFreeDisplay
+        LDA dataFreeDigitOne
         STA SCREEN_RAM + $03C6
-        LDA a11F8
+        LDA dataFreeDigitTwo
         STA SCREEN_RAM + $03C7
-        LDA a11F9
+        LDA dataFreeDigitThree
         STA SCREEN_RAM + $03C8
         RTS 
 
@@ -2079,26 +2210,27 @@ InitializeSequencer
 
 j18A9    
         LDY #$02
-        INC a0E3B
-        LDA a0E3B
-        CMP a0E41
+        INC currentStepCount
+        LDA currentStepCount
+        CMP bufferLength
         BNE b18BB
+
         LDA #$00
-        STA a0E3B
-b18BB   LDX a0E3B
-        LDA f0AB6,X
+        STA currentStepCount
+b18BB   LDX currentStepCount
+        LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BEQ b18D7
         LDA shouldDrawCursor
         AND trackingActivated
         BEQ b1901
-        STA a0E3B
+        STA currentStepCount
         TAX 
-        LDA f0AB6,X
+        LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BNE b1901
-b18D7   LDA a0E47
-        STA f0AB6,X
+b18D7   LDA baseLevel
+        STA currentIndexForCurrentStepArray,X
         LDA (currentSequencePtrLo),Y
         CMP #$C0
         BEQ b1901
@@ -2110,10 +2242,10 @@ b18D7   LDA a0E47
         LDA (currentSequencePtrLo),Y
         STA nextPixelYPositionArray,X
         LDA a191F
-        STA f0AF6,X
-        STA f0B36,X
+        STA initialFramesRemainingToNextPaintForStep,X
+        STA framesRemainingToNextPaintForStep,X
         LDA a1920
-        STA f0BB6,X
+        STA symmetrySettingForStepCount,X
 b1901   LDA currentSequencePtrLo
         CLC 
         ADC #$03
@@ -2147,30 +2279,30 @@ ActivateSequencer
         LDA shiftPressed
         AND #$01
         BNE b1945
-        LDA a0E45
+        LDA sequencerSpeed
         STA stepsRemainingInSequencerSequence
         LDA #$00
         STA currentVariableMode
         JSR DisplaySequencerState
         RTS 
 
-b1945   LDA a1A47
+b1945   LDA currentSequenceCounterMaybe
         BEQ b195D
-        LDA a1A47
-        STA a179B
-        LDA a1A48
+        LDA currentSequenceCounterMaybe
+        STA sequenceCounterOfSomeSort
+        LDA prevSequencePtrLo
         STA currentSequencePtrLo
-        LDA a1A49
+        LDA prevSequencePtrHi
         STA currentSequencePtrHi
         JMP DisplaySequFree
         ;Returns
 
 b195D   LDA #$FF
-        STA a179B
+        STA sequenceCounterOfSomeSort
         LDA currentSymmetrySetting
         LDY #$00
         STA (currentSequencePtrLo),Y
-        LDA a0E3F
+        LDA smoothingDelay
         INY 
         STA (currentSequencePtrLo),Y
 
@@ -2191,34 +2323,35 @@ b1973   LDA txtSequFree,X
 ; UpdatePointersFromSequenceData
 ;-------------------------------------------------------
 UpdatePointersFromSequenceData   
-        INC a0E3B
-        LDA a0E3B
-        CMP a0E41
+        INC currentStepCount
+        LDA currentStepCount
+        CMP bufferLength
         BNE b1992
+
         LDA #$00
-        STA a0E3B
+        STA currentStepCount
 b1992   TAX 
-        LDA f0AB6,X
+        LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BEQ b19A9
         LDA shouldDrawCursor
         AND trackingActivated
         BEQ b19D9
         TAX 
-        LDA f0AB6,X
+        LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BNE b19D9
 b19A9   LDY #$02
         LDA (currentSequencePtrLo),Y
         CMP #$C0
         BEQ b19D9
-        LDA a0E47
-        STA f0AB6,X
-        LDA customPresetSequenceData + $0301
-        STA f0AF6,X
-        STA f0B36,X
-        LDA customPresetSequenceData + $0300
-        STA f0BB6,X
+        LDA baseLevel
+        STA currentIndexForCurrentStepArray,X
+        LDA presetSequenceData + $0301
+        STA initialFramesRemainingToNextPaintForStep,X
+        STA framesRemainingToNextPaintForStep,X
+        LDA presetSequenceData + $0300
+        STA symmetrySettingForStepCount,X
         LDY #$02
         LDA (currentSequencePtrLo),Y
         STA pixelXPositionArray,X
@@ -2241,9 +2374,9 @@ b19D9   LDA currentSequencePtrLo
         BEQ b19EF
         RTS 
 
-b19EF   LDA #<customPresetSequenceData + $0300
+b19EF   LDA #<presetSequenceData + $0300
         STA currentSequencePtrLo
-        LDA #>customPresetSequenceData + $0300
+        LDA #>presetSequenceData + $0300
         STA currentSequencePtrHi
         RTS 
 
@@ -2279,13 +2412,13 @@ txtSequencer
       .TEXT 'SEQUENCER OFF   '
       .TEXT 'SEQUENCER ON    '
 .enc "none" 
-a1A47
+currentSequenceCounterMaybe
       .BYTE $00
-a1A48
+prevSequencePtrLo
       .BYTE $00
-a1A49
+prevSequencePtrHi
       .BYTE $00
-a1A4A
+patternUpdateDisplayInterval
       .BYTE $00
 
 recordingStorageLoPtr = $1F
@@ -2296,19 +2429,25 @@ recordingStorageHiPtr = $20
 StopOrStartRecording    
         LDA #>dynamicStorage
         STA recordingStorageHiPtr
+
         LDA #<dynamicStorage
         STA recordingStorageLoPtr
+
         LDA #$01
-        STA a1BE7
+        STA recordingOffset
+
         LDA shiftPressed
         AND #$01
         STA shiftPressed
+
         LDA playbackOrRecordActive
         ORA shiftPressed
         EOR #$02
         STA playbackOrRecordActive
+
         AND #$02
         BNE b1A72
+
         JMP DisplayStoppedRecording
 
 b1A72   LDA playbackOrRecordActive
@@ -2358,33 +2497,26 @@ b1AAC   BNE b1AA4
         LDA #$01
         STA dynamicStorage + $01
         LDA pixelXPosition
-        STA a1BE8
+        STA previousPixelXPosition
         LDA colorRAMLineTableIndex
-        STA a1BE9
+        STA previousColorRAMLineTableIndex
         RTS 
 
 b1AC5   LDA #$00
         STA currentColorToPaint
         JSR UpdateLineinColorRAMUsingIndex
-        LDA a1BE8
+        LDA previousPixelXPosition
         STA pixelXPosition
-        LDA a1BE9
+        LDA previousColorRAMLineTableIndex
         STA colorRAMLineTableIndex
         LDA #$FF
         STA a1BEB
         RTS 
 
+.enc "petscii" 
 txtPlayBackRecord
-        ; 'PLA'
-        .BYTE $D0,$CC,$C1
-        ; 'YING BAC'
-        .BYTE $D9,$C9,$CE,$C7,$A0,$C2,$C1,$C3
-        ; 'K®®®®REC'
-        .BYTE $CB,$AE,$AE,$AE,$AE,$D2,$C5,$C3
-        ; 'ORDING®®'
-        .BYTE $CF,$D2,$C4,$C9,$CE,$C7,$AE,$AE
-        ; '®®®®®'
-        .BYTE $AE,$AE,$AE,$AE,$AE
+        .TEXT 'PLAYING BACK',$AE,$AE,$AE,$AE,'RECORDING',$AE,$AE,$AE,$AE,$AE,$AE,$AE
+.enc "none" 
 
 ;-------------------------------------------------------
 ; DisplayStoppedRecording
@@ -2404,13 +2536,10 @@ b1B0D   LDA txtStopped,Y
         JMP WriteLastLineBufferToScreen
         ; Returns
 
+.enc "petscii" 
 txtStopped
-        ; 'STOPPE'
-        .BYTE $D3,$D4,$CF,$D0,$D0,$C5
-        ; 'D       '
-        .BYTE $C4,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-        ; '  '
-        .BYTE $A0,$A0
+        .TEXT 'STOPPED         '
+.enc "none" 
 playbackOrRecordActive
         .BYTE $00
 
@@ -2488,8 +2617,9 @@ b1B94   LDA $DC00    ;CIA1: Data Port Register A
         RTS 
 
 PlaybackRecordedJoystickInputs    
-        DEC a1BE7
+        DEC recordingOffset
         BEQ b1BA6
+
         LDY #$00
         LDA (recordingStorageLoPtr),Y
         STA lastJoystickInput
@@ -2507,7 +2637,8 @@ b1BA6   LDA recordingStorageLoPtr
         LDY #$01
         LDA (recordingStorageLoPtr),Y
         BEQ b1BC6
-        STA a1BE7
+
+        STA recordingOffset
         DEY 
         LDA (recordingStorageLoPtr),Y
         STA lastJoystickInput
@@ -2518,21 +2649,21 @@ b1BC6   LDA #>dynamicStorage
         LDA #<dynamicStorage
         STA recordingStorageLoPtr
         LDA #$01
-        STA a1BE7
+        STA recordingOffset
         LDA #$00
         STA currentColorToPaint
         JSR UpdateLineinColorRAMUsingIndex
-        LDA a1BE8
+        LDA previousPixelXPosition
         STA pixelXPosition
-        LDA a1BE9
+        LDA previousColorRAMLineTableIndex
         STA colorRAMLineTableIndex
         RTS 
 
-a1BE7
+recordingOffset
         .BYTE $00
-a1BE8
+previousPixelXPosition
         .BYTE $0C
-a1BE9
+previousColorRAMLineTableIndex
         .BYTE $0C
 a1BEA
         .BYTE $00
@@ -2568,52 +2699,63 @@ b1C0B   LDA #$83
         ADC #$08
         STA a1BEA
         JSR ClearLastLineOfScreen
+
         LDX #$00
 b1C28   LDA txtDefineAllLevelPixels,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$19
         BNE b1C28
+
         JSR WriteLastLineBufferToScreen
+
         LDA #$06
         STA a25
+
         LDY #$00
         TYA 
         STA (customPresetLoPtr),Y
+
         INY 
         LDA #$55
         STA (customPresetLoPtr),Y
+
         LDY #$81
         STA (customPresetLoPtr),Y
+
         DEY 
         LDA #$00
         STA (customPresetLoPtr),Y
+
         LDA #$07
         STA a24
+
         LDA #$01
         STA a26
+
         LDA #$17
         STA currentModeActive
+
         RTS 
 
 ;-------------------------------------------------------
 ; UpdateStuffAndReenterMainPaint
 ;-------------------------------------------------------
 UpdateStuffAndReenterMainPaint    
-        LDA #<p0C13
+        LDA #$13
         STA pixelXPosition
-        LDA #>p0C13
+        LDA #$0C
         STA colorRAMLineTableIndex
         JSR ReinitializeScreen
 b1C68   LDA a1BEA
-        STA dataPtrIndex
+        STA patternIndex
         LDA a25
         STA currentIndexToColorValues
         LDA #$00
         STA currentSymmetrySettingForStep
-        LDA #<p0C13
+        LDA #$13
         STA pixelXPositionZP
-        LDA #>p0C13
+        LDA #$0C
         STA pixelYPositionZP
         JSR LoopThroughPixelsAndPaint
         LDA a25
@@ -2770,9 +2912,9 @@ b1D70   LDA a1EAA
         JSR ROM_SETNAM ;$FFBD - set file name                    
         LDA #$01
         STA CURRENT_CHAR_COLOR
-        LDA #>customPresetSequenceData
+        LDA #>presetSequenceData
         STA presetHiPtr
-        LDA #<customPresetSequenceData
+        LDA #<presetSequenceData
         STA presetLoPtr
         LDX #$FF
         LDY #$CF
@@ -3030,22 +3172,21 @@ NMIInterruptHandler
         .BYTE $30,$48,$A9,$23,$48,$40
 
 
-;-------------------------------------------------------
-; CopyDataFrom2000ToC000
-;-------------------------------------------------------
 copyFromLoPtr = $FB
 copyFromHiPtr = $FC
 copyToLoPtr   = $FD
 copyToHiPtr   = $FE
-
-CopyDataFrom2000ToC000   
+;-------------------------------------------------------
+; MovePresetDataIntoPosition
+;-------------------------------------------------------
+MovePresetDataIntoPosition   
         LDY #$00
         TYA 
         STA copyFromLoPtr
         STA copyToLoPtr
-        LDA #$20
+        LDA #>presetSequenceDataSource
         STA copyFromHiPtr
-        LDA #$C0
+        LDA #>presetSequenceData
         STA copyToHiPtr
 
         LDX #$10
@@ -3067,25 +3208,25 @@ b1FD8   LDA f1FE1,X
         RTS 
 
 f1FE1=*-$01   
-        .BYTE $30,$0C,$30,$0C,$C3,$C2,$CD
-        .BYTE $38,$30,$00,$00,$00,$00,$00,$00
+        .BYTE $30,$0C,$30,$0C,$C3,$C2,$CD,$38
+        .BYTE $30,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00
 
 ;-------------------------------------------------------
 ; This is the main data driving the sequences in
-; Psychedelia. It's copied from this position to $C000 when
-; the game is loaded.
+; Psychedelia. It's copied from this position to $C000
+; (presetSequenceData)  when the game is loaded.
 ;
 ; The data for the 16 presets. Each chunk contains the following values:
 ;  colorBarCurrentValueForModePtr  
-;  seedValue                       
-;  initialValueForSteps            
-;  maxStepCount                    
+;  smoothingDelay                       
+;  cursorSpeed            
+;  bufferLength                    
 ;  displayCursorInitialValue       
 ;  indexForPresetColorValues       
-;  shouldUpdatePatternInitialValue 
-;  presetForCurrentColorIndex      
+;  pulseWidth 
+;  baseLevel      
 ;  presetColorValuesArray          
 ;  trackingActivated               
 ;  lineModeActivated               
@@ -3093,7 +3234,7 @@ f1FE1=*-$01
 ;  currentPatternElement
 ;  currentSymmetrySetting
 ;--------------------------------------------------------------------------
-f2000
+presetSequenceDataSource
 ;preset0
         .BYTE $00,$0C,$02,$1F,$01,$01,$07,$04
         .BYTE $01,$07,$00,$06,$02,$04,$05,$03
@@ -3174,43 +3315,53 @@ f2000
         .BYTE $01,$07,$00,$06,$02,$04,$05,$03
         .BYTE $07,$01,$FF,$00,$04,$04,$04,$00
         .BYTE $FF,$00,$00,$FF,$00,$FF,$15,$EF
+; customPreset0
         .BYTE $01,$0C,$07,$06,$07,$11,$0D,$07
         .BYTE $06,$11,$07,$FF,$0B,$07,$FF,$00
         .BYTE $FF,$21,$06,$00,$06,$01,$06,$41
         .BYTE $FF,$00,$06,$01,$06,$01,$06,$00
+; customPreset0
         .BYTE $01,$0C,$13,$08,$00,$07,$0F,$00
         .BYTE $FF,$00,$06,$01,$2A,$41,$02,$00
         .BYTE $04,$62,$FF,$41,$06,$40,$00,$6B
         .BYTE $04,$41,$FF,$00,$FF,$00,$FF,$00
+; customPreset0
         .BYTE $04,$01,$08,$01,$02,$FF,$01,$02
         .BYTE $08,$01,$02,$08,$01,$02,$08,$01
         .BYTE $02,$08,$01,$02,$08,$01,$02,$FF
         .BYTE $03,$02,$08,$03,$02,$08,$03,$02
+; customPreset0
         .BYTE $00,$11,$12,$09,$08,$12,$09,$08
         .BYTE $FF,$08,$03,$02,$08,$03,$02,$08
         .BYTE $03,$02,$FF,$00,$00,$00,$00,$01
         .BYTE $24,$00,$05,$01,$00,$00,$00,$00
+; customPreset0
         .BYTE $00,$BD,$00,$B9,$00,$BD,$00,$BD
         .BYTE $81,$BD,$81,$FF,$00,$BD,$F1,$FF
         .BYTE $00,$28,$81,$FF,$81,$AE,$83,$AE
         .BYTE $00,$FF,$81,$EE,$81,$AC,$C1,$BD
+; customPreset0
         .BYTE $C1,$24,$81,$FF,$C1,$FF,$00,$EE
         .BYTE $81,$BF,$85,$AE,$81,$EC,$E1,$BF
         .BYTE $83,$37,$00,$EE,$81,$BF,$C3,$2E
         .BYTE $81,$2E,$00,$FF,$00,$FF,$00,$FD
+; customPreset0
         .BYTE $05,$DC,$02,$EE,$81,$EC,$C7,$0C
         .BYTE $00,$68,$81,$EC,$03,$EE,$81,$EE
         .BYTE $85,$62,$81,$EE,$01,$EC,$87,$EA
         .BYTE $85,$FD,$83,$CD,$42,$EF,$00,$FF
+; customPreset0
         .BYTE $00,$28,$02,$EA,$81,$BD,$85,$BF
         .BYTE $81,$FF,$85,$EE,$00,$BF,$87,$BF
         .BYTE $00,$EE,$87,$FF,$81,$FF,$A7,$FE
         .BYTE $01,$FF,$80,$EE,$FD,$FF,$FF,$FF
         .BYTE $01,$0B,$04,$04,$07,$08,$09,$07
+; customPreset0
         .BYTE $0C,$0C,$07,$10,$11,$07,$14,$13
         .BYTE $07,$17,$13,$07,$FF,$01,$06,$41
         .BYTE $FF,$00,$06,$01,$06,$01,$06,$00
         .BYTE $00,$FF,$06,$00,$02,$00,$FF,$41
+; customPreset0
         .BYTE $46,$00,$06,$81,$AA,$41,$02,$00
         .BYTE $04,$62,$FF,$41,$06,$40,$00,$6B
         .BYTE $04,$C1,$FF,$00,$FF,$00,$FF,$00

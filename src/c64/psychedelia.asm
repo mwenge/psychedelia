@@ -34,8 +34,8 @@ timerBetweenKeyStrokes        = $12
 shouldDrawCursor              = $13
 currentSymmetrySettingForStep = $14
 currentSymmetrySetting        = $15
-offsetForYPos                           = $16
-a17                           = $17
+offsetForYPos                 = $16
+skipPixel                     = $17
 colorBarColorRamLoPtr         = $18
 colorBarColorRamHiPtr         = $19
 currentColorSet               = $1A
@@ -46,9 +46,9 @@ currentSequencePtrHi          = $1E
 lastJoystickInput             = $21
 customPresetLoPtr             = $22
 customPresetHiPtr             = $23
-a24                           = $24
-a25                           = $25
-a26                           = $26
+minIndexToColorValues                           = $24
+initialIndexToColorValues                           = $25
+currentIndexToPresetValue                           = $26
 lastKeyPressed                = $C5
 presetLoPtr                   = $FE
 presetHiPtr                   = $FF
@@ -215,7 +215,7 @@ PaintPixel
         BPL b08D0
 
         JSR GetColorRAMPtrFromLineTable
-        LDA a17
+        LDA skipPixel
         BNE b090D
 
         LDA (colorRamTableLoPtr2),Y
@@ -273,7 +273,8 @@ b0921   LDA #$07
 
         ; Paint pixels in the sequence until hitting a break
         ; at $55
-b0945   LDA previousPixelXPositionZP
+PixelPaintLoop   
+        LDA previousPixelXPositionZP
         CLC 
         ADC (xPosLoPtr),Y
         STA pixelXPositionZP
@@ -295,7 +296,7 @@ b0945   LDA previousPixelXPositionZP
 
         LDA (xPosLoPtr),Y
         CMP #$55
-        BNE b0945
+        BNE PixelPaintLoop
 
         DEC countToMatchCurrentIndex
         LDA countToMatchCurrentIndex
@@ -304,7 +305,7 @@ b0945   LDA previousPixelXPositionZP
         CMP #$01
         BEQ b0973
         INY 
-        JMP b0945
+        JMP PixelPaintLoop
 
 b0973   LDA previousPixelXPositionZP
         STA pixelXPositionZP
@@ -348,13 +349,15 @@ PushOffsetAndIndexAndPaintPixel
         JSR PaintPixel
         LDA currentSymmetrySettingForStep
         BNE b09E9
+
 b09E1   PLA 
         STA pixelYPositionZP
         PLA 
         STA pixelXPositionZP
         RTS 
 
-        .BYTE $60
+        RTS
+
 b09E9   CMP #$03
         BEQ b0A1B
         LDA #$27
@@ -473,7 +476,8 @@ symmetrySettingForStepCount
 ReinitializeSequences
         LDX #$00
         TXA 
-b0BF9   STA pixelXPositionArray,X
+ReinitLoop   
+        STA pixelXPositionArray,X
         STA pixelYPositionArray,X
         LDA #$FF
         STA currentIndexForCurrentStepArray,X
@@ -484,11 +488,12 @@ b0BF9   STA pixelXPositionArray,X
         STA symmetrySettingForStepCount,X
         INX 
 p0C13   CPX #$40
-        BNE b0BF9
+        BNE ReinitLoop
+
         STA timerBetweenKeyStrokes
         STA currentPatternElement
         STA shouldDrawCursor
-        STA a17
+        STA skipPixel
         LDA #$01
         STA currentSymmetrySetting
         RTS 
@@ -527,9 +532,10 @@ b0C42   LDA lastKeyPressed
 b0C48   LDA lastKeyPressed
         CMP #$02 ; Left/Right cursor key
         BNE b0C48
-b0C4E   LDA lastKeyPressed
+LoopUntilPressedAgain   
+        LDA lastKeyPressed
         CMP #$40 ;No key pressed
-        BNE b0C4E
+        BNE LoopUntilPressedAgain
 
 b0C54   LDA currentModeActive
         BEQ b0C6A
@@ -712,7 +718,7 @@ b0D6D   LDA lastJoystickInput
         ; Returns
 
         ; Player hasn't pressed fire.
-b0D7B   LDA a0E3D
+b0D7B   LDA stepsExceeded255
         BEQ b0D8B
         LDA stepsSincePressedFire
         BEQ b0D88
@@ -804,25 +810,26 @@ GetColorRAMPtrFromLineTableUsingIndex
         LDA colorRAMLineTableHiPtrArray,X
         STA colorRamTableHiPtr
         LDY pixelXPosition
-b0E2B   RTS 
+ReturnFromColorRamPtr   
+        RTS 
 
 ;-------------------------------------------------------
 ; UpdateLineinColorRAMUsingIndex
 ;-------------------------------------------------------
 UpdateLineinColorRAMUsingIndex   
-        LDA a1BEB
-        BNE b0E2B
+        LDA displaySavePromptActive
+        BNE ReturnFromColorRamPtr
         JSR GetColorRAMPtrFromLineTableUsingIndex
         LDA currentColorToPaint
         STA (colorRamTableLoPtr),Y
         RTS 
 
 
-pixelXPosition                           .BYTE $0A
-colorRAMLineTableIndex                   .BYTE $0A
-currentStepCount                         .BYTE $00
-stepsSincePressedFire                    .BYTE $00
-a0E3D                                    .BYTE $00
+pixelXPosition         .BYTE $0A
+colorRAMLineTableIndex .BYTE $0A
+currentStepCount       .BYTE $00
+stepsSincePressedFire  .BYTE $00
+stepsExceeded255        .BYTE $00
 
 COLOR_BAR_CURRENT = $00
 SMOOTHING_DELAY   = $01
@@ -839,20 +846,20 @@ BASE_LEVEL        = $09
 ; currentVariableMode is an index into this data structure
 ; when the user adjusts settings.
 presetValueArray
-colorBarCurrentValueForModePtr .BYTE $00
-smoothingDelay                 .BYTE $0C
-cursorSpeed                    .BYTE $02
-bufferLength                   .BYTE $1F
-pulseSpeed                     .BYTE $01
-indexForPresetColorValues      .BYTE $01
-lineWidth                      .BYTE $07
-sequencerSpeed                 .BYTE $04
-pulseWidth                     .BYTE $01
-baseLevel                      .BYTE $07
-presetColorValuesArray         .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
-trackingActivated              .BYTE $FF
-lineModeActivated              .BYTE $00
-patternIndex                   .BYTE $05
+unusedPresetByte          .BYTE $00
+smoothingDelay            .BYTE $0C
+cursorSpeed               .BYTE $02
+bufferLength              .BYTE $1F
+pulseSpeed                .BYTE $01
+indexForColorBarDisplay .BYTE $01
+lineWidth                 .BYTE $07
+sequencerSpeed            .BYTE $04
+pulseWidth                .BYTE $01
+baseLevel                 .BYTE $07
+presetColorValuesArray    .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
+trackingActivated         .BYTE $FF
+lineModeActivated         .BYTE $00
+patternIndex              .BYTE $05
 
 
 customPreset0 = $C800
@@ -1453,11 +1460,11 @@ ResetAndReenterMainPaint
         LDA #$00
         STA currentIndexToColorValues
         LDA #$01
-        STA a17
+        STA skipPixel
         JSR PushOffsetAndIndexAndPaintPixel
         INC pixelYPositionZP
         LDA #$00
-        STA a17
+        STA skipPixel
         LDA lineWidth
         EOR #$07
         STA currentIndexToColorValues
@@ -1652,7 +1659,7 @@ MaybeInColorMode
         BNE MaybeEnterPressed
 
         ; For Color Mode update some variables.
-        LDX indexForPresetColorValues
+        LDX indexForColorBarDisplay
         LDY currentColorSet
         LDA colorValuesPtr,X
         STA presetColorValuesArray,Y
@@ -1686,12 +1693,12 @@ b149E   CMP colorValuesPtr,Y
         CPY #$10
         BNE b149E
 
-b14A8   STY indexForPresetColorValues
+b14A8   STY indexForColorBarDisplay
         LDX currentVariableMode
 
 b14AE   LDA increaseOffsetForPresetValueArray,X
         STA currentColorBarOffset
-        LDA colorBarCurrentValueForModePtr,X
+        LDA presetValueArray,X
         STA maxToDrawOnColorBar
         TXA 
         PHA 
@@ -1731,25 +1738,27 @@ b14EC   JSR WriteLastLineBufferToScreen
 ;-------------------------------------------------------
 CheckIfEnterPressed    
         LDA lastKeyPressed
-        CMP #$01
-        BEQ b14F9
+        CMP #$01 ; Enter Pressed
+        BEQ EnterHasBeenPressed
         RTS 
 
         ; Enter pressed
-b14F9   LDA currentVariableMode
+EnterHasBeenPressed   
+        LDA currentVariableMode
         CMP #$05
-        BNE b1509
+        BNE ReachedLastColor
 
         ; In Color Change mode, move to the next color set
         ; until you reach the last one.
         INC currentColorSet
         LDA currentColorSet
         CMP #$08
-        BEQ b1509
+        BEQ ReachedLastColor
         RTS 
 
         ; Enter was pressed, so exit variable mode.
-b1509   LDA #$00
+ReachedLastColor   
+        LDA #$00
         STA currentVariableMode
         STA enterWasPressed
         RTS 
@@ -2063,9 +2072,9 @@ sequenceCounterOfSomeSort   .BYTE $FF,$60
 ;-------------------------------------------------------
 CheckKeyboardWhilePromptActive 
         LDA currentVariableMode
-        CMP #$83
+        CMP #CUSTOM_PRESET_ACTIVE
         BNE b17A7
-        JMP CheckKeyboardInputForOtherPrompts
+        JMP CheckKeyboardInputForCustomPresets
 
 b17A7   CMP #$84
         BNE b17AE
@@ -2102,7 +2111,7 @@ b17E9   DEX
         BNE b17C8
 
         JSR UpdateDataFreeDisplay
-        LDA a1884
+        LDA customPromptsActive
         BEQ b1801
         LDA lastKeyPressed
         CMP #$40
@@ -2110,14 +2119,14 @@ b17E9   DEX
         RTS 
 
 b17FB   LDA #$00
-        STA a1884
+        STA customPromptsActive
 b1800   RTS 
 
 b1801   LDA lastKeyPressed
         CMP #$40
         BEQ b1800
         LDX #$01
-        STX a1884
+        STX customPromptsActive
         CMP #$39
         BEQ b183D
         CMP #$01
@@ -2133,7 +2142,7 @@ b1801   LDA lastKeyPressed
         STA prevSequencePtrHi
         LDA #$00
         STA currentVariableMode
-        STA a1884
+        STA customPromptsActive
         STA sequencerActive
         LDY #$02
         LDA #$FF
@@ -2145,7 +2154,7 @@ b183D   LDY #$02
         AND #$01
         BEQ b184B
         LDA #$C0
-f1848   JMP j184E
+        JMP j184E
 
 b184B   LDA pixelXPosition
 
@@ -2177,12 +2186,12 @@ ReturnPressed
         STA (currentSequencePtrLo),Y
         LDA #$00
         STA currentVariableMode
-        STA a1884
+        STA customPromptsActive
         STA currentSequenceCounterMaybe
         STA sequencerActive
         RTS 
 
-a1884   .BYTE $00
+customPromptsActive   .BYTE $00
 ;-------------------------------------------------------
 ; UpdateDataFreeDisplay
 ;-------------------------------------------------------
@@ -2510,7 +2519,7 @@ b1AC5   LDA #$00
         LDA previousColorRAMLineTableIndex
         STA colorRAMLineTableIndex
         LDA #$FF
-        STA a1BEB
+        STA displaySavePromptActive
         RTS 
 
 .enc "petscii" 
@@ -2525,7 +2534,7 @@ DisplayStoppedRecording
         LDA #$00
         STA playbackOrRecordActive
         STA $D020    ;Border Color
-        STA a1BEB
+        STA displaySavePromptActive
         TAY 
         JSR ClearLastLineOfScreen
 b1B0D   LDA txtStopped,Y
@@ -2667,13 +2676,14 @@ previousColorRAMLineTableIndex
         .BYTE $0C
 a1BEA
         .BYTE $00
-a1BEB
+displaySavePromptActive
         .BYTE $00
 .enc "petscii" 
 txtDefineAllLevelPixels
         .TEXT 'DEFINE ALL LEVEL ',$B2,' PIXELS'
 .enc "none" 
 
+CUSTOM_PRESET_ACTIVE = $83
 ;-------------------------------------------------------
 ; DisplayCustomPreset
 ;-------------------------------------------------------
@@ -2683,14 +2693,14 @@ DisplayCustomPreset
         BEQ b1C0B
         RTS 
 
-b1C0B   LDA #$83
+b1C0B   LDA #CUSTOM_PRESET_ACTIVE
         STA currentVariableMode
 
         ; Custome presets are stored between $C800 and
         ; $CFFF.
         LDA #$00
         STA customPresetLoPtr
-        STA a1BEB
+        STA displaySavePromptActive
         LDA customPresetHiPtrArray,X
         STA customPresetHiPtr
 
@@ -2710,7 +2720,7 @@ b1C28   LDA txtDefineAllLevelPixels,X
         JSR WriteLastLineBufferToScreen
 
         LDA #$06
-        STA a25
+        STA initialIndexToColorValues
 
         LDY #$00
         TYA 
@@ -2728,10 +2738,10 @@ b1C28   LDA txtDefineAllLevelPixels,X
         STA (customPresetLoPtr),Y
 
         LDA #$07
-        STA a24
+        STA minIndexToColorValues
 
         LDA #$01
-        STA a26
+        STA currentIndexToPresetValue
 
         LDA #$17
         STA currentModeActive
@@ -2749,7 +2759,7 @@ UpdateStuffAndReenterMainPaint
         JSR ReinitializeScreen
 b1C68   LDA a1BEA
         STA patternIndex
-        LDA a25
+        LDA initialIndexToColorValues
         STA currentIndexToColorValues
         LDA #$00
         STA currentSymmetrySettingForStep
@@ -2758,7 +2768,7 @@ b1C68   LDA a1BEA
         LDA #$0C
         STA pixelYPositionZP
         JSR LoopThroughPixelsAndPaint
-        LDA a25
+        LDA initialIndexToColorValues
         BNE b1C68
         JSR ReinitializeScreen
         LDA #$00
@@ -2766,10 +2776,10 @@ b1C68   LDA a1BEA
         JMP MainPaintRoutine
 
 ;-------------------------------------------------------
-; CheckKeyboardInputForOtherPrompts
+; CheckKeyboardInputForCustomPresets
 ;-------------------------------------------------------
-CheckKeyboardInputForOtherPrompts    
-        LDA a1884
+CheckKeyboardInputForCustomPresets    
+        LDA customPromptsActive
         BEQ b1CA2
         LDA lastKeyPressed
         CMP #$40
@@ -2777,22 +2787,27 @@ CheckKeyboardInputForOtherPrompts
         RTS 
 
 b1C9C   LDA #$00
-        STA a1884
-b1CA1   RTS 
+        STA customPromptsActive
+ReturnFromOtherPrompts   
+        RTS 
 
 b1CA2   LDA lastKeyPressed
         CMP #$40
-        BEQ b1CA1
-        LDA #$FF
-        STA a1884
-        LDA lastKeyPressed
-        CMP #$01
-        BEQ b1CB6
-        JMP j1CEF
+        BEQ ReturnFromOtherPrompts
 
-b1CB6   INC a26
+        LDA #$FF
+        STA customPromptsActive
+
+        LDA lastKeyPressed
+        CMP #$01 ; Return pressed?
+        BEQ EnterPressed
+
+        JMP MaybeLeftArrowPressed2
+
+EnterPressed   
+        INC currentIndexToPresetValue
         LDA #$00
-        LDY a26
+        LDY currentIndexToPresetValue
         STA (customPresetLoPtr),Y
         PHA 
         TYA 
@@ -2804,15 +2819,15 @@ b1CB6   INC a26
         INY 
         LDA #$55
         STA (customPresetLoPtr),Y
-        LDY a26
+        LDY currentIndexToPresetValue
         INY 
         STA (customPresetLoPtr),Y
-        STY a26
+        STY currentIndexToPresetValue
         LDA #$07
-        STA a24
-        DEC a25
+        STA minIndexToColorValues
+        DEC initialIndexToColorValues
         BEQ b1CE6
-        LDA a25
+        LDA initialIndexToColorValues
         EOR #$07
         CLC 
         ADC #$31
@@ -2824,10 +2839,11 @@ b1CE6   LDA #$00
         JSR ClearLastLineOfScreen
 b1CEE   RTS 
 
-j1CEF    
-        CMP #$39
+MaybeLeftArrowPressed2
+        CMP #$39 ; Left arrow pressed.
         BNE b1CEE
-        LDY a26
+
+        LDY currentIndexToPresetValue
         LDA pixelXPosition
         SEC 
         SBC #$13
@@ -2835,7 +2851,7 @@ j1CEF
         INY 
         LDA #$55
         STA (customPresetLoPtr),Y
-        STY a26
+        STY currentIndexToPresetValue
         TYA 
         CLC 
         ADC #$7F
@@ -2847,11 +2863,11 @@ b1D0D   SBC #$0C
         INY 
         LDA #$55
         STA (customPresetLoPtr),Y
-        DEC a24
+        DEC minIndexToColorValues
         BEQ b1D1B
         RTS 
 
-b1D1B   JMP b1CB6
+b1D1B   JMP EnterPressed
 
 ;-------------------------------------------------------
 ; GetCustomPatternElement
@@ -2860,11 +2876,12 @@ GetCustomPatternElement
         JSR ClearLastLineOfScreen
 
         LDX #$00
-b1D23   LDA txtCustomPatterns,X
+txtPatternLoop   
+        LDA txtCustomPatterns,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$0E
-        BNE b1D23
+        BNE txtPatternLoop
 
         LDA currentPatternElement
         AND #$07
@@ -2896,7 +2913,7 @@ DisplaySavePromptScreen
         LDA #$13
         JSR $FFD2
         LDA #$FF
-        STA a1BEB
+        STA displaySavePromptActive
         JSR InitializeScreenWithInitCharacter
 b1D70   LDA a1EAA
         BEQ b1D70
@@ -2972,7 +2989,7 @@ b1DE6   LDA #$01
 j1E08    
         LDA #$00
         STA currentModeActive
-        STA a1BEB
+        STA displaySavePromptActive
         STA a1EAA
         JSR ROM_CLALL ;$FFE7 - close or abort all files         
         JSR ReinitializeScreen
@@ -3017,8 +3034,10 @@ CheckKeyboardInputWhileSavePromptActive
         RTS 
 
 b1E74   LDA lastKeyPressed
-        CMP #$0A
-        BNE b1E87
+        CMP #$0A ; 'A' pressed?
+        BNE MaybeM_Pressed
+
+        ; 'A' pressed.
         LDA #$00
         STA currentModeActive
 
@@ -3027,16 +3046,26 @@ j1E7F
         STA currentVariableMode
         JMP ClearLastLineOfScreen
 
-b1E87   CMP #$24
-        BNE b1E98
+MaybeM_Pressed   
+        CMP #$24 ; 'M' pressed?
+        BNE MaybeP_Pressed
+
+        ; Selecting MOTION saves the stored sequence of joystick moves used in
+        ; the Record option. (Long performances take a little while!). The
+        ; parameters are saved as GOATS and the motion as SHEEP (| suggest you
+        ; use opposite sides of a short cassette to store these on). 
         LDA #$02
         STA a1EAA
         LDA #$18
         STA currentModeActive
         JMP j1E7F
 
-b1E98   CMP #$29
+MaybeP_Pressed   
+        CMP #$29 ; 'P' pressed?
         BNE b1EA9
+
+        ; Selecting PARAMETERS saves all presets, burst gens and sequencer,
+        ; plus all user-defined shapes.
         LDA #$01
         STA a1EAA
         LDA #$18
@@ -3084,6 +3113,7 @@ CheckKeyboardInputWhileLoadAbortActive
 
 b1EE5   CMP #$14 ; 'C'
         BNE b1EFB
+
         ; 'C' pressed
         LDA #$03
         STA a1EAA
@@ -3097,35 +3127,31 @@ b1EFB   RTS
 
 .enc "petscii" 
 txtContinueLoadOrAbort
-        .TEXT $A8,'C',$A9,'ONTINUE LO'
-        .TEXT 'AD',$AC,' OR ',$A8,'A',$A9,'BORT',$BF,' '
+        .TEXT $A8,'C',$A9,'ONTINUE LOAD',$AC,' OR ',$A8,'A',$A9,'BORT',$BF,' '
         .TEXT '           '
 .enc "none" 
-demoModeActive
-        .BYTE $00
-a1F25
-        .BYTE $01
-a1F26
-        .BYTE $10
+demoModeActive          .BYTE $00
+joystickInputDebounce   .BYTE $01
+joystickInputRandomizer .BYTE $10
 
 ;-------------------------------------------------------
 ; PerformRandomJoystickMovement
 ;-------------------------------------------------------
 PerformRandomJoystickMovement 
-        DEC a1F25
+        DEC joystickInputDebounce
         BEQ b1F2D
         RTS 
 
 b1F2D   JSR PutRandomByteInAccumulator
         AND #$1F
         ORA #$01
-        STA a1F25
-        LDA a1F26
+        STA joystickInputDebounce
+        LDA joystickInputRandomizer
         EOR #$10
-        STA a1F26
+        STA joystickInputRandomizer
         JSR PutRandomByteInAccumulator
         AND #$0F
-        ORA a1F26
+        ORA joystickInputRandomizer
         EOR #$1F
         STA lastJoystickInput
         DEC demoModeCountDownToChangePreset
@@ -3219,12 +3245,12 @@ f1FE1=*-$01
 ; (presetSequenceData)  when the game is loaded.
 ;
 ; The data for the 16 presets. Each chunk contains the following values:
-;  colorBarCurrentValueForModePtr  
+;  unusedPresetByte  
 ;  smoothingDelay                       
 ;  cursorSpeed            
 ;  bufferLength                    
 ;  displayCursorInitialValue       
-;  indexForPresetColorValues       
+;  indexForColorBarDisplay       
 ;  pulseWidth 
 ;  baseLevel      
 ;  presetColorValuesArray          

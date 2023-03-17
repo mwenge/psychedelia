@@ -53,15 +53,17 @@ lastKeyPressed                = $C5
 presetLoPtr                   = $FE
 presetHiPtr                   = $FF
 
-SCREEN_RAM                    = $0400
-COLOR_RAM                     = $D800
-CURRENT_CHAR_COLOR            = $0286
-shiftKey                      = $028D
-a7FFF                         = $7FFF
-presetSequenceData      = $C000
+shiftKey           = $028D
+a7FFF              = $7FFF
+presetSequenceData = $C000
+colorRamLoPtr      = $FB
+colorRamHiPtr      = $FC
 
 eEA31                         = $EA31
 
+SCREEN_RAM                    = $0400
+COLOR_RAM                     = $D800
+CURRENT_CHAR_COLOR            = $0286
 ROM_IOINIT                    = $FF84
 ROM_READST                    = $FFB7
 ROM_SETLFS                    = $FFBA
@@ -86,16 +88,18 @@ GRAY2        = $0C
 LTGREEN      = $0D
 LTBLUE       = $0E
 GRAY3        = $0F
+
 * = $0801
 ;-----------------------------------------------------------------------------------
 ; Start program at InitializeProgram (SYS 2064)
+; SYS 2064 ($0810)
+; $9E = SYS
+; $32,$30,$36,$34 = 2064
 ;-----------------------------------------------------------------------------------
         .BYTE $0B,$08,$C1,$07,$9E,$32,$30,$36,$34
-        .BYTE $00,$00,$00,$F9
-        .BYTE $02,$F9
 
-colorRamLoPtr = $FB
-colorRamHiPtr = $FC
+        .BYTE $00,$00,$00,$F9,$02,$F9
+
 ;-------------------------------------------------------
 ; InitializeProgram
 ;-------------------------------------------------------

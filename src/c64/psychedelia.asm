@@ -15,6 +15,7 @@
 ;    May you do good and not evil.
 ;    May you find forgiveness for yourself and forgive others.
 ;    May you share freely, never taking more than you give.
+
 pixelXPositionZP              = $02
 pixelYPositionZP              = $03
 currentIndexToColorValues     = $04
@@ -44,50 +45,22 @@ presetSequenceDataHiPtr       = $1C
 currentSequencePtrLo          = $1D
 currentSequencePtrHi          = $1E
 lastJoystickInput             = $21
-customPatternLoPtr             = $22
-customPatternHiPtr             = $23
+customPatternLoPtr            = $22
+customPatternHiPtr            = $23
 minIndexToColorValues         = $24
 initialIndexToColorValues     = $25
 currentIndexToPresetValue     = $26
 lastKeyPressed                = $C5
 presetLoPtr                   = $FE
 presetHiPtr                   = $FF
+shiftKey                      = $028D
+storageOfSomeKind             = $7FFF
+presetSequenceData            = $C000
+colorRamLoPtr                 = $FB
+colorRamHiPtr                 = $FC
 
-shiftKey           = $028D
-a7FFF              = $7FFF
-presetSequenceData = $C000
-colorRamLoPtr      = $FB
-colorRamHiPtr      = $FC
 
-eEA31                         = $EA31
-
-SCREEN_RAM                    = $0400
-COLOR_RAM                     = $D800
-CURRENT_CHAR_COLOR            = $0286
-ROM_IOINIT                    = $FF84
-ROM_READST                    = $FFB7
-ROM_SETLFS                    = $FFBA
-ROM_SETNAM                    = $FFBD
-ROM_LOAD                      = $FFD5
-ROM_SAVE                      = $FFD8
-ROM_CLALL                     = $FFE7
-
-BLACK        = $00
-WHITE        = $01
-RED          = $02
-CYAN         = $03
-PURPLE       = $04
-GREEN        = $05
-BLUE         = $06
-YELLOW       = $07
-ORANGE       = $08
-BROWN        = $09
-LTRED        = $0A
-GRAY1        = $0B
-GRAY2        = $0C
-LTGREEN      = $0D
-LTBLUE       = $0E
-GRAY3        = $0F
+.include "constants.asm"
 
 * = $0801
 ;-----------------------------------------------------------------------------------
@@ -169,7 +142,8 @@ InitializeScreenWithInitCharacter
         LDX #$00 
 
 currentPixel = *+$01
-b0892   LDA #$CF
+InitScreenLoop   
+        LDA #$CF
         STA SCREEN_RAM + $0000,X
         STA SCREEN_RAM + $0100,X
         STA SCREEN_RAM + $0200,X
@@ -180,12 +154,14 @@ b0892   LDA #$CF
         STA COLOR_RAM + $0200,X
         STA COLOR_RAM + $02C0,X
         DEX 
-        BNE b0892
+        BNE InitScreenLoop
         RTS 
 
 presetKeyCodes
-        .BYTE $39,$38,$3B,$08,$0B,$10,$13,$18
-        .BYTE $1B,$20,$23,$28,$2B,$30,$33,$00
+        .BYTE KEY_LEFT,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7
+        .BYTE KEY_8,KEY_9,KEY_0,KEY_PLUS,KEY_MINUS,KEY_POUND
+        .BYTE KEY_CLR_HOME,KEY_INST_DEL
+
 
 ;-------------------------------------------------------
 ; GetColorRAMPtrFromLineTable
@@ -331,35 +307,22 @@ b0973   LDA previousPixelXPositionZP
 ; in starOneXPosArray and starOneYPosArray 
 ; draws the square of 0s at the centre of the star.
 ;
-;        5       
-;                
-;       4 4      
-;        3       
-;        2       
-;        1       
-;   4   000   4  
-; 5  3210 0123  5
-;   4   000   4  
-;        1       
-;        2       
-;        3       
-;       4 4      
-;                
-;        5       
-starOneXPosArray  .BYTE $00,$01,$01,$01,$00,$FF,$FF,$FF,$55
-                  .BYTE $00,$02,$00,$FE,$55
-                  .BYTE $00,$03,$00,$FD,$55
-                  .BYTE $00,$04,$00,$FC,$55
-                  .BYTE $FF,$01,$05,$05,$01,$FF,$FB,$FB,$55
-                  .BYTE $00,$07,$00,$F9,$55
-                  .BYTE $55
-starOneYPosArray  .BYTE $FF,$FF,$00,$01,$01,$01,$00,$FF,$55
-                  .BYTE $FE,$00,$02,$00,$55
-                  .BYTE $FD,$00,$03,$00,$55
-                  .BYTE $FC,$00,$04,$00,$55
-                  .BYTE $FB,$FB,$FF,$01,$05,$05,$01,$FF,$55
-                  .BYTE $F9,$00,$07,$00,$55
-                  .BYTE $55
+
+starOneXPosArray  .BYTE $00,$01,$01,$01,$00,$FF,$FF,$FF,$55       ;        5       
+                  .BYTE $00,$02,$00,$FE,$55                       ;                
+                  .BYTE $00,$03,$00,$FD,$55                       ;       4 4      
+                  .BYTE $00,$04,$00,$FC,$55                       ;        3       
+                  .BYTE $FF,$01,$05,$05,$01,$FF,$FB,$FB,$55       ;        2       
+                  .BYTE $00,$07,$00,$F9,$55                       ;        1       
+                  .BYTE $55                                       ;   4   000   4  
+starOneYPosArray  .BYTE $FF,$FF,$00,$01,$01,$01,$00,$FF,$55       ; 5  3210 0123  5
+                  .BYTE $FE,$00,$02,$00,$55                       ;   4   000   4  
+                  .BYTE $FD,$00,$03,$00,$55                       ;        1       
+                  .BYTE $FC,$00,$04,$00,$55                       ;        2       
+                  .BYTE $FB,$FB,$FF,$01,$05,$05,$01,$FF,$55       ;        3       
+                  .BYTE $F9,$00,$07,$00,$55                       ;       4 4      
+                  .BYTE $55                                       ;                
+                                                                  ;        5       
 
 countToMatchCurrentIndex   .BYTE $00
 
@@ -562,7 +525,8 @@ MainPaintLoop
         ; Left/Right cursor key pauses the paint animation.
         ; This section just loops around if the left/right keys
         ; are pressed and keeps looping until they're pressed again.
-LastKeyLoop   LDA lastKeyPressed
+LastKeyLoop   
+        LDA lastKeyPressed
         CMP #$40 ;  No key pressed
         BNE LastKeyLoop
 MPKeyLoop   
@@ -859,7 +823,7 @@ DrawCursorAndReturnFromInterrupt
 ;-------------------------------------------------------
 JumpToCheckKeyboardInput    
         JSR CheckKeyboardInput
-        JMP eEA31
+        JMP RETURN_INTERRUPT
 
 ;-------------------------------------------------------
 ; GetColorRAMPtrFromLineTableUsingIndex
@@ -890,37 +854,27 @@ pixelXPosition         .BYTE $0A
 colorRAMLineTableIndex .BYTE $0A
 currentStepCount       .BYTE $00
 stepsSincePressedFire  .BYTE $00
-stepsExceeded255        .BYTE $00
+stepsExceeded255       .BYTE $00
 
-COLOR_BAR_CURRENT = $00
-SMOOTHING_DELAY   = $01
-CURSOR_SPEED      = $02
-BUFFER_LENGTH     = $03
-PULSE_SPEED       = $04
-COLOR_CHANGE      = $05
-LINE_WIDTH        = $06
-SEQUENCER_SPEED   = $07
-PULSE_WIDTH       = $08
-BASE_LEVEL        = $09
 ; This is where the presets get loaded to. It represents
 ; the data structure for the presets.
 ; currentVariableMode is an index into this data structure
 ; when the user adjusts settings.
 presetValueArray
-unusedPresetByte          .BYTE $00
-smoothingDelay            .BYTE $0C
-cursorSpeed               .BYTE $02
-bufferLength              .BYTE $1F
-pulseSpeed                .BYTE $01
+unusedPresetByte        .BYTE $00
+smoothingDelay          .BYTE $0C
+cursorSpeed             .BYTE $02
+bufferLength            .BYTE $1F
+pulseSpeed              .BYTE $01
 indexForColorBarDisplay .BYTE $01
-lineWidth                 .BYTE $07
-sequencerSpeed            .BYTE $04
-pulseWidth                .BYTE $01
-baseLevel                 .BYTE $07
-presetColorValuesArray    .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
-trackingActivated         .BYTE $FF
-lineModeActivated         .BYTE $00
-patternIndex              .BYTE $05
+lineWidth               .BYTE $07
+sequencerSpeed          .BYTE $04
+pulseWidth              .BYTE $01
+baseLevel               .BYTE $07
+presetColorValuesArray  .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
+trackingActivated       .BYTE $FF
+lineModeActivated       .BYTE $00
+patternIndex            .BYTE $05
 
 
 customPattern0XPosArray = $C800
@@ -989,20 +943,13 @@ pixelYPositionHiPtrArray .BYTE >starOneYPosArray,>theTwistYPosArray,>laLlamitaYP
 ; An illustration of the pattern each data structure creates
 ; is given before it.
 
-;     1  
-;   01   
-;  6 222 
-;  543   
-; 5 4 3  
-;   4  3 
-;       3
-theTwistXPosArray .BYTE $00,$55
-                  .BYTE $01,$02,$55
-                  .BYTE $01,$02,$03,$55
-                  .BYTE $01,$02,$03,$04,$55
-                  .BYTE $00,$00,$00,$55
-                  .BYTE $FF,$FE,$55
-                  .BYTE $FF,$55
+theTwistXPosArray .BYTE $00,$55                            ;     1  
+                  .BYTE $01,$02,$55                        ;   01   
+                  .BYTE $01,$02,$03,$55                    ;  6 222 
+                  .BYTE $01,$02,$03,$04,$55                ;  543   
+                  .BYTE $00,$00,$00,$55                    ; 5 4 3  
+                  .BYTE $FF,$FE,$55                        ;   4  3 
+                  .BYTE $FF,$55                            ;       3
                   .BYTE $55
 theTwistYPosArray .BYTE $FF,$55
                   .BYTE $FF,$FE,$55
@@ -1013,43 +960,27 @@ theTwistYPosArray .BYTE $FF,$55
                   .BYTE $00,$55
                   .BYTE $55
 
-;  0      
-; 06      
-;  0      
-;  1    3 
-;  12223 3
-;  22223  
-;  333 4  
-;  4   4  
-; 54  54  
-;       
-laLlamitaXPosArray  .BYTE $00,$FF,$00,$55
-                    .BYTE $00,$00,$55
-                    .BYTE $01,$02,$03,$00,$01,$02,$03,$55
-                    .BYTE $04,$05,$06,$04,$00,$01,$02,$55
-                    .BYTE $04,$00,$04,$00,$04,$55
-                    .BYTE $FF,$03,$55
-                    .BYTE $00,$55
-laLlamitaYPosArray  .BYTE $FF,$00,$01,$55
-                    .BYTE $02,$03,$55
+laLlamitaXPosArray  .BYTE $00,$FF,$00,$55                    ;  0       
+                    .BYTE $00,$00,$55                        ; 06      
+                    .BYTE $01,$02,$03,$00,$01,$02,$03,$55    ;  0      
+                    .BYTE $04,$05,$06,$04,$00,$01,$02,$55    ;  1    3 
+                    .BYTE $04,$00,$04,$00,$04,$55            ;  12223 3
+                    .BYTE $FF,$03,$55                        ;  22223  
+                    .BYTE $00,$55                            ;  333 4  
+laLlamitaYPosArray  .BYTE $FF,$00,$01,$55                    ;  4   4  
+                    .BYTE $02,$03,$55                        ; 54  54  
                     .BYTE $03,$03,$03,$04,$04,$04,$04,$55
                     .BYTE $03,$02,$03,$04,$05,$05,$05,$55
                     .BYTE $05,$06,$06,$07,$07,$55
                     .BYTE $07,$07,$55
                     .BYTE $00,$55
 
-;    1  
-;   0  2
-;    6  
-; 4     
-;     3 
-;  5    
-starTwoXPosArray  .BYTE $FF,$55
-                  .BYTE $00,$55
-                  .BYTE $02,$55
-                  .BYTE $01,$55
-                  .BYTE $FD,$55
-                  .BYTE $FE,$55
+starTwoXPosArray  .BYTE $FF,$55                  ;    1  
+                  .BYTE $00,$55                  ;   0  2
+                  .BYTE $02,$55                  ;    6  
+                  .BYTE $01,$55                  ; 4     
+                  .BYTE $FD,$55                  ;     3 
+                  .BYTE $FE,$55                  ;  5    
                   .BYTE $00,$55
 starTwoYPosArray  .BYTE $FF,$55
                   .BYTE $FE,$55
@@ -1059,59 +990,34 @@ starTwoYPosArray  .BYTE $FF,$55
                   .BYTE $FC,$55
                   .BYTE $00,$55
 
-;       5      
-;              
-;       4      
-;       3      
-;       2      
-;      202     
-;     20602    
-;    3     3   
-;   4       4  
-;              
-; 5           5
-deltoidXPosArray  .BYTE $00,$01,$FF,$55
-                  .BYTE $00,$55
-                  .BYTE $00,$01,$02,$FE,$FF,$55
-                  .BYTE $00,$03,$FD,$55
-                  .BYTE $00,$04,$FC,$55
-                  .BYTE $00,$06,$FA,$55
-                  .BYTE $00,$55
-deltoidYPosArray  .BYTE $FF,$00,$00,$55
-                  .BYTE $00,$55
-                  .BYTE $FE,$FF,$00,$00,$FF,$55
-                  .BYTE $FD,$01,$01,$55
+deltoidXPosArray  .BYTE $00,$01,$FF,$55           ;       5      
+                  .BYTE $00,$55                   ;              
+                  .BYTE $00,$01,$02,$FE,$FF,$55   ;       4      
+                  .BYTE $00,$03,$FD,$55           ;       3      
+                  .BYTE $00,$04,$FC,$55           ;       2      
+                  .BYTE $00,$06,$FA,$55           ;      202     
+                  .BYTE $00,$55                   ;     20602    
+deltoidYPosArray  .BYTE $FF,$00,$00,$55           ;    3     3   
+                  .BYTE $00,$55                   ;   4       4  
+                  .BYTE $FE,$FF,$00,$00,$FF,$55   ;              
+                  .BYTE $FD,$01,$01,$55           ; 5           5
                   .BYTE $FC,$02,$02,$55
                   .BYTE $FA,$04,$04,$55
                   .BYTE $00,$55
 
-; 5            
-;            4 
-;   3          
-;          2   
-; 5   1       5
-;   3    0  3  
-;       6      
-;   3  0    3  
-; 5       1   5
-;    2         
-;           3  
-;  4           
-;             5
-
-diffusedXPosArray .BYTE $FF,$01,$55
-                  .BYTE $FE,$02,$55
-                  .BYTE $FD,$03,$55
-                  .BYTE $FC,$04,$FC,$FC,$04,$04,$55
-                  .BYTE $FB,$05,$55
-                  .BYTE $FA,$06,$FA,$FA,$06,$06,$55
-                  .BYTE $00,$55
-diffusedYPosArray .BYTE $01,$FF,$55
-                  .BYTE $FE,$02,$55
-                  .BYTE $03,$FD,$55
-                  .BYTE $FC,$04,$FF,$01,$FF,$01,$55
-                  .BYTE $05,$FB,$55
-                  .BYTE $FA,$06,$FE,$02,$FE,$02,$55
+diffusedXPosArray .BYTE $FF,$01,$55                  ; 5            
+                  .BYTE $FE,$02,$55                  ;            4 
+                  .BYTE $FD,$03,$55                  ;   3          
+                  .BYTE $FC,$04,$FC,$FC,$04,$04,$55  ;          2   
+                  .BYTE $FB,$05,$55                  ; 5   1       5
+                  .BYTE $FA,$06,$FA,$FA,$06,$06,$55  ;   3    0  3  
+                  .BYTE $00,$55                      ;       6      
+diffusedYPosArray .BYTE $01,$FF,$55                  ;   3  0    3  
+                  .BYTE $FE,$02,$55                  ; 5       1   5
+                  .BYTE $03,$FD,$55                  ;    2         
+                  .BYTE $FC,$04,$FF,$01,$FF,$01,$55  ;           3  
+                  .BYTE $05,$FB,$55                  ;  4           
+                  .BYTE $FA,$06,$FE,$02,$FE,$02,$55  ;             5
                   .BYTE $00,$55
 
 
@@ -1149,7 +1055,7 @@ ProcessKeyStroke
         LDY shiftKey
         STY shiftPressed
 
-        CMP #$3C ; Space pressed?
+        CMP #KEY_SPACE ; Space pressed?
         BNE MaybeSPressed
 
         ; Space pressed. Selects a new pattern element. " There are eight permanent ones,
@@ -1185,7 +1091,7 @@ txtPresetLoop
         ; Returns
 
 MaybeSPressed   
-        CMP #$0D ; 'S' pressed.
+        CMP #KEY_S ; 'S' pressed.
         BNE MaybeLPressed
 
         ; Check if shift was pressed too.
@@ -1230,7 +1136,7 @@ txtSymmLoop
         ;Returns
 
 MaybeLPressed   
-        CMP #$2A ; 'L' pressed?
+        CMP #KEY_L ; 'L' pressed?
         BNE MaybeDPressed
 
         ; Don't do anything if already saving to tape.
@@ -1270,7 +1176,7 @@ b1043   LDA lineModeSettingDescriptions,Y
         ; Returns
 
 MaybeDPressed   
-        CMP #$12 ; 'D' pressed?
+        CMP #KEY_D ; 'D' pressed?
         BNE MaybeCPressed
 
         ; Smoothing Delay, D to activate: Because of the time taken to draw
@@ -1282,7 +1188,7 @@ MaybeDPressed
         RTS 
 
 MaybeCPressed   
-        CMP #$14 ; C pressed?
+        CMP #KEY_C ; C pressed?
         BNE MaybeBPressed
         ; C pressed.
         ; Cursor Speed C to activate: Just that. Gives you a slow r fast little
@@ -1293,7 +1199,7 @@ MaybeCPressed
         RTS 
 
 MaybeBPressed   
-        CMP #$1C ; B pressed?
+        CMP #KEY_B ; B pressed?
         BNE MaybePPressed
 
         ; B pressed.
@@ -1307,7 +1213,7 @@ MaybeBPressed
         RTS 
 
 MaybePPressed   
-        CMP #$29 ; P pressed
+        CMP #KEY_P ; P pressed
         BNE MaybeHPressed
 
         ; P pressed.
@@ -1320,7 +1226,7 @@ MaybePPressed
         RTS 
 
 MaybeHPressed   
-        CMP #$1D ; H pressed.
+        CMP #KEY_H ; H pressed.
         BNE MaybeTPressed
 
         ; H pressed. Select a change to the pattern colors.
@@ -1335,7 +1241,7 @@ MaybeHPressed
         RTS 
 
 MaybeTPressed   
-        CMP #$16 ; T pressed.
+        CMP #KEY_T ; T pressed.
         BNE CheckIfPresetKeysPressed
 
         ;"T: Controls whether logic-seeking is used in the buffer or not. The upshot of 
@@ -1380,7 +1286,7 @@ UpdateDisplayedPreset
         JMP DisplayPresetMessage
 
 MaybeWPressed    
-        CMP #$09 ; W pressed?
+        CMP #KEY_W ; W pressed?
         BNE MaybeFunctionKeysPressed
 
         ; W pressed
@@ -1407,19 +1313,19 @@ FunctionKeyWasPressed
         STX functionKeyIndex
         LDA sequencerActive
         BNE MaybeQPressed
-        LDA #$80
+        LDA #SEQUENCER_ACTIVE
         STA currentVariableMode
         JSR UpdateBurstGenerator
         RTS 
 
 MaybeQPressed    
-        CMP #$3E ; Q pressed?
+        CMP #KEY_Q ; Q pressed?
         BNE MaybeVPressed
 
         ; Q was presed. Toggle the sequencer on or off.
         LDA sequencerActive
         BNE TurnSequenceOff
-        LDA #$80
+        LDA #SEQUENCER_ACTIVE
         STA currentVariableMode
         JMP ActivateSequencer
         ;Returns
@@ -1432,7 +1338,7 @@ TurnSequenceOff
         JMP DisplaySequencerState
 
 MaybeVPressed   
-        CMP #$1F ; V pressed?
+        CMP #KEY_V ; V pressed?
         BNE MaybeOPressed
 
         ; V pressed.
@@ -1443,7 +1349,7 @@ MaybeVPressed
         RTS 
 
 MaybeOPressed   
-        CMP #$26 ; O pressed.
+        CMP #KEY_O ; O pressed.
         BNE MaybeAsteriskPressed
 
         ; O pressed.
@@ -1455,7 +1361,7 @@ MaybeOPressed
         RTS 
 
 MaybeAsteriskPressed   
-        CMP #$31 ; * pressed?
+        CMP #KEY_ASTERISK ; * pressed?
         BNE MaybeRPressed
 
         ; * pressed.
@@ -1466,13 +1372,13 @@ MaybeAsteriskPressed
         RTS 
 
 MaybeRPressed   
-        CMP #$11 ; R pressed?
+        CMP #KEY_R ; R pressed?
         BNE MaybeUpArrowPressed
         ; R was pressed. Stop or start recording.
         JMP StopOrStartRecording
 
 MaybeUpArrowPressed   
-        CMP #$36 ; Up arrow
+        CMP #KEY_UP ; Up arrow
         BNE MaybeAPressed
         ; Up arrow pressed. "Press UP-ARROW to change the shape of the little pixels on the screen."
         INC pixelShapeIndex
@@ -1494,7 +1400,7 @@ UpdatePixelLoop
         RTS 
 
 MaybeAPressed   
-        CMP #$0A ; 'A' pressed
+        CMP #KEY_A ; 'A' pressed
         BNE FinalReturnFromKeyboardCheck
 
         ; Activate demo mode.
@@ -1508,50 +1414,46 @@ FinalReturnFromKeyboardCheck
 
 
 initialTimeBetweenKeyStrokes   .BYTE $10
-multicrossXPosArray .BYTE $01,$01,$FF,$FF,$55
-                    .BYTE $02,$02,$FE,$FE,$55
-                    .BYTE $01,$03,$03,$01,$FF,$FD,$FD,$FF,$55
-                    .BYTE $03,$03,$FD,$FD,$55
-                    .BYTE $04,$04,$FC,$FC,$55
-                    .BYTE $03,$05,$05,$03,$FD,$FB,$FB,$FD,$55
-                    .BYTE $00,$55
-multicrossYPosArray .BYTE $FF,$01,$01,$FF,$55
-                    .BYTE $FE,$02,$02,$FE,$55
-                    .BYTE $FD,$FF,$01,$03,$03,$01,$FF,$FD,$55
-                    .BYTE $FD,$03,$03,$FD,$55
-                    .BYTE $FC,$04,$04,$FC,$55
-                    .BYTE $FB,$FD,$03,$05,$05,$03,$FD,$FB,$55
+
+multicrossXPosArray .BYTE $01,$01,$FF,$FF,$55                    ;
+                    .BYTE $02,$02,$FE,$FE,$55                    ;   5     5  
+                    .BYTE $01,$03,$03,$01,$FF,$FD,$FD,$FF,$55    ;  4       4 
+                    .BYTE $03,$03,$FD,$FD,$55                    ; 5 3 2 2 3 5
+                    .BYTE $04,$04,$FC,$FC,$55                    ;    1   1   
+                    .BYTE $03,$05,$05,$03,$FD,$FB,$FB,$FD,$55    ;   2 0 0 2  
+                    .BYTE $00,$55                                ;      6     
+multicrossYPosArray .BYTE $FF,$01,$01,$FF,$55                    ;   2 0 0 2  
+                    .BYTE $FE,$02,$02,$FE,$55                    ;    1   1   
+                    .BYTE $FD,$FF,$01,$03,$03,$01,$FF,$FD,$55    ; 5 3 2 2 3 5
+                    .BYTE $FD,$03,$03,$FD,$55                    ;  4       4 
+                    .BYTE $FC,$04,$04,$FC,$55                    ;   5     5  
+                    .BYTE $FB,$FD,$03,$05,$05,$03,$FD,$FB,$55    ;
                     .BYTE $00,$55
 
-pulsarXPosArray .BYTE $00,$01,$00,$FF,$55
-                .BYTE $00,$02,$00,$FE,$55
-                .BYTE $00,$03,$00,$FD,$55
-                .BYTE $00,$04,$00,$FC,$55
-                .BYTE $00,$05,$00,$FB,$55
-                .BYTE $00,$06,$00,$FA,$55
-                .BYTE $00,$55
-pulsarYPosArray .BYTE $FF,$00,$01,$00,$55
-                .BYTE $FE,$00,$02,$00,$55
-                .BYTE $FD,$00,$03,$00,$55
-                .BYTE $FC,$00,$04,$00,$55
-                .BYTE $FB,$00,$05,$00,$55
-                .BYTE $FA,$00,$06,$00,$55
-                .BYTE $00,$55
 
-lastLineBufferPtr
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF
-dataFreeDigitOne
-        .BYTE $FF
-dataFreeDigitTwo
-        .BYTE $FF
-dataFreeDigitThree
-        .BYTE $FF,$FF,$FF,$FF,$FF
-customPatternValueBufferPtr
-        .BYTE $FF,$FF,$FF
-customPatternValueBufferMessage
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+pulsarXPosArray .BYTE $00,$01,$00,$FF,$55       ;
+                .BYTE $00,$02,$00,$FE,$55       ;       5      
+                .BYTE $00,$03,$00,$FD,$55       ;       4      
+                .BYTE $00,$04,$00,$FC,$55       ;       3      
+                .BYTE $00,$05,$00,$FB,$55       ;       2      
+                .BYTE $00,$06,$00,$FA,$55       ;       1      
+                .BYTE $00,$55                   ;       0      
+pulsarYPosArray .BYTE $FF,$00,$01,$00,$55       ; 5432106012345
+                .BYTE $FE,$00,$02,$00,$55       ;       0      
+                .BYTE $FD,$00,$03,$00,$55       ;       1      
+                .BYTE $FC,$00,$04,$00,$55       ;       2      
+                .BYTE $FB,$00,$05,$00,$55       ;       3      
+                .BYTE $FA,$00,$06,$00,$55       ;       4      
+                .BYTE $00,$55                   ;       5      
+
+lastLineBufferPtr               .BYTE $FF,$FF,$FF,$FF,$FF,$FF
+dataFreeDigitOne                .BYTE $FF
+dataFreeDigitTwo                .BYTE $FF
+dataFreeDigitThree              .BYTE $FF,$FF,$FF,$FF,$FF
+customPatternValueBufferPtr     .BYTE $FF,$FF,$FF
+customPatternValueBufferMessage .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+                                .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+                                .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 
 
 ;-------------------------------------------------------
@@ -1844,7 +1746,7 @@ DisplayVariableSelection
         STA colorBarColorRamLoPtr
 
         LDX currentVariableMode
-        CPX #$05
+        CPX #COLOR_CHANGE
         BNE b14AE
 
         ; Current variable mode is 'color change'
@@ -1888,7 +1790,7 @@ b14D1   LDA txtVariableLabels,Y
         BNE b14D1
 
         LDA currentVariableMode
-        CMP #$05
+        CMP #COLOR_CHANGE
         BNE b14EC
         LDA #$30
         CLC 
@@ -1909,7 +1811,7 @@ CheckIfEnterPressed
         ; Enter pressed
 EnterHasBeenPressed   
         LDA currentVariableMode
-        CMP #$05
+        CMP #COLOR_CHANGE
         BNE ReachedLastColor
 
         ; In Color Change mode, move to the next color set
@@ -1928,19 +1830,15 @@ ReachedLastColor
         RTS 
 
 
-maxValueForPresetValueArray   
-        .BYTE $00,$40,$08,$40,$10,$10,$08
-        .BYTE $20,$10,$08
-minValueForPresetValueArray   
-        .BYTE $00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00
-increaseOffsetForPresetValueArray   
-        .BYTE $00,$01,$08
-        .BYTE $01,$04,$08,$08,$02,$04,$08
-currentVariableMode   
-        .BYTE $00
-currentDrawCursorInterval   
-        .BYTE $01
+maxValueForPresetValueArray       .BYTE $00,$40,$08,$40,$10,$10,$08
+                                  .BYTE $20,$10,$08
+minValueForPresetValueArray       .BYTE $00,$00,$00,$00,$00
+                                  .BYTE $00,$00,$00,$00,$00
+increaseOffsetForPresetValueArray .BYTE $00,$01,$08
+                                  .BYTE $01,$04,$08,$08,$02,$04,$08
+currentVariableMode               .BYTE $00
+currentDrawCursorInterval         .BYTE $01
+
 txtVariableLabels   
 .enc "petscii" 
         .TEXT '                '
@@ -2173,8 +2071,8 @@ b172a   STA currentIndexForCurrentStepArray,X
         JMP InitializeScreenWithInitCharacter
         ; Returns
 
-enterWasPressed   .BYTE $00
-functionKeyIndex   .BYTE $00
+enterWasPressed  .BYTE $00
+functionKeyIndex .BYTE $00
 
 burstGeneratorF1 = $C200
 burstGeneratorF2 = $C220
@@ -2384,10 +2282,10 @@ InitializeSequencer
         STA currentVariableMode
         TAY 
         LDA (currentSequencePtrLo),Y
-        STA a1920
+        STA prevSymmetrySetting
         INY 
         LDA (currentSequencePtrLo),Y
-        STA a191F
+        STA prevInitialFrames
 
 j18A9    
         LDY #$02
@@ -2422,10 +2320,10 @@ b18D7   LDA baseLevel
         INY 
         LDA (currentSequencePtrLo),Y
         STA nextPixelYPositionArray,X
-        LDA a191F
+        LDA prevInitialFrames
         STA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
-        LDA a1920
+        LDA prevSymmetrySetting
         STA symmetrySettingForStepCount,X
 b1901   LDA currentSequencePtrLo
         CLC 
@@ -2444,9 +2342,9 @@ b1919   LDA #$00
         STA sequencerActive
         RTS 
 
-a191F   .BYTE $00
-a1920   .BYTE $00
-sequencerActive   .BYTE $00
+prevInitialFrames   .BYTE $00
+prevSymmetrySetting .BYTE $00
+sequencerActive     .BYTE $00
 ;-------------------------------------------------------
 ; ActivateSequencer
 ;-------------------------------------------------------
@@ -2743,7 +2641,7 @@ b1B37   LDA recordingStorageLoPtr
         CMP #$80
         BNE b1B50
         LDA #$00
-        STA a7FFF
+        STA storageOfSomeKind
         JMP DisplayStoppedRecording
 
 b1B50   LDY #$01
@@ -2855,7 +2753,6 @@ txtDefineAllLevelPixels
         .TEXT 'DEFINE ALL LEVEL ',$B2,' PIXELS'
 .enc "none" 
 
-CUSTOM_PRESET_ACTIVE = $83
 ;-------------------------------------------------------
 ; EditCustomPattern
 ;-------------------------------------------------------
@@ -2868,8 +2765,8 @@ EditCustomPattern
 b1C0B   LDA #CUSTOM_PRESET_ACTIVE
         STA currentVariableMode
 
-        ; Custome presets are stored between $C800 and
-        ; $CFFF.
+        ; Custom patterns are stored between $C800 and
+        ; $CFFF. See custom_patterns.asm
         LDA #$00
         STA customPatternLoPtr
         STA displaySavePromptActive
@@ -3014,7 +2911,7 @@ b1CE6   LDA #$00
 b1CEE   RTS 
 
 MaybeLeftArrowPressed2
-        CMP #$39 ; Left arrow pressed.
+        CMP #KEY_LEFT ; Left arrow pressed.
         BNE b1CEE
 
         LDY currentIndexToPresetValue
@@ -3080,12 +2977,14 @@ pixelShapeArray
 
 presetTempLoPtr                       = $FB
 presetTempHiPtr                       = $FC
+
+PRINT = $FFD2
 ;-------------------------------------------------------
 ; DisplaySavePromptScreen
 ;-------------------------------------------------------
 DisplaySavePromptScreen 
         LDA #$13
-        JSR $FFD2
+        JSR PRINT
         LDA #$FF
         STA displaySavePromptActive
         JSR InitializeScreenWithInitCharacter
@@ -3181,7 +3080,7 @@ PromptToSave
         CMP #$02
         BEQ b1E43
 
-        LDA #$84
+        LDA #SAVING_ACTIVE
         STA currentVariableMode
 
         LDX #$00
@@ -3203,7 +3102,7 @@ txtSavePrompt   .TEXT " SAVE (P)ARAMETERS, (M)OTION, (A)BORT?  "
 ;-------------------------------------------------------
 CheckKeyboardInputWhileSavePromptActive    
         LDA currentVariableMode
-        CMP #$84
+        CMP #SAVING_ACTIVE
         BEQ b1E74
         RTS 
 
@@ -3259,7 +3158,7 @@ DisplayLoadOrAbort
         LDA playbackOrRecordActive
         CMP #$02
         BEQ b1EA9
-        LDA #$85
+        LDA #LOADING_ACTIVE
         STA currentVariableMode
         LDX #$00
 b1EBE   LDA txtContinueLoadOrAbort,X
@@ -3401,13 +3300,13 @@ b1FC8   LDA (copyFromLoPtr),Y
         BNE b1FC8
 
         LDX #$09
-b1FD8   LDA f1FE1,X
-        STA a7FFF,X
+b1FD8   LDA originalStorageOfSomeKind,X
+        STA storageOfSomeKind,X
         DEX 
         BNE b1FD8
         RTS 
 
-f1FE1=*-$01   
+originalStorageOfSomeKind=*-$01   
         .BYTE $30,$0C,$30,$0C,$C3,$C2,$CD,$38
         .BYTE $30,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00

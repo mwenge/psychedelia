@@ -1,6 +1,37 @@
+; This is where patterns defined by the user are stored.
+;
+; "There are eight elements you can define for yourself. To get into pattern
+; edit mode press CTRL and any of the first 8 preset keys. The screen clears
+; and the cursor centres. Each pattern is composed of seven levels. Level One
+; is preset, always just a single white dot. You can determine the positions of
+; the pixels in Levels 2-7. Move the Joystick to get the cursor where you want
+; a pixel, then press LEFT-ARROW to enter it (like in Sequencer and Burst). You
+; can define up to seven pixels per level. Press RETURN when you ve done enough
+; pixels on a particular level and the option proceeds to the next level, until
+; level 7 is completed. Remember, the more pixels you have the slower the
+; finished pattern will run. You can place pixels anywhere on the screen, they
+; don’t have to be around the centre Level One pixel at all. Don’t worry if
+; this sounds complex, just get in there and have a bash, you can’t do any
+; damage! To select your pattern once you've defined it, press SPACE until it
+; comes up on one of the eight User Patterns corresponding to the first eight
+; Preset keys. Whew! Quite a lot to digest - but the best way is to just learn
+; by experimentation. Play with the values and see what happens - just like
+; you'd tinker with a synthesiser. "
+;  - Psychedelia Manual
+;
+; The pattern data structure consists of up to 7 rows, each
+; one defining a stage in the creation of the pattern. Each
+; row is assigned a unique color. The X and Y positions given
+; in each array refer to the position relative to the cursor
+; at the centre. 'Minus' values relative to the cursor are
+; given by values such as FF (-1), FE (-2), and so on.
 
-; Custom patterns
+; There are some 'predefined' custom patterns already in here. The
+; ascii diagrams below show what each one looks like.
+;
 
+
+;
 ;    33033   
 ;  35  0  54 
 ; 5    6    5
@@ -8,9 +39,7 @@
 ;    0 2 0   
 ;  30  2  14 
 ;    54245   
-;-----------------
-
-
+;
 ; customPattern0XPosArray
         .BYTE $00,$00,$00,$FF,$FE,$FD,$01,$02,$55
         .BYTE $00,$03,$55

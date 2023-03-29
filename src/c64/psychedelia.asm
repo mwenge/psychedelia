@@ -173,7 +173,8 @@ GetColorRAMPtrFromLineTable
         LDA colorRAMLineTableHiPtrArray,X
         STA colorRamTableHiPtr2
         LDY pixelXPositionZP
-b08D0   RTS 
+ReturnEarlyFromRoutine   
+        RTS 
 
 tempIndex = $FD
 ;-------------------------------------------------------
@@ -183,16 +184,16 @@ PaintPixel
         ; Return early if the index or offset are invalid
         LDA pixelXPositionZP
         AND #$80
-        BNE b08D0
+        BNE ReturnEarlyFromRoutine
         LDA pixelXPositionZP
         CMP #$28
-        BPL b08D0
+        BPL ReturnEarlyFromRoutine
         LDA pixelYPositionZP
         AND #$80
-        BNE b08D0
+        BNE ReturnEarlyFromRoutine
         LDA pixelYPositionZP
         CMP #$18
-        BPL b08D0
+        BPL ReturnEarlyFromRoutine
 
         JSR GetColorRAMPtrFromLineTable
         LDA skipPixel
@@ -202,13 +203,15 @@ PaintPixel
         AND #$0F
 
         LDX #$00
-b08F6   CMP presetColorValuesArray,X
-        BEQ b0900
+GetIndexInPresetsLoop   
+        CMP presetColorValuesArray,X
+        BEQ FoundMatchingIndex
         INX 
         CPX #$08
-        BNE b08F6
+        BNE GetIndexInPresetsLoop
 
-b0900   TXA 
+FoundMatchingIndex   
+        TXA 
         STA tempIndex
         LDX currentIndexToColorValues
         INX 
@@ -228,7 +231,7 @@ ActuallyPaintPixel
 ; LoopThroughPixelsAndPaint
 ;-------------------------------------------------------
 LoopThroughPixelsAndPaint   
-        JSR PushOffsetAndIndexAndPaintPixel
+        JSR PaintPixelForCurrentSymmetry
         LDY #$00
         LDA currentIndexToColorValues
         CMP #$07
@@ -269,7 +272,7 @@ PixelPaintLoop
         TYA 
         PHA 
 
-        JSR PushOffsetAndIndexAndPaintPixel
+        JSR PaintPixelForCurrentSymmetry
 
         ; Pull Y back from the stack and increment
         PLA 
@@ -336,19 +339,24 @@ randomByteAddress   =*+$01
         RTS 
 
         BRK #$00
+
 ;-------------------------------------------------------
-; PushOffsetAndIndexAndPaintPixel
+; PaintPixelForCurrentSymmetry
 ;-------------------------------------------------------
-PushOffsetAndIndexAndPaintPixel   
+PaintPixelForCurrentSymmetry   
+        ; First paint the normal pattern without any
+        ; symmetry.
         LDA pixelXPositionZP
         PHA 
         LDA pixelYPositionZP
         PHA 
         JSR PaintPixel
-        LDA currentSymmetrySettingForStep
-        BNE b09E9
 
-b09E1   PLA 
+        LDA currentSymmetrySettingForStep
+        BNE HasSymmetry
+
+CleanUpAndReturnFromSymmetry   
+        PLA 
         STA pixelYPositionZP
         PLA 
         STA pixelXPositionZP
@@ -356,26 +364,47 @@ b09E1   PLA
 
         RTS
 
-b09E9   CMP #$03
-        BEQ b0A1B
+HasSymmetry   
+        CMP #X_AXIS_SYMMETRY
+        BEQ XAxisSymmetry
+
+        ; Has a pattern to paint on the Y axis
+        ; symmetry so prepare for that.
         LDA #$27
         SEC 
         SBC pixelXPositionZP
         STA pixelXPositionZP
+
+        ; If it has X_Y_SYMMETRY then we just 
+        ; need to paint that, and we're done.
         LDY currentSymmetrySettingForStep
-        CPY #$02
-        BEQ b0A25
+        CPY #X_Y_SYMMETRY
+        BEQ XYSymmetry
+
+        ; If we're here it's either Y_AXIS_SYMMETRY
+        ; or QUAD_SYMMETRY so we can paint a pattern
+        ; on the Y axis.
         JSR PaintPixel
+
+        ; If it's Y_AXIS_SYMMETRY we're done and can 
+        ; return.
         LDA currentSymmetrySettingForStep
-        CMP #$01
-        BEQ b09E1
+        CMP #Y_AXIS_SYMMETRY
+        BEQ CleanUpAndReturnFromSymmetry
+
+        ; Has QUAD_SYMMETRY so the remaining steps are
+        ; to paint two more: one on our X axis and one
+        ; on our Y axis.
+
+        ; First we do the Y axis.
         LDA #$17
         SEC 
         SBC pixelYPositionZP
         STA pixelYPositionZP
         JSR PaintPixel
 
-j0A0D    
+        ; Paint one on the X axis.
+PaintXAxisPixelForSymmetry    
         PLA 
         TAY 
         PLA 
@@ -387,13 +416,15 @@ j0A0D
         STA pixelYPositionZP
         RTS 
 
-b0A1B   LDA #$17
+XAxisSymmetry   
+        LDA #$17
         SEC 
         SBC pixelYPositionZP
         STA pixelYPositionZP
-        JMP j0A0D
+        JMP PaintXAxisPixelForSymmetry
 
-b0A25   LDA #$17
+XYSymmetry   
+        LDA #$17
         SEC 
         SBC pixelYPositionZP
         STA pixelYPositionZP
@@ -1527,14 +1558,14 @@ ResetAndReenterMainPaint
         STA currentIndexToColorValues
         LDA #$01
         STA skipPixel
-        JSR PushOffsetAndIndexAndPaintPixel
+        JSR PaintPixelForCurrentSymmetry
         INC pixelYPositionZP
         LDA #$00
         STA skipPixel
         LDA lineWidth
         EOR #$07
         STA currentIndexToColorValues
-b1331   JSR PushOffsetAndIndexAndPaintPixel
+b1331   JSR PaintPixelForCurrentSymmetry
         INC pixelYPositionZP
         INC currentIndexToColorValues
         LDA currentIndexToColorValues
@@ -1900,7 +1931,7 @@ b1623   INC dataFreeDigitThree
 b1635   DEX 
         BNE b1623
 
-b1638   JMP RefreshPresetDataActivatedMessage
+b1638   JMP UpdateCurrentActivePreset
 
 WriteLastLineBufferAndReturn    
         JSR WriteLastLineBufferToScreen
@@ -1917,9 +1948,9 @@ shiftPressed
         .BYTE $00
 
 ;-------------------------------------------------------
-; RefreshPresetDataActivatedMessage
+; UpdateCurrentActivePreset
 ;-------------------------------------------------------
-RefreshPresetDataActivatedMessage    
+UpdateCurrentActivePreset    
         LDA shiftPressed
         AND #$01
         ASL 

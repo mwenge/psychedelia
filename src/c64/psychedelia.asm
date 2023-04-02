@@ -246,7 +246,7 @@ b0921   LDA #$07
         LDA pixelYPositionZP
         STA previousPixelYPositionZP
 
-        LDX patternIndex
+        LDX presetIndex
         LDA pixelXPositionLoPtrArray,X
         STA xPosLoPtr
         LDA pixelXPositionHiPtrArray,X
@@ -626,7 +626,7 @@ ShouldDoAPaint
         STA pixelYPositionZP
 
         LDA nextPixelYPositionArray,X
-        STA patternIndex
+        STA presetIndex
 
         LDA symmetrySettingForStepCount,X
         STA currentSymmetrySettingForStep
@@ -905,7 +905,7 @@ baseLevel               .BYTE $07
 presetColorValuesArray  .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
 trackingActivated       .BYTE $FF
 lineModeActivated       .BYTE $00
-patternIndex            .BYTE $05
+presetIndex            .BYTE $05
 
 
 customPattern0XPosArray = $C800
@@ -2860,7 +2860,7 @@ UpdateStuffAndReenterMainPaint
         STA colorRAMLineTableIndex
         JSR ReinitializeScreen
 b1C68   LDA a1BEA
-        STA patternIndex
+        STA presetIndex
         LDA initialIndexToColorValues
         STA currentIndexToColorValues
         LDA #$00

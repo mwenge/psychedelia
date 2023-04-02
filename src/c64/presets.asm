@@ -15,7 +15,7 @@
 ;  presetColorValuesArray          
 ;  trackingActivated               
 ;  lineModeActivated               
-;  patternIndex                    
+;  presetIndex                    
 ;  currentPatternElement
 ;  currentSymmetrySetting
 ;--------------------------------------------------------------------------
@@ -62,7 +62,7 @@ presetSequenceDataSource
         .BYTE $00
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -122,7 +122,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -183,7 +183,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -244,7 +244,7 @@ presetSequenceDataSource
         .BYTE $00
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -304,7 +304,7 @@ presetSequenceDataSource
         .BYTE $00
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -364,7 +364,7 @@ presetSequenceDataSource
         .BYTE $00
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -424,7 +424,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -484,7 +484,7 @@ presetSequenceDataSource
         .BYTE $00
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -544,7 +544,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -604,7 +604,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -664,7 +664,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $01
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -724,7 +724,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -784,7 +784,7 @@ presetSequenceDataSource
         .BYTE $00
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -844,7 +844,7 @@ presetSequenceDataSource
         .BYTE $00
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -904,7 +904,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to
@@ -964,7 +964,7 @@ presetSequenceDataSource
         .BYTE $FF
         ; lineModeActivated: 'A bit like drawing with the Aurora Borealis'
         .BYTE $00
-        ; patternIndex: 'This calls in one of the 16 presets, stored Lightsynth
+        ; presetIndex: 'This calls in one of the 16 presets, stored Lightsynth
         ; parameters which give different effects. Try them all out io see some uf
         ; the multitude of effects which you cai achieve using the system. Some are
         ; fast, some slow, some pulse, others swirl. Play with them all, try them to

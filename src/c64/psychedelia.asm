@@ -480,7 +480,7 @@ framesRemainingToNextPaintForStep
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-nextPixelYPositionArray
+patternIndexArray
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -513,7 +513,7 @@ ReinitLoop
         LDA #$00
         STA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
-        STA nextPixelYPositionArray,X
+        STA patternIndexArray,X
         STA symmetrySettingForStepCount,X
         INX 
 p0C13   CPX #$40
@@ -582,7 +582,7 @@ HandleAnyCurrentModes
         CMP #$17 ; Custom Preset active?
         BNE MaybeInSavePromptMode
         ; Custom Preset active.
-        JMP UpdateStuffAndReenterMainPaint
+        JMP HandleCustomPreset
 
 MaybeInSavePromptMode   
         CMP #$18 ; Current Mode is 'Save/Prompt'
@@ -625,7 +625,7 @@ ShouldDoAPaint
         LDA pixelYPositionArray,X
         STA pixelYPositionZP
 
-        LDA nextPixelYPositionArray,X
+        LDA patternIndexArray,X
         STA presetIndex
 
         LDA symmetrySettingForStepCount,X
@@ -834,7 +834,7 @@ b0DD6   LDA pixelXPosition
 b0DF5   LDA baseLevel
         STA currentIndexForCurrentStepArray,X
         LDA currentPatternElement
-        STA nextPixelYPositionArray,X
+        STA patternIndexArray,X
 
 j0E00    
         LDA smoothingDelay
@@ -2316,7 +2316,7 @@ InitializeSequencer
         STA prevSymmetrySetting
         INY 
         LDA (currentSequencePtrLo),Y
-        STA prevInitialFrames
+        STA burstSmoothingDelay
 
 j18A9    
         LDY #$02
@@ -2331,31 +2331,36 @@ b18BB   LDX currentStepCount
         LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BEQ b18D7
+
         LDA shouldDrawCursor
         AND trackingActivated
         BEQ b1901
+
         STA currentStepCount
         TAX 
         LDA currentIndexForCurrentStepArray,X
         CMP #$FF
         BNE b1901
+
 b18D7   LDA baseLevel
         STA currentIndexForCurrentStepArray,X
         LDA (currentSequencePtrLo),Y
         CMP #$C0
         BEQ b1901
+
         STA pixelXPositionArray,X
         INY 
         LDA (currentSequencePtrLo),Y
         STA pixelYPositionArray,X
         INY 
         LDA (currentSequencePtrLo),Y
-        STA nextPixelYPositionArray,X
-        LDA prevInitialFrames
+        STA patternIndexArray,X
+        LDA burstSmoothingDelay
         STA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
         LDA prevSymmetrySetting
         STA symmetrySettingForStepCount,X
+
 b1901   LDA currentSequencePtrLo
         CLC 
         ADC #$03
@@ -2373,7 +2378,7 @@ b1919   LDA #$00
         STA sequencerActive
         RTS 
 
-prevInitialFrames   .BYTE $00
+burstSmoothingDelay   .BYTE $00
 prevSymmetrySetting .BYTE $00
 sequencerActive     .BYTE $00
 ;-------------------------------------------------------
@@ -2470,7 +2475,7 @@ b19A9   LDY #$02
         STA pixelYPositionArray,X
         INY 
         LDA (currentSequencePtrLo),Y
-        STA nextPixelYPositionArray,X
+        STA patternIndexArray,X
 b19D9   LDA currentSequencePtrLo
         CLC 
         ADC #$03
@@ -2851,14 +2856,15 @@ b1C28   LDA txtDefineAllLevelPixels,X
         RTS 
 
 ;-------------------------------------------------------
-; UpdateStuffAndReenterMainPaint
+; HandleCustomPreset
 ;-------------------------------------------------------
-UpdateStuffAndReenterMainPaint    
+HandleCustomPreset    
         LDA #$13
         STA pixelXPosition
         LDA #$0C
         STA colorRAMLineTableIndex
         JSR ReinitializeScreen
+
 b1C68   LDA a1BEA
         STA presetIndex
         LDA initialIndexToColorValues
@@ -2872,6 +2878,7 @@ b1C68   LDA a1BEA
         JSR LoopThroughPixelsAndPaint
         LDA initialIndexToColorValues
         BNE b1C68
+
         JSR ReinitializeScreen
         LDA #$00
         STA currentModeActive

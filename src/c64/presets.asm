@@ -24,7 +24,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0C
@@ -32,7 +32,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $1F
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -47,9 +47,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $04
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -84,7 +84,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0C
@@ -92,7 +92,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $28
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -107,9 +107,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $08
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -145,7 +145,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0B
@@ -153,7 +153,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $28
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -168,9 +168,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $0B
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -206,7 +206,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $04
@@ -214,7 +214,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $26
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -229,9 +229,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $0A
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -266,7 +266,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0C
@@ -274,7 +274,7 @@ presetSequenceDataSource
         .BYTE $01
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $2B
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -289,9 +289,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $08
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -326,7 +326,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0C
@@ -334,7 +334,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $2B
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -349,9 +349,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $0C
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -386,7 +386,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0F
@@ -394,7 +394,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $3F
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -409,9 +409,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $0F
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -446,7 +446,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0B
@@ -454,7 +454,7 @@ presetSequenceDataSource
         .BYTE $01
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $1C
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -469,9 +469,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $09
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -506,7 +506,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $04
@@ -514,7 +514,7 @@ presetSequenceDataSource
         .BYTE $01
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $28
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -529,9 +529,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $0A
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -566,7 +566,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $11
@@ -574,7 +574,7 @@ presetSequenceDataSource
         .BYTE $01
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $0D
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -589,9 +589,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $0C
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -626,7 +626,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $01
@@ -634,7 +634,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $1F
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -649,9 +649,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $08
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -686,7 +686,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $01
@@ -694,7 +694,7 @@ presetSequenceDataSource
         .BYTE $01
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $13
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -709,9 +709,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $08
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $05
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -746,7 +746,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0C
@@ -754,7 +754,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $28
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -769,9 +769,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $09
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -806,7 +806,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0B
@@ -814,7 +814,7 @@ presetSequenceDataSource
         .BYTE $01
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $1C
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -829,9 +829,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $09
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -866,7 +866,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $0C
@@ -874,7 +874,7 @@ presetSequenceDataSource
         .BYTE $02
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $2B
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -889,9 +889,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $08
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the
@@ -926,7 +926,7 @@ presetSequenceDataSource
         ; unusedPresetByte: Unused Byte
         .BYTE $00
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
-        ; increase/decrease is not linear. You can adjust the ‘compensating delay’
+        ; increase/decrease is not linear. You can adjust the 'compensating delay'
         ; which often smooths out jerky patterns. Can be used just for special FX),
         ; though. Suck it and see.'
         .BYTE $03
@@ -934,7 +934,7 @@ presetSequenceDataSource
         .BYTE $01
         ; bufferLength: 'Larger patterns flow more smoothly with a shorter
         ; Buffer Length - not so many positions are retained so less plotting to do.
-        ; Small patterns with a long Buffer Length are good for ‘steamer’ effects.
+        ; Small patterns with a long Buffer Length are good for 'steamer' effects.
         ; N.B. Cannot be adjusted whilst patterns are actually onscreen.'
         .BYTE $1F
         ; pulseSpeed: 'Usually if you hold down the button you get a continuous
@@ -949,9 +949,9 @@ presetSequenceDataSource
         ; sequencerSpeed: 'Controls the rate at which sequencer feeds in its data. '
         .BYTE $00
         ; pulseWidth: 'Sets the length of the pulses in a pulsed stream output.
-        ; Don’t worry about what that means - just get in there and mess with it.'
+        ; Don't worry about what that means - just get in there and mess with it.'
         .BYTE $01
-        ; baseLevel: 'Controls how many ‘levels’ of pattern are plotted.'
+        ; baseLevel: 'Controls how many 'levels' of pattern are plotted.'
         .BYTE $07
         ; presetColorValuesArray: 'Allows you to set the colour for each of the
         ; seven pattern steps. Set up the colour you want, press RETURN, and the

@@ -680,14 +680,18 @@ countStepsBeforeCheckingJoystickInput   .BYTE $02,$00
 ; MainInterruptHandler
 ;-------------------------------------------------------
 MainInterruptHandler
+        ; The sequencer is played by the interrupt handler.
+        ; Check if it's active.
         LDA stepsRemainingInSequencerSequence
         BEQ b0CFB
         DEC stepsRemainingInSequencerSequence
         BNE b0CFB
 
+        ; If the sequencer is active we'll end up here and
+        ; load the sequencer data so that it can be played.
         LDA sequencerSpeed
         STA stepsRemainingInSequencerSequence
-        JSR UpdatePointersFromSequenceData
+        JSR LoadDataForSequencer
 
 b0CFB   DEC countStepsBeforeCheckingJoystickInput
         BEQ b0D03
@@ -829,16 +833,16 @@ b0DD6   LDA pixelXPosition
         SBC colorRAMLineTableIndex
         ORA #$80
         STA currentIndexForCurrentStepArray,X
-        JMP j0E00
+        JMP ApplySmoothingDelay
 
 b0DF5   LDA baseLevel
         STA currentIndexForCurrentStepArray,X
         LDA currentPatternElement
         STA patternIndexArray,X
 
-j0E00    
+ApplySmoothingDelay    
         LDA smoothingDelay
-a0E03   STA initialFramesRemainingToNextPaintForStep,X
+        STA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
         LDA currentSymmetrySetting
         STA symmetrySettingForStepCount,X
@@ -2235,16 +2239,20 @@ b1801   LDA lastKeyPressed
         CMP #$3C
         BNE b183C
         JSR UpdateDataFreeDisplay
+
         LDA currentDataFree
-        STA currentSequenceCounterMaybe
+        STA dataFreeForSequencer
+
         LDA currentSequencePtrLo
         STA prevSequencePtrLo
         LDA currentSequencePtrHi
         STA prevSequencePtrHi
+
         LDA #$00
         STA currentVariableMode
         STA customPromptsActive
         STA sequencerActive
+
         LDY #$02
         LDA #$FF
         STA (currentSequencePtrLo),Y
@@ -2288,7 +2296,7 @@ ReturnPressed
         LDA #$00
         STA currentVariableMode
         STA customPromptsActive
-        STA currentSequenceCounterMaybe
+        STA dataFreeForSequencer
         STA sequencerActive
         RTS 
 
@@ -2385,15 +2393,17 @@ sequencerActive     .BYTE $00
 ; ActivateSequencer
 ;-------------------------------------------------------
 ActivateSequencer 
-        LDA #$C3
+        LDA #>startOfSequencerData
         STA currentSequencePtrHi
-        LDA #$00
+        LDA #<startOfSequencerData
         STA currentSequencePtrLo
         LDA #$FF
         STA sequencerActive
         LDA shiftPressed
         AND #$01
         BNE b1945
+
+        ; Start Playing the Sequencer
         LDA sequencerSpeed
         STA stepsRemainingInSequencerSequence
         LDA #$00
@@ -2401,9 +2411,9 @@ ActivateSequencer
         JSR DisplaySequencerState
         RTS 
 
-b1945   LDA currentSequenceCounterMaybe
+b1945   LDA dataFreeForSequencer
         BEQ b195D
-        LDA currentSequenceCounterMaybe
+        LDA dataFreeForSequencer
         STA currentDataFree
         LDA prevSequencePtrLo
         STA currentSequencePtrLo
@@ -2435,9 +2445,9 @@ b1973   LDA txtSequFree,X
         RTS 
 
 ;-------------------------------------------------------
-; UpdatePointersFromSequenceData
+; LoadDataForSequencer
 ;-------------------------------------------------------
-UpdatePointersFromSequenceData   
+LoadDataForSequencer   
         INC currentStepCount
         LDA currentStepCount
         CMP bufferLength
@@ -2448,25 +2458,32 @@ UpdatePointersFromSequenceData
 b1992   TAX 
         LDA currentIndexForCurrentStepArray,X
         CMP #$FF
-        BEQ b19A9
+        BEQ LoadValuesFromSequencerData
+
         LDA shouldDrawCursor
         AND trackingActivated
-        BEQ b19D9
+        BEQ MoveToNextPositionInSequencer
         TAX 
         LDA currentIndexForCurrentStepArray,X
         CMP #$FF
-        BNE b19D9
-b19A9   LDY #$02
+        BNE MoveToNextPositionInSequencer
+
+LoadValuesFromSequencerData   
+        LDY #$02
         LDA (currentSequencePtrLo),Y
         CMP #$C0
-        BEQ b19D9
+        BEQ MoveToNextPositionInSequencer
+
         LDA baseLevel
         STA currentIndexForCurrentStepArray,X
-        LDA presetSequenceData + $0301
+
+        LDA startOfSequencerData + $01
         STA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
-        LDA presetSequenceData + $0300
+
+        LDA startOfSequencerData
         STA symmetrySettingForStepCount,X
+
         LDY #$02
         LDA (currentSequencePtrLo),Y
         STA pixelXPositionArray,X
@@ -2476,7 +2493,9 @@ b19A9   LDY #$02
         INY 
         LDA (currentSequencePtrLo),Y
         STA patternIndexArray,X
-b19D9   LDA currentSequencePtrLo
+
+MoveToNextPositionInSequencer   
+        LDA currentSequencePtrLo
         CLC 
         ADC #$03
         STA currentSequencePtrLo
@@ -2486,12 +2505,13 @@ b19D9   LDA currentSequencePtrLo
         LDY #$02
         LDA (currentSequencePtrLo),Y
         CMP #$FF
-        BEQ b19EF
+        BEQ ResetSequencerToStart
         RTS 
 
-b19EF   LDA #<presetSequenceData + $0300
+ResetSequencerToStart   
+        LDA #<startOfSequencerData
         STA currentSequencePtrLo
-        LDA #>presetSequenceData + $0300
+        LDA #>startOfSequencerData
         STA currentSequencePtrHi
         RTS 
 
@@ -2527,7 +2547,7 @@ txtSequencer
       .TEXT 'SEQUENCER OFF   '
       .TEXT 'SEQUENCER ON    '
 .enc "none" 
-currentSequenceCounterMaybe
+dataFreeForSequencer
       .BYTE $00
 prevSequencePtrLo
       .BYTE $00
@@ -3352,5 +3372,5 @@ originalStorageOfSomeKind=*-$01
 
 .include "presets.asm"
 .include "burst_generators.asm"
-.include "other_data.asm"
+.include "sequencer_data.asm"
 .include "custom_patterns.asm"

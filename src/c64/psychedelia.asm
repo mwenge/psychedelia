@@ -683,9 +683,9 @@ MainInterruptHandler
         ; The sequencer is played by the interrupt handler.
         ; Check if it's active.
         LDA stepsRemainingInSequencerSequence
-        BEQ b0CFB
+        BEQ SequencerNotActiveCheckJoystickInput
         DEC stepsRemainingInSequencerSequence
-        BNE b0CFB
+        BNE SequencerNotActiveCheckJoystickInput
 
         ; If the sequencer is active we'll end up here and
         ; load the sequencer data so that it can be played.
@@ -693,7 +693,8 @@ MainInterruptHandler
         STA stepsRemainingInSequencerSequence
         JSR LoadDataForSequencer
 
-b0CFB   DEC countStepsBeforeCheckingJoystickInput
+SequencerNotActiveCheckJoystickInput   
+        DEC countStepsBeforeCheckingJoystickInput
         BEQ b0D03
         JMP JumpToCheckKeyboardInput
         ;Returns?
@@ -2109,10 +2110,6 @@ b172a   STA currentIndexForCurrentStepArray,X
 enterWasPressed  .BYTE $00
 functionKeyIndex .BYTE $00
 
-burstGeneratorF1 = $C200
-burstGeneratorF2 = $C220
-burstGeneratorF3 = $C240
-burstGeneratorF4 = $C260
 ;-------------------------------------------------------
 ; UpdateBurstGenerator
 ;-------------------------------------------------------
@@ -2401,7 +2398,7 @@ ActivateSequencer
         STA sequencerActive
         LDA shiftPressed
         AND #$01
-        BNE b1945
+        BNE ShiftPressedSoProgramSequencer
 
         ; Start Playing the Sequencer
         LDA sequencerSpeed
@@ -2411,8 +2408,9 @@ ActivateSequencer
         JSR DisplaySequencerState
         RTS 
 
-b1945   LDA dataFreeForSequencer
-        BEQ b195D
+ShiftPressedSoProgramSequencer   
+        LDA dataFreeForSequencer
+        BEQ SetUpNewSequencer
         LDA dataFreeForSequencer
         STA currentDataFree
         LDA prevSequencePtrLo
@@ -2422,7 +2420,8 @@ b1945   LDA dataFreeForSequencer
         JMP DisplaySequFree
         ;Returns
 
-b195D   LDA #$FF
+SetUpNewSequencer   
+        LDA #$FF
         STA currentDataFree
         LDA currentSymmetrySetting
         LDY #$00
@@ -2435,11 +2434,12 @@ DisplaySequFree
         JSR ClearLastLineOfScreen
 
         LDX #$00
-b1973   LDA txtSequFree,X
+SequencerTextLoop   
+        LDA txtSequFree,X
         STA lastLineBufferPtr,X
         INX 
         CPX #$10
-        BNE b1973
+        BNE SequencerTextLoop
 
         JSR WriteLastLineBufferToScreen
         RTS 

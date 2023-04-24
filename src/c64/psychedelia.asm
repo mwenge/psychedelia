@@ -592,6 +592,7 @@ MaybeInSavePromptMode
         ; The main paint work.
 InitializeScreenAndPaint   
         JSR ReinitializeScreen
+
 DoANormalPaint   
         LDA currentBufferLength
         CMP bufferLength
@@ -631,9 +632,10 @@ ShouldDoAPaint
         LDA symmetrySettingForStepCount,X
         STA currentSymmetrySettingForStep
 
+        ; Line Mode sets the top bit of currentIndexToColorValues
         LDA currentIndexToColorValues
         AND #$80
-        BNE ResetAndGoBackToStartOfLoop
+        BNE PaintLineModeAndLoop
 
         TXA 
         PHA 
@@ -647,9 +649,9 @@ GoBackToStartOfLoop
 
 currentBufferLength   .BYTE $00
 
-ResetAndGoBackToStartOfLoop
+PaintLineModeAndLoop
         ; Loops back to MainPaintLoop
-        JMP ResetAndReenterMainPaint
+        JMP PaintLineMode
 
 ;-------------------------------------------------------
 ; SetUpInterruptHandlers
@@ -770,7 +772,7 @@ b0D64   CMP #$28
 
 b0D6D   LDA lastJoystickInput
         AND #$10
-        BEQ b0D7B
+        BEQ PlayerHasntPressedFire
 
         ; Player has pressed fire.
         LDA #$00
@@ -779,27 +781,32 @@ b0D6D   LDA lastJoystickInput
         ; Returns
 
         ; Player hasn't pressed fire.
-b0D7B   LDA stepsExceeded255
-        BEQ b0D8B
+PlayerHasntPressedFire   
+        LDA stepsExceeded255
+        BEQ DecrementPulseWidthCounter
         LDA stepsSincePressedFire
-        BEQ b0D88
+        BEQ IncrementStepsSincePressedFire
         JMP DrawCursorAndReturnFromInterrupt
 
-b0D88   INC stepsSincePressedFire
-b0D8B   LDA patternUpdateDisplayInterval
-        BEQ b0D98
-        DEC patternUpdateDisplayInterval
-        BEQ b0D98
+IncrementStepsSincePressedFire   
+        INC stepsSincePressedFire
+DecrementPulseWidthCounter   
+        LDA currentPulseWidth
+        BEQ DecrementPulseSpeedCounter
+        DEC currentPulseWidth
+        BEQ DecrementPulseSpeedCounter
         JMP UpdateDisplayedPattern
 
-b0D98   DEC currentDrawCursorInterval
-        BEQ b0DA0
+DecrementPulseSpeedCounter   
+        DEC currentPulseSpeedCounter
+        BEQ RefreshPulseSpeed
         JMP DrawCursorAndReturnFromInterrupt
 
-b0DA0   LDA pulseSpeed
-        STA currentDrawCursorInterval
+RefreshPulseSpeed   
+        LDA pulseSpeed
+        STA currentPulseSpeedCounter
         LDA pulseWidth
-        STA patternUpdateDisplayInterval
+        STA currentPulseWidth
 
 UpdateDisplayedPattern    
         INC currentStepCount
@@ -828,7 +835,9 @@ b0DD6   LDA pixelXPosition
         LDA colorRAMLineTableIndex
         STA pixelYPositionArray,X
         LDA lineModeActivated
-        BEQ b0DF5
+        BEQ LineModeNotActive
+
+        ; Line Mode Active
         LDA #$19
         SEC 
         SBC colorRAMLineTableIndex
@@ -836,7 +845,8 @@ b0DD6   LDA pixelXPosition
         STA currentIndexForCurrentStepArray,X
         JMP ApplySmoothingDelay
 
-b0DF5   LDA baseLevel
+LineModeNotActive   
+        LDA baseLevel
         STA currentIndexForCurrentStepArray,X
         LDA currentPatternElement
         STA patternIndexArray,X
@@ -1548,9 +1558,9 @@ txtSymmetrySettingDescriptions
 .enc "none"
 
 ;-------------------------------------------------------
-; ResetAndReenterMainPaint
+; PaintLineMode
 ;-------------------------------------------------------
-ResetAndReenterMainPaint 
+PaintLineMode 
         LDA currentIndexToColorValues
         AND #$7F
         STA offsetForYPos
@@ -1567,32 +1577,36 @@ ResetAndReenterMainPaint
         INC pixelYPositionZP
         LDA #$00
         STA skipPixel
+
         LDA lineWidth
         EOR #$07
         STA currentIndexToColorValues
-b1331   JSR PaintPixelForCurrentSymmetry
+LineModeLoop   
+        JSR PaintPixelForCurrentSymmetry
         INC pixelYPositionZP
         INC currentIndexToColorValues
         LDA currentIndexToColorValues
         CMP #$08
-        BNE b1343
-        JMP j134B
+        BNE ResetLineModeColorValue
+        JMP CleanUpAndExitLineModePaint
 
         INC currentIndexToColorValues
-b1343   STA currentIndexToColorValues
+ResetLineModeColorValue   
+        STA currentIndexToColorValues
         LDA pixelYPositionZP
         CMP #$19
-        BNE b1331
+        BNE LineModeLoop
 
-j134B    
+CleanUpAndExitLineModePaint    
         LDX currentBufferLength
         DEC currentIndexForCurrentStepArray,X
         LDA currentIndexForCurrentStepArray,X
         CMP #$80
-        BEQ b135B
+        BEQ ResetIndexAndExitLineModePaint
         JMP MainPaintLoop
 
-b135B   LDA #$FF
+ResetIndexAndExitLineModePaint   
+        LDA #$FF
         STA currentIndexForCurrentStepArray,X
         STX shouldDrawCursor
         JMP MainPaintLoop
@@ -1873,7 +1887,7 @@ minValueForPresetValueArray       .BYTE $00,$00,$00,$00,$00
 increaseOffsetForPresetValueArray .BYTE $00,$01,$08
                                   .BYTE $01,$04,$08,$08,$02,$04,$08
 currentVariableMode               .BYTE $00
-currentDrawCursorInterval         .BYTE $01
+currentPulseSpeedCounter         .BYTE $01
 
 txtVariableLabels   
 .enc "petscii" 
@@ -2553,7 +2567,7 @@ prevSequencePtrLo
       .BYTE $00
 prevSequencePtrHi
       .BYTE $00
-patternUpdateDisplayInterval
+currentPulseWidth
       .BYTE $00
 
 recordingStorageLoPtr = $1F

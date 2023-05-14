@@ -35,10 +35,10 @@ The subsequent version of Colourspace for the Atari ST took the concept even fur
 was followed by [Trip-a-Tron] on the Atari ST and [Neon] , which was built into the X360 XBox console.
 
 ## Psychedelia: The Book
-[<img height=360 src="https://github.com/mwenge/psypixels/raw/master/src/cover/pdf/cover_front.svg">](https://github.com/mwenge/psypixels/raw/master/out/psychedelia-pixelsandcode_release.pdf)
+[<img height=360 src="https://github.com/mwenge/psypixels/raw/master/src/cover/pdf/cover_front.svg">](https://github.com/mwenge/psypixels/releases/download/v0.01/psychedelia-pixelsandcode_release.pdf)
 
 If you want to read more about Psychedelia than is possibly healthy, you can try the current state of 
-a work-in-progress, omnium-gatherum called [Psychedelia: Pixels and Code](https://github.com/mwenge/psypixels/raw/master/out/psychedelia-pixelsandcode_release.pdf).
+a work-in-progress, omnium-gatherum called [Psychedelia: Pixels and Code](https://github.com/mwenge/psypixels/releases/download/v0.01/psychedelia-pixelsandcode_release.pdf).
 
 You can [gift what you want](https://www.paypal.com/paypalme/hoganrobert).
 

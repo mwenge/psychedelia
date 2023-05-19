@@ -3,6 +3,7 @@
 XVIC = xvic
 XVIC_IMAGE = "bin/psychedelia-vic20.prg"
 C16_IMAGE = "bin/psychedelia-c16.prg"
+LISTING_IMAGE = "bin/psychedelia-listing.prg"
 D64_IMAGE = "bin/psychedelia.d64"
 D64_ORIG_IMAGE = "orig/psychedelia.d64"
 X64 = x64
@@ -36,6 +37,10 @@ psychedelia-c16.prg: src/c16/psychedelia.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-c16.prg -L bin/list-co1.txt -l bin/labels.txt src/c16/psychedelia.asm
 	md5sum bin/psychedelia-c16.prg orig/psychedelia-c16.prg
 
+psychedelia-listing.prg: src/listing/psychedelia.asm
+	64tass -Wall --cbm-prg -Wno-implied-reg -o bin/psychedelia-listing.prg -L bin/list-co1.txt -l bin/labels.txt src/listing/psychedelia.asm
+	echo "c039056f04a93e16658b904733609ed2  bin/psychedelia-listing.prg" | md5sum -c
+
 d64: psychedelia.prg
 	$(C1541) -format "psychedelia,rq" d64 $(D64_IMAGE)
 	$(C1541) $(D64_IMAGE) -write bin/psychedelia.prg "psychedelia"
@@ -48,6 +53,9 @@ d64_orig:
 
 run: d64
 	$(X64) -verbose $(D64_IMAGE)
+
+runlisting: psychedelia-listing.prg
+	$(X64) -verbose $(LISTING_IMAGE)
 
 runvic: psychedelia-vic20.prg
 	$(XVIC) -verbose $(XVIC_IMAGE)

@@ -8,19 +8,23 @@
   * [Psychedelia: The Book](#psychedelia-the-book)
     * [A Peek Inside](#a-peek-inside)
 * [Play in your Browser](#play-in-your-browser)
-* [Psychedelia for the C64](#psychedelia-for-the-c64)
-  * [Requirements](#requirements)
+* [Psychedelia Demo listing in Popular Computer Magazine](#psychedelia-demo-listing-in-popular-computer-magazine)
+  * [Try it online](#try-it-online)
   * [Setup](#setup)
   * [Build Instructions](#build-instructions)
+* [Psychedelia for the C64](#psychedelia-for-the-c64)
+  * [Requirements](#requirements)
+  * [Setup](#setup-1)
+  * [Build Instructions](#build-instructions-1)
 * [Psychedelia for the Vic20](#psychedelia-for-the-vic20)
   * [Requirements](#requirements-1)
-  * [Build Instructions](#build-instructions-1)
+  * [Build Instructions](#build-instructions-2)
 * [Psychedelia for the C16](#psychedelia-for-the-c16)
   * [Requirements](#requirements-2)
-  * [Build Instructions](#build-instructions-2)
+  * [Build Instructions](#build-instructions-3)
 * [Colourspace (1985) for the Atari 800](#colourspace-1985-for-the-atari-800)
   * [Requirements](#requirements-3)
-  * [Build Instructions](#build-instructions-3)
+  * [Build Instructions](#build-instructions-4)
 
 <!-- vim-markdown-toc -->
 This repository collects the reverse-engineered and [commented source code] for the early "light-synthesizer" projects by Jeff Minter. 
@@ -57,6 +61,34 @@ To get the most out of Psychedelia, you should read [the manual](MANUAL-C64.md).
 [Atari800:](https://mwenge.github.io/psychedelia/atari800/?disk_filename=colourspace.atr) (Alt key is 'Fire', Arrow Keys to move.)
 
 You can also take a look at the [demo wall for the Vic 20](https://mwenge.github.io/psychedelia/vic20/wall.html).
+
+# Psychedelia Demo listing in Popular Computer Magazine
+<img height=360 src="https://github.com/mwenge/psychedelia-listing/raw/master/listing/PopularComputing_Weekly_Issue_1984-12-13_0031.jpg"><img height=360 src="https://github.com/mwenge/psychedelia-listing/assets/58846/b6027f6d-f5ac-4af6-be4a-53ddce8c1728">
+
+A demo version of Psychedelia appeared as a type-in listing in 'Popular Computing Magazine' in December 1984. 
+
+## Try it online
+You can [play it without installing anything here.](https://lvllvl.com/c64/?gid=59db254ccc74c65007c58a890ccf31af)
+
+## Setup
+On Ubuntu you can install [VICE] as follows:
+```
+sudo apt install vice
+```
+
+## Build Instructions
+To compile and run:
+
+```sh
+$ make runlisting
+```
+
+To just compile the game and get a binary (`psychedelia.prg`) do:
+
+```sh
+$ make psychedelia-listing.prg
+```
+
 
 # Psychedelia for the C64
 <img src="https://user-images.githubusercontent.com/58846/103469199-9e685d80-4d59-11eb-96c8-386b3a530809.png" height=300><img src="https://user-images.githubusercontent.com/58846/103463469-7dd1e080-4d24-11eb-93d2-7673ba031074.gif" height=300>

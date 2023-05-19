@@ -5,7 +5,7 @@
 
 <!-- vim-markdown-toc GFM -->
 
-  * [Psychedelia: The Book](#psychedelia-the-book)
+* [Psychedelia: The Book](#psychedelia-the-book)
     * [A Peek Inside](#a-peek-inside)
 * [Play in your Browser](#play-in-your-browser)
 * [Psychedelia Demo listing in Popular Computer Magazine](#psychedelia-demo-listing-in-popular-computer-magazine)
@@ -38,7 +38,7 @@ the Commodore 16. He then developed the idea further with Colourspace on the Ata
 The subsequent version of Colourspace for the Atari ST took the concept even further. This
 was followed by [Trip-a-Tron] on the Atari ST and [Neon] , which was built into the X360 XBox console.
 
-## Psychedelia: The Book
+# Psychedelia: The Book
 [<img height=360 src="https://github.com/mwenge/psypixels/raw/master/src/cover/pdf/cover_front.svg">](https://github.com/mwenge/psypixels/releases/download/v0.01/psychedelia-pixelsandcode_release.pdf)
 
 If you want to read more about Psychedelia than is possibly healthy, you can try the current state of 

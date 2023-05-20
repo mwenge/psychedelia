@@ -24,7 +24,7 @@ colourspace.xex: src/atari800/colourspace.asm
 	64tass -Wall -Wno-implied-reg --atari-xex -o bin/colourspace.xex -L bin/list-co1.txt -l bin/labels.txt src/atari800/colourspace.asm
 	# the original xex file has an incorrect end-byte which we need to patch here.
 	dd if=bin/patch-atari-end-byte.bin of=bin/colourspace.xex bs=1 seek=4 count=1 conv=notrunc
-	md5sum bin/colourspace.xex bin/colourspace-bench.xex
+	echo "fb1bd1446b5af7526ab12f44a542cdd3  bin/colourspace.xex" | md5sum -c
 
 psychedelia-vic20.prg: src/vic20/psychedelia.asm
 	64tass -Wall -Wno-implied-reg --cbm-prg -o bin/psychedelia-vic20.prg -L bin/list-co1.txt -l bin/labels.txt src/vic20/psychedelia.asm

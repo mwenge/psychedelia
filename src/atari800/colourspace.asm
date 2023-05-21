@@ -1,7 +1,7 @@
 ;
 ; **** ZP FIELDS **** 
 ;
-HOLDCH = $7C
+HOLDinputCharacter = $7C
 ;
 ; **** ZP ABSOLUTE ADRESSES **** 
 ;
@@ -22,10 +22,9 @@ aB4 = $B4
 aB5 = $B5
 aC0 = $C0
 aC1 = $C1
-aC2 = $C2
+verticalResolutionSPAC = $C2
 aC3 = $C3
 aC4 = $C4
-aC5 = $C5
 aC6 = $C6
 aC7 = $C7
 aC8 = $C8
@@ -37,7 +36,7 @@ aCD = $CD
 aCE = $CE
 aCF = $CF
 aD0 = $D0
-aD1 = $D1
+bottomMostYPos = $D1
 aD2 = $D2
 aD3 = $D3
 FR0 = $D4
@@ -47,8 +46,8 @@ aD7 = $D7
 aD8 = $D8
 aD9 = $D9
 FR3 = $DA
-aDB = $DB
-acDC = $DC
+pixelXPosition = $DB
+pixelYPosition = $DC
 aDD = $DD
 aDE = $DE
 aDF = $DF
@@ -57,14 +56,14 @@ aE1 = $E1
 aE2 = $E2
 aE3 = $E3
 aE4 = $E4
-aE5 = $E5
+vectorMode = $E5
 FR2 = $E6
-aE8 = $E8
+speedBoostAdjust = $E8
 aE9 = $E9
-aEA = $EA
+currentPatternIndex = $EA
 aEB = $EB
 FPCOC = $EC
-FPTEM1 = $ED
+currentSymmetry = $ED
 FPTEM2 = $EE
 aEF = $EF
 aF0 = $F0
@@ -72,16 +71,16 @@ aF1 = $F1
 CIX = $F2
 INBUFF = $F3
 aF4 = $F4
-aF5 = $F5
+smoothingDelay = $F5
 aF6 = $F6
-aF7 = $F7
+bufferLength = $F7
 aF8 = $F8
 aF9 = $F9
 aFA = $FA
 DEGFLG = $FB
 FLPTR = $FC
-aFD = $FD
-InputCharacter = $FE
+generalLoPtr = $FD
+generalHiPtr = $FE
 ;
 ; **** ZP POINTERS **** 
 ;
@@ -89,13 +88,12 @@ pB0 = $B0
 pB2 = $B2
 pC0 = $C0
 pC3 = $C3
-pC5 = $C5
+keyboardInputArray = $C5
 pC9 = $C9
 pCB = $CB
 pD2 = $D2
 pDD = $DD
 pEF = $EF
-pFD = $FD
 ;
 ; **** FIELDS **** 
 ;
@@ -149,12 +147,14 @@ BOTSCR = $02BF
 PCOLR0 = $02C0
 COLOR2 = $02C6
 COLOR4 = $02C8
-CH = $02FC
+inputCharacter = $02FC
 PRNBUF = $03C0
 CIOV = $E456
 SETBV = $E45C
 XITBV = $E462
 WARMSV = $E474
+
+.include "constants.asm"
 
 * = $1F00
 
@@ -333,7 +333,7 @@ j2C33
 ; j2C3B
 ;-------------------------------------------------------------------------
 j2C3B
-        LDA a5A45
+        LDA wipeForegroundGraphics
         CMP #$02
         BEQ b2C57
         CMP #$01
@@ -343,7 +343,7 @@ j2C3B
 b2C49   JSR s4815
         JSR s4225
         LDA #$00
-        STA a5A45
+        STA wipeForegroundGraphics
         JMP MainGameLoop
 
 b2C57   LDA #$10
@@ -351,19 +351,19 @@ b2C57   LDA #$10
         STA aC4
         LDA #$00
         STA aC3
-        LDA a5A42
+        LDA symmetryForeground
         STA aD0
 b2C65   LDY #$00
         LDA (pC3),Y
         CMP #$FF
         BNE b2C76
 b2C6D   LDA #$00
-        STA a5A45
+        STA wipeForegroundGraphics
         CLI 
         JMP MainGameLoop
 
 b2C76   CLC 
-        ADC a5A43
+        ADC drawForegroundAtXPos
         STA aCD
         LDA aC4
         PHA 
@@ -372,7 +372,7 @@ b2C76   CLC
         STA aC4
         LDA (pC3),Y
         CLC 
-        ADC a5A44
+        ADC drawForegroundAtYPos
         STA aCE
         LDA aC4
         CLC 
@@ -393,7 +393,7 @@ b2C76   CLC
         JMP b2C65
 
 a2CAE   .BYTE $00
-a2CAF   .BYTE $00
+explosionMode   .BYTE $00
 ;-------------------------------------------------------------------------
 ; j2CB0
 ;-------------------------------------------------------------------------
@@ -515,7 +515,7 @@ s2D79
         LDX #$20
         JSR CIOV     ;$E456 (jmp) CIOV
         LDA #$00
-        STA a5A45
+        STA wipeForegroundGraphics
         JMP j2E91
 
 ;-------------------------------------------------------------------------
@@ -540,7 +540,7 @@ s2D8B
 ;-------------------------------------------------------------------------
 j2DA9
         JSR s2E6D
-        LDA a5A45
+        LDA wipeForegroundGraphics
         CMP #$03
         BNE b2DDA
         JSR s2D5B
@@ -554,9 +554,9 @@ j2DBB
         STA ICBAL
         LDA #>p1000
         STA ICBAH
-        LDA #<p3000
+        LDA #<possibleDisplayLists
         STA ICBLL
-        LDA #>p3000
+        LDA #>possibleDisplayLists
         STA ICBLH
         LDX #$20
         JSR CIOV     ;$E456 (jmp) CIOV
@@ -611,7 +611,7 @@ a2E26   .BYTE $00,$33,$21,$36,$25,$00,$2D,$2F
 ; s2E6D
 ;-------------------------------------------------------------------------
 s2E6D
-        LDA a5A45
+        LDA wipeForegroundGraphics
         SEC 
         SBC #$03
         BEQ b2E7E
@@ -707,7 +707,7 @@ a2FCA   .BYTE $00,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55
-p3000   .BYTE $01,$01,$01,$01,$05,$00,$00,$10
+possibleDisplayLists   .BYTE $01,$01,$01,$01,$05,$00,$00,$10
         .BYTE $01,$00,$40,$00,$02,$00,$18,$38
         .BYTE $58,$78,$98,$B8,$D8,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$01,$01,$01
@@ -1227,6 +1227,7 @@ LaunchColourspace
         LDA a2FCA
         BNE b4032
         INC a2FCA
+
 b400A   LDA #$CC
         STA fA000,X
         STA fB000,X
@@ -1247,6 +1248,7 @@ b402A   LDA a4019
         INX 
         CMP #$1C
         BNE b400A
+
 b4032   JSR s415E
         JSR s4225
         JSR s4257
@@ -1266,11 +1268,11 @@ s4040
         STA aC4
         LDA #<a7000
         STA aC3
-        LDX aC2
+        LDX verticalResolutionSPAC
         LDA f4212,X
         STA a403F
         LDY #$00
-        STY aD1
+        STY bottomMostYPos
         LDA #$70
         JSR s40EA
         JSR s40EA
@@ -1282,11 +1284,11 @@ s4040
         JSR s40EA
         LDA #$90
         JSR s40EA
-        LDA a4B08
+        LDA screenMode
         BEQ b4082
         JMP j4AC0
 
-b4082   LDX aC2
+b4082   LDX verticalResolutionSPAC
 b4084   LDA #$4F
         JSR s40EA
         LDA aC3
@@ -1302,7 +1304,7 @@ b4084   LDA #$4F
         LDA aC4
         ADC #$00
         STA aC4
-        INC aD1
+        INC bottomMostYPos
         DEC a403F
         BNE b4082
 ;-------------------------------------------------------------------------
@@ -1323,24 +1325,24 @@ j40AA
         STA SDLSTH   ;SDLSTH  shadow for DLISTH ($D403)
         LDA #$22
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
-        LDA a58A3
+        LDA dualJoystickMode
         BEQ b40D7
-        LDA aD1
+        LDA bottomMostYPos
         JMP j40DD
 
-b40D7   LDA aD1
-        CMP acDC
+b40D7   LDA bottomMostYPos
+        CMP pixelYPosition
         BPL b40E9
 ;-------------------------------------------------------------------------
 ; j40DD
 ;-------------------------------------------------------------------------
 j40DD
-        LDX acDC
+        LDX pixelYPosition
         STX aF1
         STX CIX      ;CIX     
-        STA acDC
-        DEC acDC
-        DEC acDC
+        STA pixelYPosition
+        DEC pixelYPosition
+        DEC pixelYPosition
 b40E9   RTS 
 
 ;-------------------------------------------------------------------------
@@ -1357,53 +1359,53 @@ b40F2   RTS
 ; j40F3
 ;-------------------------------------------------------------------------
 j40F3
-        LDX #$44
-        LDY #$90
+        LDX #>VerticalBlankInterruptHandler
+        LDY #<VerticalBlankInterruptHandler
         LDA #$07
         JSR SETBV    ;$E45C (jmp) SETBV
         LDA #$10
-        STA aF5
+        STA smoothingDelay
         LDA #<DisplayListInterrupt
         STA VDSLST   ;VDSLST  display list interrupt vector
         LDA #>DisplayListInterrupt
         STA a0201
         LDA #<p0428
-        STA aDB
+        STA pixelXPosition
         LDA #>p0428
-        STA acDC
+        STA pixelYPosition
         LDA #$01
-        STA FPTEM1
+        STA currentSymmetry
         TAX 
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         LDA #$00
-        STA a4B08
+        STA screenMode
         STA CIX      ;CIX     
         STA INBUFF   ;INBUFF  
         STA aF4
         STA FR2
         STA aF9
         STA aFA
-        STA a5A45
+        STA wipeForegroundGraphics
         LDA #$FF
         STA aDF
         LDA #$01
-        STA aEA
+        STA currentPatternIndex
         JSR s4815
         LDA #$40
         STA aE4
-        STA aF7
+        STA bufferLength
         STA aF6
         LDA #$01
-        STA aE8
+        STA speedBoostAdjust
         LDA #$C0
         STA $D40E    ;NMIEN
         LDX #$00
         LDA #$01
-        STA aE5
+        STA vectorMode
         LDA #$18
-        STA aD1
+        STA bottomMostYPos
         LDA #$05
-        STA aC2
+        STA verticalResolutionSPAC
         JSR s4040
         JMP MainGameLoop
 
@@ -1477,7 +1479,7 @@ s41A6
         STA aCC
         PLA 
         STA aCF
-        LDA a58FD
+        LDA beginDrawingForeground
         BNE b41E7
         LDA (pC9),Y
         AND #$EF
@@ -1689,53 +1691,141 @@ b431C   DEC FR3
         STA ATRACT   ;ATRACT  screen attract counter
         RTS 
 
-        .BYTE $00,$55,$01,$02,$55,$01,$02,$03
-        .BYTE $55,$01,$02,$03,$04,$55,$00,$00
-        .BYTE $00,$55,$FF,$FE,$55,$55,$FF,$55
-        .BYTE $FF,$FE,$55,$00,$00,$00,$55,$01
-        .BYTE $02,$03,$04,$55,$01,$02,$03,$55
-        .BYTE $01,$02,$55,$55,$FF,$01,$55,$FE
-        .BYTE $02,$55,$FD,$03,$55,$FC,$04,$55
-        .BYTE $FB,$05,$55,$FA,$06,$55,$55,$02
-        .BYTE $FE,$55,$FF,$01,$55,$04,$FC,$55
-        .BYTE $FE,$02,$55,$06,$FA,$55,$FD,$03
-        .BYTE $55,$55,$01,$55,$02,$55,$03,$55
-        .BYTE $04,$55,$05,$55,$06,$55,$55,$FE
-        .BYTE $55,$02,$55,$FD,$55,$03,$55,$FC
-        .BYTE $55,$04,$55,$55,$FF,$00,$01,$55
-        .BYTE $55,$FE,$FF,$00,$01,$02,$55,$FD
-        .BYTE $00,$03,$55,$FC,$00,$04,$55,$FA
-        .BYTE $00,$06,$55,$55,$00,$FF,$00,$55
-        .BYTE $55,$00,$FF,$FE,$FF,$00,$55,$01
-        .BYTE $FD,$01,$55,$02,$FC,$02,$55,$04
-        .BYTE $FA,$04,$55,$55,$00,$01,$00,$FF
-        .BYTE $55,$00,$02,$00,$FE,$55,$00,$03
-        .BYTE $00,$FD,$55,$00,$04,$00,$FC,$55
-        .BYTE $00,$05,$00,$FB,$55,$00,$06,$00
-        .BYTE $FA,$55,$55,$FF,$00,$01,$00,$55
-        .BYTE $FE,$00,$02,$00,$55,$FD,$00,$03
-        .BYTE $00,$55,$FC,$00,$04,$00,$55,$FB
-        .BYTE $00,$05,$00,$55,$FA,$00,$06,$00
-        .BYTE $55,$55,$FF,$01,$01,$FF,$55,$FE
-        .BYTE $02,$02,$FE,$55,$FD,$FF,$01,$03
-        .BYTE $03,$01,$FF,$FD,$55,$FD,$03,$03
-        .BYTE $FD,$55,$FC,$04,$04,$FC,$55,$FB
-        .BYTE $FD,$03,$05,$05,$03,$FD,$FB,$55
-        .BYTE $55,$FF,$FF,$01,$01,$55,$FE,$FE
-        .BYTE $02,$02,$55,$FF,$FD,$FD,$FF,$01
-        .BYTE $03,$03,$01,$55,$FD,$FD,$03,$03
-        .BYTE $55,$FC,$FC,$04,$04,$55,$FD,$FB
-        .BYTE $FB,$FD,$03,$05,$05,$03,$55,$55
-        .BYTE $FF,$01,$55,$FD,$03,$55,$FE,$02
-        .BYTE $55,$FB,$05,$55,$08,$08,$55,$08
-        .BYTE $08,$55,$55,$FF,$01,$55,$FD,$03
-        .BYTE $55,$01,$FF,$55,$02,$FE,$55,$0B
-        .BYTE $0F,$55,$0C,$0E,$55,$55,$FF,$55
-        .BYTE $01,$55,$FE,$55,$02,$55,$01,$55
-        .BYTE $FF,$55,$55,$FD,$55,$FE,$55,$FF
-        .BYTE $55,$00,$55,$02,$55,$02,$55,$55
+; Some patterns
+a4328
+        .BYTE $00,$55
+        .BYTE $01,$02,$55
+        .BYTE $01,$02,$03,$55
+        .BYTE $01,$02,$03,$04,$55
+        .BYTE $00,$00,$00,$55
+        .BYTE $FF,$FE,$55
+        .BYTE $55
+a433E
+        .BYTE $FF,$55
+        .BYTE $FF,$FE,$55
+        .BYTE $00,$00,$00,$55
+        .BYTE $01,$02,$03,$04,$55
+        .BYTE $01,$02,$03,$55
+        .BYTE $01,$02,$55
+        .BYTE $55
+a4354
+        .BYTE $FF,$01,$55
+        .BYTE $FE,$02,$55
+        .BYTE $FD,$03,$55
+        .BYTE $FC,$04,$55
+        .BYTE $FB,$05,$55
+        .BYTE $FA,$06,$55
+        .BYTE $55
+a4367
+        .BYTE $02,$FE,$55
+        .BYTE $FF,$01,$55
+        .BYTE $04,$FC,$55
+        .BYTE $FE,$02,$55
+        .BYTE $06,$FA,$55
+        .BYTE $FD,$03,$55
+        .BYTE $55
+a437A
+        .BYTE $01,$55
+        .BYTE $02,$55
+        .BYTE $03,$55
+        .BYTE $04,$55
+        .BYTE $05,$55
+        .BYTE $06,$55
+        .BYTE $55
+a4387
+        .BYTE $FE,$55
+        .BYTE $02,$55
+        .BYTE $FD,$55
+        .BYTE $03,$55
+        .BYTE $FC,$55
+        .BYTE $04,$55
+        .BYTE $55
+a4394
+        .BYTE $FF,$00,$01,$55
+        .BYTE $55
+        .BYTE $FE,$FF,$00,$01,$02,$55
+        .BYTE $FD,$00,$03,$55
+        .BYTE $FC,$00,$04,$55
+        .BYTE $FA,$00,$06,$55
+        .BYTE $55
+a43AC
+        .BYTE $00,$FF,$00,$55
+        .BYTE $55
+        .BYTE $00,$FF,$FE,$FF,$00,$55
+        .BYTE $01,$FD,$01,$55
+        .BYTE $02,$FC,$02,$55
+        .BYTE $04,$FA,$04,$55
+        .BYTE $55
+a43C4
+        .BYTE $00,$01,$00,$FF,$55
+        .BYTE $00,$02,$00,$FE,$55
+        .BYTE $00,$03,$00,$FD,$55
+        .BYTE $00,$04,$00,$FC,$55
+        .BYTE $00,$05,$00,$FB,$55
+        .BYTE $00,$06,$00,$FA,$55
+        .BYTE $55
+a43E3
+        .BYTE $FF,$00,$01,$00,$55
+        .BYTE $FE,$00,$02,$00,$55
+        .BYTE $FD,$00,$03,$00,$55
+        .BYTE $FC,$00,$04,$00,$55
+        .BYTE $FB,$00,$05,$00,$55
+        .BYTE $FA,$00,$06,$00,$55
+        .BYTE $55
+a4402
+        .BYTE $FF,$01,$01,$FF,$55
+        .BYTE $FE,$02,$02,$FE,$55
+        .BYTE $FD,$FF,$01,$03,$03,$01,$FF,$FD,$55
+        .BYTE $FD,$03,$03,$FD,$55
+        .BYTE $FC,$04,$04,$FC,$55
+        .BYTE $FB,$FD,$03,$05,$05,$03,$FD,$FB,$55
+        .BYTE $55
+a4429
+        .BYTE $FF,$FF,$01,$01,$55
+        .BYTE $FE,$FE,$02,$02,$55
+        .BYTE $FF,$FD,$FD,$FF,$01,$03,$03,$01,$55
+        .BYTE $FD,$FD,$03,$03,$55
+        .BYTE $FC,$FC,$04,$04,$55
+        .BYTE $FD,$FB,$FB,$FD,$03,$05,$05,$03,$55
+        .BYTE $55
+a4450
+        .BYTE $FF,$01,$55
+        .BYTE $FD,$03,$55
+        .BYTE $FE,$02,$55
+        .BYTE $FB,$05,$55
+        .BYTE $08,$08,$55
+        .BYTE $08,$08,$55
+        .BYTE $55
+a4463
+        .BYTE $FF,$01,$55
+        .BYTE $FD,$03,$55
+        .BYTE $01,$FF,$55
+        .BYTE $02,$FE,$55
+        .BYTE $0B,$0F,$55
+        .BYTE $0C,$0E,$55
+        .BYTE $55
+a4476
+        .BYTE $FF,$55
+        .BYTE $01,$55
+        .BYTE $FE,$55
+        .BYTE $02,$55
+        .BYTE $01,$55
+        .BYTE $FF,$55
+        .BYTE $55
+a4483
+        .BYTE $FD,$55
+        .BYTE $FE,$55
+        .BYTE $FF,$55
+        .BYTE $00,$55
+        .BYTE $02,$55
+        .BYTE $02,$55
+        .BYTE $55
 
 ; Vertical Blank interrupt?
+;-------------------------------------------------------------------------
+; VerticalBlankInterruptHandler
+;-------------------------------------------------------------------------
+VerticalBlankInterruptHandler
         PHA 
         TXA 
         PHA 
@@ -1746,12 +1836,12 @@ b431C   DEC FR3
         STA $D01B    ;PRIOR
         LDA PCOLR0   ;PCOLR0  shadow for COLPM0 ($D012)
         STA $D01A    ;COLBK
-        JSR s4D33
+        JSR LookForKeyboardInput
         DEC a4A1F
         BNE b44B4
-        LDA a4A1E
+        LDA cursorSpeed
         STA a4A1F
-        JSR s452A
+        JSR GetJoystickInput
 b44B4   INC COLOR4   ;COLOR4  shadow for COLBK ($D01A)
         JSR s4CA0
         PLA 
@@ -1767,15 +1857,15 @@ b44C2   RTS
 ; s44C3
 ;-------------------------------------------------------------------------
 s44C3
-        LDA a5B66
+        LDA autoDemoEnabled
         CMP #$02
         BEQ b44C2
         TYA 
         PHA 
         TXA 
         PHA 
-        LDX acDC
-        LDY aDB
+        LDX pixelYPosition
+        LDY pixelXPosition
         LDA f9EA0,X
         STA aDD
         LDA f9F54,X
@@ -1789,8 +1879,8 @@ s44C3
         TAY 
         RTS 
 
-b44E7   LDX acDC
-        LDA aDB
+b44E7   LDX pixelYPosition
+        LDA pixelXPosition
         CLC 
         ROR 
         TAY 
@@ -1802,7 +1892,7 @@ b44E7   LDX acDC
         BEQ b4526
         LDA #$08
 b44FE   STA aE1
-        LDA aDB
+        LDA pixelXPosition
         AND #$01
         BEQ b4511
         LDA (pDD),Y
@@ -1834,41 +1924,41 @@ j4521
 b4526   LDA #$00
         BEQ b44FE
 ;-------------------------------------------------------------------------
-; s452A
+; GetJoystickInput
 ;-------------------------------------------------------------------------
-s452A
+GetJoystickInput
         LDA CIX      ;CIX     
         BEQ b4549
         LDA #$00
         STA CIX      ;CIX     
         STA aDF
-        LDA acDC
+        LDA pixelYPosition
         PHA 
         LDA aF1
-        STA acDC
+        STA pixelYPosition
         JSR s44C3
         PLA 
-        STA acDC
+        STA pixelYPosition
         JSR s57FC
         LDA #$0A
         STA a5CF7
 b4549   LDA #$00
         STA aDF
         JSR s44C3
-        LDX aE8
+        LDX speedBoostAdjust
         LDA STICK0   ;STICK0  shadow for PORTA lo ($D300)
-        AND a586C
+        AND slothMode
         LDY STRIG0   ;STRIG0  shadow for TRIG0 ($D001)
         BNE b455F
         ORA #$80
 b455F   STA FR1      ;FR1     floating point register 1
-        LDA a5B66
+        LDA autoDemoEnabled
         BEQ b456E
         CMP #$01
         BEQ b456E
         LDA FLPTR
         STA FR1      ;FR1     floating point register 1
-b456E   LDA a58A3
+b456E   LDA dualJoystickMode
         BEQ b4580
         INC a58A4
         LDA a58A4
@@ -1879,7 +1969,7 @@ b4580   LDA a4ECC
         BEQ b4589
         LDA #$FA
         STA FR1      ;FR1     floating point register 1
-b4589   LDA aE5
+b4589   LDA vectorMode
         AND #$02
         BEQ b4597
         TXA 
@@ -1890,36 +1980,36 @@ b4589   LDA aE5
 b4597   LDA FR1      ;FR1     floating point register 1
         AND #$01
         BNE b45A7
-        DEC acDC
+        DEC pixelYPosition
         BPL b45A7
-        LDA aD1
-        STA acDC
-        DEC acDC
+        LDA bottomMostYPos
+        STA pixelYPosition
+        DEC pixelYPosition
 b45A7   LDA FR1      ;FR1     floating point register 1
         AND #$02
         BNE b45B9
-        INC acDC
-        LDA acDC
-        CMP aD1
+        INC pixelYPosition
+        LDA pixelYPosition
+        CMP bottomMostYPos
         BNE b45B9
         LDA #$00
-        STA acDC
+        STA pixelYPosition
 b45B9   LDA FR1      ;FR1     floating point register 1
         AND #$04
         BNE b45C7
-        DEC aDB
+        DEC pixelXPosition
         BPL b45C7
         LDA #$4F
-        STA aDB
+        STA pixelXPosition
 b45C7   LDA FR1      ;FR1     floating point register 1
         AND #$08
         BNE b45D9
-        INC aDB
-        LDA aDB
+        INC pixelXPosition
+        LDA pixelXPosition
         CMP #$50
         BNE b45D9
         LDA #$00
-        STA aDB
+        STA pixelXPosition
 b45D9   TXA 
         PHA 
 ;-------------------------------------------------------------------------
@@ -1938,23 +2028,23 @@ j45DB
         BEQ b4614
         LDA #$00
         STA a5CF5
-        LDA aDB
+        LDA pixelXPosition
         STA a5CF6
-        LDA acDC
+        LDA pixelYPosition
         STA a5CF7
         LDA a5CF3
-        STA aDB
+        STA pixelXPosition
         LDA a5CF4
-        STA acDC
-        LDA aEA
+        STA pixelYPosition
+        LDA currentPatternIndex
         PHA 
-        LDA a58E9
-        STA aEA
+        LDA secondUserLightform
+        STA currentPatternIndex
         PLA 
-        STA a58E9
+        STA secondUserLightform
 b4614   RTS 
 
-f4615   .BYTE $4B,$45,$59,$36,$09,$3A,$4E,$C0
+pixelXPositionArray   .BYTE $4B,$45,$59,$36,$09,$3A,$4E,$C0
         .BYTE $01,$0C,$4B,$36,$31,$0B,$6B,$4E
         .BYTE $C0,$3B,$0E,$42,$4F,$54,$52,$4F
         .BYTE $09,$48,$4E,$C0,$15,$0C,$4B,$36
@@ -1962,7 +2052,7 @@ f4615   .BYTE $4B,$45,$59,$36,$09,$3A,$4E,$C0
         .BYTE $43,$48,$45,$43,$09,$4C,$4E,$C0
         .BYTE $1E,$0C,$4B,$5A,$4F,$09,$56,$4E
         .BYTE $C0,$33,$0C,$4B,$36,$33,$0C,$39
-f4655   .BYTE $54,$C0,$3D,$0C,$53,$48,$4F,$43
+pixelYPositionArray   .BYTE $54,$C0,$3D,$0C,$53,$48,$4F,$43
         .BYTE $4F,$4C,$0A,$A3,$4E,$C0,$6F,$0C
         .BYTE $4B,$45,$59,$37,$0A,$A2,$4E,$C0
         .BYTE $63,$0C,$53,$54,$52,$4F,$09,$86
@@ -1970,7 +2060,7 @@ f4655   .BYTE $54,$C0,$3D,$0C,$53,$48,$4F,$43
         .BYTE $80,$54,$C0,$04,$0D,$47,$45,$54
         .BYTE $41,$09,$9F,$4E,$C0,$8C,$0D,$5A
         .BYTE $58,$59,$0C,$52,$54,$C0,$E8,$0C
-f4695   .BYTE $53,$48,$4F,$4E,$55,$4D,$0A,$CE
+patternIndexArray   .BYTE $53,$48,$4F,$4E,$55,$4D,$0A,$CE
         .BYTE $4E,$C0,$79,$0C,$4B,$45,$59,$38
         .BYTE $08,$BC,$4E,$C0,$8B,$0C,$4B,$37
         .BYTE $0A,$CD,$4E,$C0,$5D,$0E,$54,$43
@@ -1978,7 +2068,7 @@ f4695   .BYTE $53,$48,$4F,$4E,$55,$4D,$0A,$CE
         .BYTE $4B,$45,$59,$38,$38,$0C,$4D,$4F
         .BYTE $C0,$A2,$0C,$4D,$45,$53,$47,$45
         .BYTE $53,$0B,$4A,$4F,$C0,$AD,$0C,$4D
-f46D5   .BYTE $53,$47,$4C,$4F,$0B,$4B,$4F,$C0
+initialFramesRemainingToNextPaintForStep   .BYTE $53,$47,$4C,$4F,$0B,$4B,$4F,$C0
         .BYTE $C1,$0C,$4D,$53,$47,$48,$49,$09
         .BYTE $20,$4F,$C0,$25,$0F,$4E,$4F,$4D
         .BYTE $0A,$38,$4F,$C0,$CB,$0C,$4D,$45
@@ -1994,7 +2084,7 @@ f4715   .BYTE $7E,$54,$C0,$F2,$0C,$53,$48,$4F
         .BYTE $C0,$90,$0F,$48,$49,$58,$0C,$A2
         .BYTE $2E,$C0,$0A,$11,$46,$41,$4C,$53
         .BYTE $49,$45,$0A,$A3,$54,$C0,$2D,$0D
-f4755   .BYTE $4D,$43,$48,$31,$0A,$C6,$54,$C0
+currentSymmetryArray   .BYTE $4D,$43,$48,$31,$0A,$C6,$54,$C0
         .BYTE $37,$0D,$4D,$43,$48,$32,$0B,$B1
         .BYTE $54,$C0,$42,$0D,$4D,$43,$48,$31
         .BYTE $31,$0B,$BA,$54,$C0,$4D,$0D,$4D
@@ -2047,13 +2137,13 @@ MainGameLoop
         BEQ b483E
         DEC aF8
         BNE b483E
-        LDA aF7
+        LDA bufferLength
         STA aE4
-b483E   LDA a58FD
+b483E   LDA beginDrawingForeground
         BEQ b4846
         JMP j5D1F
 
-b4846   LDA a5A45
+b4846   LDA wipeForegroundGraphics
         BEQ b484E
         JMP j2C3B
 
@@ -2071,17 +2161,17 @@ b4862   LDA f4795,X
         STA aD9
         AND #$07
         STA aD6
-        LDA f4615,X
+        LDA pixelXPositionArray,X
         STA aD7
-        LDA f4655,X
+        LDA pixelYPositionArray,X
         STA aD8
-        LDA f4695,X
+        LDA patternIndexArray,X
         STA aE9
-        LDA f4755,X
+        LDA currentSymmetryArray,X
         STA aD0
         LDA f47D5,X
         STA FPTEM2
-        LDA f46D5,X
+        LDA initialFramesRemainingToNextPaintForStep,X
         STA f4715,X
         DEC f4795,X
         JSR LoopThroughPixelsAndPaint
@@ -2099,7 +2189,7 @@ GoBackToStartOfLoop
 ; s48A5
 ;-------------------------------------------------------------------------
 s48A5
-        LDA a58FD
+        LDA beginDrawingForeground
         BEQ b48AD
         JMP j5D70
 
@@ -2134,14 +2224,14 @@ b48D9   INC aE3
         BNE b48E9
         LDA #$00
         STA aE3
-        LDA aF7
+        LDA bufferLength
         STA aF6
 b48E9   LDX aE3
         LDA f4795,X
         AND #$0F
         CMP #$0F
         BEQ b490D
-        LDA aE5
+        LDA vectorMode
         AND #$01
         BEQ b48B8
         LDA aF8
@@ -2154,21 +2244,21 @@ b48E9   LDX aE3
         STA FR2
         JMP b48E9
 
-b490D   LDA aDB
-        STA f4615,X
-        LDA acDC
-        STA f4655,X
-        LDA aF5
-        STA f46D5,X
+b490D   LDA pixelXPosition
+        STA pixelXPositionArray,X
+        LDA pixelYPosition
+        STA pixelYPositionArray,X
+        LDA smoothingDelay
+        STA initialFramesRemainingToNextPaintForStep,X
         STA f4715,X
-        LDA FPTEM1
-        STA f4755,X
-        LDA aEA
-        STA f4695,X
-        LDA aD1
+        LDA currentSymmetry
+        STA currentSymmetryArray,X
+        LDA currentPatternIndex
+        STA patternIndexArray,X
+        LDA bottomMostYPos
         STA f47D5,X
         LDA #$07
-        ORA a2CAF
+        ORA explosionMode
         STA f4795,X
         RTS 
 
@@ -2194,18 +2284,18 @@ s494B
         LDA a4947
         AND #$10
         BNE b496C
-        INC aDB
-        INC aDB
-b496C   DEC aDB
+        INC pixelXPosition
+        INC pixelXPosition
+b496C   DEC pixelXPosition
         BPL b4976
         LDA #$4F
-        STA aDB
+        STA pixelXPosition
         BNE b4980
-b4976   LDA aDB
+b4976   LDA pixelXPosition
         CMP #$50
         BNE b4980
         LDA #$00
-        STA aDB
+        STA pixelXPosition
 b4980   LDA a494A
         BEQ b49B7
         DEC a494A
@@ -2218,19 +2308,19 @@ b4980   LDA a494A
         LDA a4948
         AND #$10
         BNE b49A1
-        INC acDC
-        INC acDC
-b49A1   DEC acDC
+        INC pixelYPosition
+        INC pixelYPosition
+b49A1   DEC pixelYPosition
         BPL b49AD
-        LDA aD1
-        STA acDC
-        DEC acDC
+        LDA bottomMostYPos
+        STA pixelYPosition
+        DEC pixelYPosition
         BNE b49B7
-b49AD   LDA acDC
-        CMP aD1
+b49AD   LDA pixelYPosition
+        CMP bottomMostYPos
         BNE b49B7
         LDA #$00
-        STA acDC
+        STA pixelYPosition
 b49B7   LDA FR1      ;FR1     floating point register 1
         AND #$0C
         CMP #$0C
@@ -2262,66 +2352,63 @@ b49D1   DEC a4947
 b49FC   LDA FR1      ;FR1     floating point register 1
         AND #$01
         BNE b4A0A
-        DEC a4A1E
+        DEC cursorSpeed
         BNE b4A0A
-        INC a4A1E
+        INC cursorSpeed
 b4A0A   LDA FR1      ;FR1     floating point register 1
         AND #$02
         BNE b4A1D
-        INC a4A1E
-        LDA a4A1E
+        INC cursorSpeed
+        LDA cursorSpeed
         CMP #$08
         BNE b4A1D
-        DEC a4A1E
+        DEC cursorSpeed
 b4A1D   RTS 
 
-a4A1E   .BYTE $01
-a4A1F   .BYTE $01
-pixelXPositionLoPtrArray   .BYTE $28,$54,$7A,$94,$C4,$02,$50,$76
-        .BYTE $00,$80,$00,$80,$00,$80,$00,$80
-        .BYTE $00,$80,$00,$80,$00,$80,$00,$80
-        .BYTE $00,$80,$00,$80,$00,$80,$00,$80
-        .BYTE $00,$80,$00,$80,$00,$80,$00,$80
-pixelXPositionHiPtrArray   .BYTE $43,$43,$43,$43,$43,$44,$44,$44
-        .BYTE $20,$20,$21,$21,$22,$22,$23,$23
-        .BYTE $24,$24,$25,$25,$26,$26,$27,$27
-        .BYTE $28,$28,$29,$29,$2A,$2A,$2B,$2B
-        .BYTE $2C,$2C,$2D,$2D,$2E,$2E,$2F,$2F
-;pixelXPositionLoPtrArray   .BYTE <a4328,<a4354,<a437A,<a4394,<a43C4,<a4402,<a4450,<a4476
-;        .BYTE <a2000,<a2080,<a2100,<a2180,<a2200,<a2280,<a2300,<a2380
-;        .BYTE <a2400,<a2480,<a2500,<a2580,<a2600,<a2680,<a2700,<a2780
-;        .BYTE <a2800,<a2880,<a2900,<a2980,<a2A00,<a2A80,<a2B00,<a2B80
-;        .BYTE <a2C00,<a2C80,<a2D00,<a2D80,<a2E00,<a2E80,<a2F00,<a2F80
-;
-;
-;pixelXPositionHiPtrArray   .BYTE >a4328,>a4354,>a437A,>a4394,>a43C4,>a4402,>a4450,>a4476
-;        .BYTE >a2000,>a2080,>a2100,>a2180,>a2200,>a2280,>a2300,>a2380
-;        .BYTE >a2400,>a2480,>a2500,>a2580,>a2600,>a2680,>a2700,>a2780
-;        .BYTE >a2800,>a2880,>a2900,>a2980,>a2A00,>a2A80,>a2B00,>a2B80
-;        .BYTE >a2C00,>a2C80,>a2D00,>a2D80,>a2E00,>a2E80,>a2F00,>a2F80
+a2C00 = $2C00
+a2C80 = $2C80
+a2D00 = $2D00
+a2D80 = $2D80
+a2E00 = $2E00
+a2E80 = $2E80
+a2F00 = $2F00
+a2F80 = $2F80
+a2C40 = $2C40
+a2CC0 = $2CC0
+a2D40 = $2D40
+a2DC0 = $2DC0
+a2E40 = $2E40
+a2EC0 = $2EC0
+a2F40 = $2F40
+a2FC0 = $2FC0
 
-pixelYPositionLoPtrArray   .BYTE $3E,$67,$87,$AC,$E3,$29,$63,$83
-        .BYTE $40,$C0,$40,$C0,$40,$C0,$40,$C0
-        .BYTE $40,$C0,$40,$C0,$40,$C0,$40,$C0
-        .BYTE $40,$C0,$40,$C0,$40,$C0,$40,$C0
-        .BYTE $40,$C0,$40,$C0,$40,$C0,$40,$C0
-pixelYPositionHiPtrArray   .BYTE $43,$43,$43,$43,$43,$44,$44,$44
-        .BYTE $20,$20,$21,$21,$22,$22,$23,$23
-        .BYTE $24,$24,$25,$25,$26,$26,$27,$27
-        .BYTE $28,$28,$29,$29,$2A,$2A,$2B,$2B
-        .BYTE $2C,$2C,$2D,$2D,$2E,$2E,$2F,$2F
-;pixelYPositionLoPtrArray   .BYTE <a433E,<a4367,<a4387,<a43AC,<a43E3,<a4429,<a4463,<a4483
-;        .BYTE <a2040,<a20C0,<a2140,<a21C0,<a2240,<a22C0,<a2340,<a23C0
-;        .BYTE <a2440,<a24C0,<a2540,<a25C0,<a2640,<a26C0,<a2740,<a27C0
-;        .BYTE <a2840,<a28C0,<a2940,<a29C0,<a2A40,<a2AC0,<a2B40,<a2BC0
-;        .BYTE <a2C40,<a2CC0,<a2D40,<a2DC0,<a2E40,<a2EC0,<a2F40,<a2FC0
-;
-;
-;pixelYPositionHiPtrArray   .BYTE >a433E,>a4367,>a4387,>a43AC,>a43E3,>a4429,>a4463,>a4483
-;        .BYTE >a2040,>a20C0,>a2140,>a21C0,>a2240,>a22C0,>a2340,>a23C0
-;        .BYTE >a2440,>a24C0,>a2540,>a25C0,>a2640,>a26C0,>a2740,>a27C0
-;        .BYTE >a2840,>a28C0,>a2940,>a29C0,>a2A40,>a2AC0,>a2B40,>a2BC0
-;        .BYTE >a2C40,>a2CC0,>a2D40,>a2DC0,>a2E40,>a2EC0,>a2F40,>a2FC0
+cursorSpeed   .BYTE $01
+a4A1F   .BYTE $01
+pixelXPositionLoPtrArray   .BYTE <a4328,<a4354,<a437A,<a4394,<a43C4,<a4402,<a4450,<a4476
+        .BYTE <a2000,<a2080,<a2100,<a2180,<a2200,<a2280,<a2300,<a2380
+        .BYTE <a2400,<a2480,<a2500,<a2580,<a2600,<a2680,<a2700,<a2780
+        .BYTE <a2800,<a2880,<a2900,<a2980,<a2A00,<a2A80,<a2B00,<a2B80
+        .BYTE <a2C00,<a2C80,<a2D00,<a2D80,<a2E00,<a2E80,<a2F00,<a2F80
+
+
+pixelXPositionHiPtrArray   .BYTE >a4328,>a4354,>a437A,>a4394,>a43C4,>a4402,>a4450,>a4476
+        .BYTE >a2000,>a2080,>a2100,>a2180,>a2200,>a2280,>a2300,>a2380
+        .BYTE >a2400,>a2480,>a2500,>a2580,>a2600,>a2680,>a2700,>a2780
+        .BYTE >a2800,>a2880,>a2900,>a2980,>a2A00,>a2A80,>a2B00,>a2B80
+        .BYTE >a2C00,>a2C80,>a2D00,>a2D80,>a2E00,>a2E80,>a2F00,>a2F80
+
+pixelYPositionLoPtrArray   .BYTE <a433E,<a4367,<a4387,<a43AC,<a43E3,<a4429,<a4463,<a4483
+        .BYTE <a2040,<a20C0,<a2140,<a21C0,<a2240,<a22C0,<a2340,<a23C0
+        .BYTE <a2440,<a24C0,<a2540,<a25C0,<a2640,<a26C0,<a2740,<a27C0
+        .BYTE <a2840,<a28C0,<a2940,<a29C0,<a2A40,<a2AC0,<a2B40,<a2BC0
+        .BYTE <a2C40,<a2CC0,<a2D40,<a2DC0,<a2E40,<a2EC0,<a2F40,<a2FC0
+
+
+pixelYPositionHiPtrArray   .BYTE >a433E,>a4367,>a4387,>a43AC,>a43E3,>a4429,>a4463,>a4483
+        .BYTE >a2040,>a20C0,>a2140,>a21C0,>a2240,>a22C0,>a2340,>a23C0
+        .BYTE >a2440,>a24C0,>a2540,>a25C0,>a2640,>a26C0,>a2740,>a27C0
+        .BYTE >a2840,>a28C0,>a2940,>a29C0,>a2A40,>a2AC0,>a2B40,>a2BC0
+        .BYTE >a2C40,>a2CC0,>a2D40,>a2DC0,>a2E40,>a2EC0,>a2F40,>a2FC0
 
 ;-------------------------------------------------------------------------
 ; j4AC0
@@ -2354,7 +2441,7 @@ b4ADE   JSR s4AF8
         DEX 
         BNE b4ADE
         LDA #$5A
-        STA aD1
+        STA bottomMostYPos
         JMP j40AA
 
 ;-------------------------------------------------------------------------
@@ -2369,7 +2456,7 @@ s4AF8
         JSR s40EA
         RTS 
 
-a4B08   .BYTE $02
+screenMode   .BYTE $02
 ;-------------------------------------------------------------------------
 ; j4B09
 ;-------------------------------------------------------------------------
@@ -2381,7 +2468,7 @@ j4B09
 b4B10   LDA #$01
         STA a403F
         LDA #$00
-        STA aD1
+        STA bottomMostYPos
 b4B19   LDX #$04
 b4B1B   LDA a403F
         STA a4B48
@@ -2395,7 +2482,7 @@ b4B21   JSR s4AF8
         LDA aC4
         ADC #$00
         STA aC4
-        INC aD1
+        INC bottomMostYPos
         DEX 
         BNE b4B1B
         INC a403F
@@ -2422,7 +2509,7 @@ j4B49
 b4B5F   LDA #$01
         STA a403F
         LDA #$00
-        STA aD1
+        STA bottomMostYPos
 b4B68   LDX a4BFE
 b4B6B   LDA a403F
         STA a4B48
@@ -2436,7 +2523,7 @@ b4B71   JSR s4AF8
         LDA aC4
         ADC #$00
         STA aC4
-        INC aD1
+        INC bottomMostYPos
         DEX 
         BNE b4B6B
         INC a403F
@@ -2462,7 +2549,7 @@ b4BB4   LDA aC3
         LDA aC4
         ADC #$00
         STA aC4
-        INC aD1
+        INC bottomMostYPos
 ;-------------------------------------------------------------------------
 ; j4BC3
 ;-------------------------------------------------------------------------
@@ -2504,7 +2591,7 @@ b4BE9   LDA #$01
         LDA #>p0102
         STA a4BFF
         JSR b4B5F
-        INC aD1
+        INC bottomMostYPos
         RTS 
 
 a4BFE   .BYTE $02
@@ -2524,7 +2611,7 @@ b4C07   LDA #$01
         LDA #>a0201
         STA a4BFF
         JSR b4B5F
-        INC aD1
+        INC bottomMostYPos
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -2567,7 +2654,7 @@ b4C30   JSR s4AF8
         DEX 
         BNE b4C30
         LDA #$59
-        STA aD1
+        STA bottomMostYPos
         JMP j40AA
 
 a4C66   .BYTE $01
@@ -2669,27 +2756,27 @@ f4D2A   RTS
 
         .BYTE $54,$09,$6B,$5C,$C0,$B1,$13,$4E
 ;-------------------------------------------------------------------------
-; s4D33
+; LookForKeyboardInput
 ;-------------------------------------------------------------------------
-s4D33
-        LDA a5B66
+LookForKeyboardInput
+        LDA autoDemoEnabled
         BEQ b4D3B
-        JSR s5B67
+        JSR MaybeGetKeyboardInput
 b4D3B   LDA a586D
         BEQ b4D57
         DEC a586D
         BNE b4D57
-        LDA a586C
+        LDA slothMode
         EOR #$0F
-        STA a586C
+        STA slothMode
         JSR s586E
         AND #$07
         ORA #$04
         STA a586D
-b4D57   LDA CH       ;CH      keyboard FIFO byte
+b4D57   LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
         CMP #$FF
         BNE b4D93
-        LDA a58FD
+        LDA beginDrawingForeground
         BEQ b4D66
         JMP j5924
 
@@ -2700,12 +2787,12 @@ b4D6E   LDA a4F4C
         BEQ b4D87
         DEC a4F4C
         BNE b4D87
-        LDA a5ABF
+        LDA disableStatusLine
         BEQ b4D88
 ;-------------------------------------------------------------------------
-; s4D7D
+; ProcessKeyboardInput
 ;-------------------------------------------------------------------------
-s4D7D
+ProcessKeyboardInput
         LDA #<f4ED1
         STA a8003
         LDA #>f4ED1
@@ -2719,86 +2806,95 @@ b4D88   LDA #<f4EE5
         RTS 
 
 b4D93   LDY #$FF
-        STY CH       ;CH      keyboard FIFO byte
-        LDY a58FD
+        STY inputCharacter       ;inputCharacter      keyboard FIFO byte
+        LDY beginDrawingForeground
         BEQ b4DA0
         JMP j5924
 
-b4DA0   CMP #$3E
+b4DA0   CMP #KEY_S
         BNE b4DBF
-        LDA FPTEM1
+
+        ; S=Symmetry change 
+        LDA currentSymmetry
         CLC 
         ADC #$01
         CMP #$05
         BNE b4DAF
         LDA #$00
-b4DAF   STA FPTEM1
+b4DAF   STA currentSymmetry
         CLC 
         ADC #$08
         TAX 
         CPX #$09
         BNE b4DBB
         LDX #$3E
-b4DBB   JSR s4F10
+b4DBB   JSR PossiblyLoadPresetData
         RTS 
 
-b4DBF   CMP #$25
+b4DBF   CMP #KEY_M
         BNE b4DE0
-        LDA a4B08
+
+        ; M=Screen Mode 
+        LDA screenMode
         CLC 
         ADC #$01
         CMP #$07
         BNE b4DCF
         LDA #$00
-b4DCF   STA a4B08
+b4DCF   STA screenMode
         CLC 
         ADC #$0D
         TAX 
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         LDA #$01
         STA a4DDF
         RTS 
 
 a4DDF   .BYTE $00
-b4DE0   CMP #$17
+b4DE0   CMP #KEY_Z
         BNE b4DF4
-        INC aC2
-        LDA aC2
+        ; Z/SHIFT - Z=Vary Vertical Resolution SPAC
+        INC verticalResolutionSPAC
+        LDA verticalResolutionSPAC
         CMP #$12
         BNE b4DEE
-        DEC aC2
+        DEC verticalResolutionSPAC
 b4DEE   LDA #$01
         STA a4DDF
         RTS 
 
-b4DF4   CMP #$57
+b4DF4   CMP #KEY_SHIFT | KEY_Z
         BNE b4E05
-        DEC aC2
-        LDA aC2
+
+        ; Z/SHIFT - Z=Vary Vertical Resolution SPAC
+        DEC verticalResolutionSPAC
+        LDA verticalResolutionSPAC
         CMP #$01
         BNE b4DEE
-        INC aC2
+        INC verticalResolutionSPAC
         JMP b4DEE
 
-b4E05   CMP #$21
+b4E05   CMP #KEY_SPACE
         BNE b4E2B
-        INC aEA
-        LDA aEA
+
+        ; Update selected pattern.
+        INC currentPatternIndex
+        LDA currentPatternIndex
         CMP #$18
         BNE b4E15
         LDA #$00
-        STA aEA
+        STA currentPatternIndex
 b4E15   AND #$18
         BEQ b4E26
-        LDA aEA
+        LDA currentPatternIndex
         SEC 
         SBC #$08
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$35
         JMP j555B
 
-b4E26   LDX aEA
-        JMP s4F10
+b4E26   LDX currentPatternIndex
+        JMP PossiblyLoadPresetData
 
 b4E2B   PHA 
         AND #$C0
@@ -2831,7 +2927,7 @@ j4E4C
         DEC PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
 b4E56   INC PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         LDA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         STA f4C68,X
         LDA #$30
         STA a4ECC
@@ -2845,6 +2941,7 @@ f4E6B   .BYTE $27,$16,$12,$10,$15,$23,$25,$20
 j4E73
         CMP #$22
         BNE b4EA3
+
         INC a4EA2
         LDA a4EA2
         CMP #$08
@@ -2852,9 +2949,9 @@ j4E73
         LDA #$01
         STA a4EA2
 b4E86   LDA a4EA2
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$16
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         JSR s5480
         LDA a4CF2
         BEQ b4E9F
@@ -2872,13 +2969,13 @@ b4EA3   CMP #$26
         LDA #$00
         STA a4CF3
         LDX #$14
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b4EBC   LDA #$00
         STA a4CF2
         STA a4CF3
         LDX #$15
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         JMP j4D1F
 
 a4ECC   BRK #$00
@@ -2903,14 +3000,14 @@ DisplayListInterrupt
         RTI 
 
 ;-------------------------------------------------------------------------
-; s4F10
+; PossiblyLoadPresetData
 ;-------------------------------------------------------------------------
-s4F10
-        LDA #<p4F4D
+PossiblyLoadPresetData
+        LDA #<possiblePresetData
         STA a4F4A
-        LDA #>p4F4D
+        LDA #>possiblePresetData
         STA a4F4B
-        LDA a5ABF
+        LDA disableStatusLine
         BEQ b4F20
         RTS 
 
@@ -2936,7 +3033,7 @@ b4F38   LDA a4F4A
 a4F4A   .BYTE $01
 a4F4B   .BYTE $01
 a4F4C   .BYTE $14
-p4F4D   .BYTE $34,$28,$25,$00,$34,$37,$29,$33
+possiblePresetData   .BYTE $34,$28,$25,$00,$34,$37,$29,$33
         .BYTE $34,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$34,$28,$25,$00
         .BYTE $33,$2D,$2F,$2F,$34,$28,$00,$23
@@ -3102,9 +3199,9 @@ s5439
         TAY 
         LDA #$17
         CLC 
-        ADC a54C5
+        ADC currentColourControlEffect
         TAX 
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         TYA 
         PHA 
         JSR s5480
@@ -3117,7 +3214,7 @@ s5439
 ; j5452
 ;-------------------------------------------------------------------------
 j5452
-        LDX a547F
+        LDX somethingToDoWithSmoothingDelay
         LDA #$10
         LDY #$11
         STA (pEF),Y
@@ -3143,12 +3240,12 @@ b547B   DEX
         BNE b5465
 b547E   RTS 
 
-a547F   .BYTE $00
+somethingToDoWithSmoothingDelay   .BYTE $00
 ;-------------------------------------------------------------------------
 ; s5480
 ;-------------------------------------------------------------------------
 s5480
-        LDA a5ABF
+        LDA disableStatusLine
         BNE b5492
         LDA a8003
         STA aEF
@@ -3170,7 +3267,7 @@ b5492   LDA #$A2
 ; j549B
 ;-------------------------------------------------------------------------
 j549B
-        LDY a54C5
+        LDY currentColourControlEffect
         BNE b54A3
         JMP j4E4C
 
@@ -3187,12 +3284,12 @@ b54B1   INC f4C70,X
 ; j54BA
 ;-------------------------------------------------------------------------
 j54BA
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDA #$30
         STA a4ECC
         JMP s5439
 
-a54C5   .BYTE $00
+currentColourControlEffect   .BYTE $00
 b54C6   CPY #$02
         BNE b54DD
         AND #$80
@@ -3216,23 +3313,25 @@ b54E7   INC f4C80,X
 ; j54F3
 ;-------------------------------------------------------------------------
 j54F3
-        CMP #$07
+        CMP #KEY_ASTERISK
         BNE b5509
-        INC a54C5
-        LDA a54C5
+        INC currentColourControlEffect
+        LDA currentColourControlEffect
         AND #$03
-        STA a54C5
+        STA currentColourControlEffect
         CLC 
         ADC #$1B
         TAX 
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-b5509   CMP #$47
+b5509   CMP #KEY_SHIFT | KEY_ASTERISK
         BNE b5530
+
+        ; SHIFT-*=Colourflow resync
 ;-------------------------------------------------------------------------
-; j550D
+; ColourFlowResync
 ;-------------------------------------------------------------------------
-j550D
+ColourFlowResync
         LDX #$00
 b550F   LDA f4C68,X
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
@@ -3246,14 +3345,15 @@ b550F   LDA f4C68,X
         CPX #$08
         BNE b550F
         LDX #$1F
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b5530   PHA 
         AND #$3F
-        CMP #$0A
+        CMP #KEY_P
         BEQ b553B
+        ; P=Pulse Speed variable key
         PLA 
-        JMP j5565
+        JMP CheckMoreKeys
 
 b553B   PLA 
         AND #$C0
@@ -3269,88 +3369,96 @@ b554E   LDA INBUFF   ;INBUFF
         AND #$0F
         STA aF4
         STA INBUFF   ;INBUFF  
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$20
 ;-------------------------------------------------------------------------
 ; j555B
 ;-------------------------------------------------------------------------
 j555B
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         JSR s5480
         JMP j5452
 
 b5564   RTS 
 
 ;-------------------------------------------------------------------------
-; j5565
+; CheckMoreKeys
 ;-------------------------------------------------------------------------
-j5565
-        CMP #$16
+CheckMoreKeys
+        CMP #KEY_X
         BNE b557D
-        INC aE8
-        LDA aE8
+
+        ; X=Speed Boost adjust 
+        INC speedBoostAdjust
+        LDA speedBoostAdjust
         CMP #$10
         BNE b5573
         LDA #$01
-b5573   STA aE8
-        STA a547F
+b5573   STA speedBoostAdjust
+        STA somethingToDoWithSmoothingDelay
         LDX #$21
         JMP j555B
 
-b557D   CMP #$12
+b557D   CMP #KEY_C
         BNE b559F
-        INC a4A1E
-        LDA a4A1E
+
+        ; C=Cursor Speed adjust
+        INC cursorSpeed
+        LDA cursorSpeed
         AND #$0F
-        STA a4A1E
+        STA cursorSpeed
         BNE b5591
-        INC a4A1E
-b5591   LDA a4A1E
+        INC cursorSpeed
+b5591   LDA cursorSpeed
         STA a4A1F
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$22
         JMP j555B
 
-b559F   CMP #$10
+b559F   CMP #KEY_V
         BNE b55B3
-        LDA aE5
+
+        ; V=Vector Mode on/off 
+        LDA vectorMode
         EOR #$02
-        STA aE5
+        STA vectorMode
         AND #$02
         CLC 
         ROR 
         ADC #$23
         TAX 
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-b55B3   CMP #$2D
+b55B3   CMP #KEY_T
         BNE b55C6
-        LDA aE5
+        ; T=Tracking on/off 
+        LDA vectorMode
         EOR #$01
-        STA aE5
+        STA vectorMode
         AND #$01
         CLC 
         ADC #$25
         TAX 
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b55C6   PHA 
         AND #$3F
-        CMP #$3A
+        CMP #KEY_D
         BEQ b55D1
         PLA 
         JMP j55EB
 
+        ; D=Smoothing Delay variable key 
 b55D1   PLA 
         AND #$C0
         BEQ b55EA
         CMP #$80
         BEQ b55DE
-        DEC aF5
-        DEC aF5
-b55DE   INC aF5
-        LDA aF5
-        STA a547F
+        DEC smoothingDelay
+        DEC smoothingDelay
+b55DE   INC smoothingDelay
+        LDA smoothingDelay
+        STA somethingToDoWithSmoothingDelay
         LDX #$27
         JMP j555B
 
@@ -3360,18 +3468,19 @@ b55EA   RTS
 ; j55EB
 ;-------------------------------------------------------------------------
 j55EB
-        CMP #$15
+        CMP #KEY_B
         BNE b5622
-        LDA aF7
+        ; B=Buffer Length adjust 
+        LDA bufferLength
         CLC 
         ADC #$01
         CMP #$41
         BNE b55FA
         LDA #$01
-b55FA   STA aF7
-        STA a547F
+b55FA   STA bufferLength
+        STA somethingToDoWithSmoothingDelay
         JSR s5605
-        JMP j561D
+        JMP CheckPresetKeys
 
 ;-------------------------------------------------------------------------
 ; s5605
@@ -3379,11 +3488,11 @@ b55FA   STA aF7
 s5605
         LDA #$09
         STA aF8
-        LDX aF7
+        LDX bufferLength
         CPX #$40
         BEQ b561C
 b560F   LDA #$01
-        STA f46D5,X
+        STA initialFramesRemainingToNextPaintForStep,X
         STA f4715,X
         INX 
         CPX #$40
@@ -3391,16 +3500,16 @@ b560F   LDA #$01
 b561C   RTS 
 
 ;-------------------------------------------------------------------------
-; j561D
+; CheckPresetKeys
 ;-------------------------------------------------------------------------
-j561D
+CheckPresetKeys
         LDX #$28
         JMP j555B
 
 b5622   PHA 
         AND #$3F
         LDX #$00
-b5627   CMP f565A,X
+b5627   CMP presetKeys,X
         BEQ b5635
         INX 
         CPX #$10
@@ -3416,24 +3525,24 @@ b5635   PLA
         BNE b5641
         RTS 
 
-b5641   STX a547F
-        STX a5C77
-        JSR s56F5
+b5641   STX somethingToDoWithSmoothingDelay
+        STX selectedPreset
+        JSR LoadPreset
         LDX #$29
         JMP j555B
 
-b564F   STX a547F
+b564F   STX somethingToDoWithSmoothingDelay
         JSR s568F
         LDX #$2A
         JMP j555B
 
-f565A   .BYTE $1C,$1F,$1E,$1A,$18,$1D,$1B,$33
-        .BYTE $35,$30,$32,$36,$37,$34,$0E,$0F
+presetKeys   .BYTE $1C,$1F,$1E,$1A,$18,$1D,$1B,$33
+             .BYTE $35,$30,$32,$36,$37,$34,$0E,$0F
 ;-------------------------------------------------------------------------
 ; s566A
 ;-------------------------------------------------------------------------
 s566A
-        LDY a56EF
+        LDY selectedPresetBank
         LDA f56F0,Y
         CLC 
         ADC #$30
@@ -3459,27 +3568,27 @@ b568A   STA aEF
 ;-------------------------------------------------------------------------
 s568F
         JSR s566A
-        LDA a4A1E
+        LDA cursorSpeed
         JSR s56EB
-        LDA aE5
+        LDA vectorMode
         JSR s56EB
-        LDA aE8
+        LDA speedBoostAdjust
         JSR s56EB
-        LDA aEA
+        LDA currentPatternIndex
         JSR s56EB
-        LDA aC2
+        LDA verticalResolutionSPAC
         JSR s56EB
         LDA INBUFF   ;INBUFF  
         JSR s56EB
         LDA aF9
         JSR s56EB
-        LDA aF5
+        LDA smoothingDelay
         JSR s56EB
-        LDA FPTEM1
+        LDA currentSymmetry
         JSR s56EB
-        LDA a4B08
+        LDA screenMode
         JSR s56EB
-        LDA aF7
+        LDA bufferLength
         JSR s56EB
         LDA a4CF2
         JSR s56EB
@@ -3491,7 +3600,7 @@ b56D9   LDA f4C68,X
         INX 
         CPX #$21
         BNE b56D9
-        LDA a2CAF
+        LDA explosionMode
         JSR s56EB
         RTS 
 
@@ -3503,23 +3612,23 @@ s56EB
         INY 
         RTS 
 
-a56EF   .BYTE $00
+selectedPresetBank   .BYTE $00
 f56F0   .BYTE $00,$03,$06,$09,$0C
 ;-------------------------------------------------------------------------
-; s56F5
+; LoadPreset
 ;-------------------------------------------------------------------------
-s56F5
+LoadPreset
         JSR s566A
         JSR s5787
-        STA a4A1E
+        STA cursorSpeed
         JSR s5787
-        STA aE5
+        STA vectorMode
         JSR s5787
-        STA aE8
+        STA speedBoostAdjust
         JSR s5787
-        STA aEA
+        STA currentPatternIndex
         JSR s5787
-        STA aC2
+        STA verticalResolutionSPAC
         JSR s5787
         STA INBUFF   ;INBUFF  
         STA aF4
@@ -3527,13 +3636,13 @@ s56F5
         STA aF9
         STA aFA
         JSR s5787
-        STA aF5
+        STA smoothingDelay
         JSR s5787
-        STA FPTEM1
+        STA currentSymmetry
         JSR s5787
-        STA a4B08
+        STA screenMode
         JSR s5787
-        STA aF7
+        STA bufferLength
         JSR s5787
         STA a4CF2
         LDA #$00
@@ -3548,7 +3657,7 @@ b5748   JSR s5787
         BNE b5748
         JSR s5787
         AND #$80
-        STA a2CAF
+        STA explosionMode
         LDX #$00
 b575D   LDA f4C68,X
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
@@ -3598,7 +3707,7 @@ b579C   CMP #$80
 b57A4   INC aF9
         LDA aF9
         STA aFA
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$2B
         JMP j555B
 
@@ -3606,44 +3715,46 @@ b57A4   INC aF9
 ; j57B2
 ;-------------------------------------------------------------------------
 j57B2
-        CMP #$3C
+        CMP #KEY_CAPSTOGGLE
         BNE b57D0
-        INC a56EF
-        LDA a56EF
+        ; CAPS=Preset Bank Select 
+        INC selectedPresetBank
+        LDA selectedPresetBank
         CMP #$05
         BNE b57C5
         LDA #$00
-        STA a56EF
-b57C5   LDA a56EF
-        STA a547F
+        STA selectedPresetBank
+b57C5   LDA selectedPresetBank
+        STA somethingToDoWithSmoothingDelay
         LDX #$2C
         JMP j555B
 
 b57D0   PHA 
         AND #$3F
-        CMP #$28
+        CMP #KEY_R
         BEQ b57DB
         PLA 
-        JMP j5875
+        JMP ContinueCheckingKeys
 
+        ; R=Stop Record Mode/Begin Playback/Stop Playback CTRL
 b57DB   PLA 
         AND #$C0
         BEQ b583F
         CMP #$40
         BEQ b582C
-        LDA a5B66
+        LDA autoDemoEnabled
         CMP #$01
         BNE b57EC
         RTS 
 
-b57EC   LDA a58A3
+b57EC   LDA dualJoystickMode
         BEQ b581F
 ;-------------------------------------------------------------------------
 ; j57F1
 ;-------------------------------------------------------------------------
 j57F1
         LDA #$00
-        STA a58A3
+        STA dualJoystickMode
         JSR s57FC
         JMP j581A
 
@@ -3651,21 +3762,21 @@ j57F1
 ; s57FC
 ;-------------------------------------------------------------------------
 s57FC
-        LDA aDB
+        LDA pixelXPosition
         PHA 
-        LDA acDC
+        LDA pixelYPosition
         PHA 
         LDA a5CF6
-        STA aDB
+        STA pixelXPosition
         LDA a5CF7
-        STA acDC
+        STA pixelYPosition
         LDA #$00
         STA aDF
         JSR s44C3
         PLA 
-        STA acDC
+        STA pixelYPosition
         PLA 
-        STA aDB
+        STA pixelXPosition
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -3673,25 +3784,25 @@ s57FC
 ;-------------------------------------------------------------------------
 j581A
         LDX #$33
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b581F   LDX #$32
         LDA #$01
-        STA a58A3
+        STA dualJoystickMode
         JSR s5C79
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-b582C   LDA a5B66
+b582C   LDA autoDemoEnabled
         BNE b585A
-        LDA a58A3
+        LDA dualJoystickMode
         BEQ b5837
         RTS 
 
 b5837   JSR s5B30
         LDX #$2D
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-b583F   LDA a5B66
+b583F   LDA autoDemoEnabled
         CMP #$01
         BEQ b585A
         CMP #$00
@@ -3703,18 +3814,18 @@ b583F   LDA a5B66
 
 b5852   JSR s5BD8
         LDX #$2E
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b585A   LDY #$00
         LDA #$CC
-        STA (pFD),Y
-        STA (pC5),Y
+        STA (generalLoPtr),Y
+        STA (keyboardInputArray),Y
 b5862   LDX #$2F
         LDA #$00
-        STA a5B66
-        JMP s4F10
+        STA autoDemoEnabled
+        JMP PossiblyLoadPresetData
 
-a586C   .BYTE $0F
+slothMode   .BYTE $0F
 a586D   .BYTE $00
 a586F   =*+$01
 ;-------------------------------------------------------------------------
@@ -3726,87 +3837,104 @@ s586E
         RTS 
 
 ;-------------------------------------------------------------------------
-; j5875
+; ContinueCheckingKeys
 ;-------------------------------------------------------------------------
-j5875
-        CMP #$2F
-        BNE b58A5
-        LDA a586C
+ContinueCheckingKeys
+        CMP #KEY_Q
+        BNE MaybeJPressed
+
+        ; Q=Sloth Mode on/off 
+        LDA slothMode
         CMP #$0F
         BEQ b588F
         LDA #<p0F
-        STA a586C
+        STA slothMode
         LDA #>p0F
         STA a586D
         LDX #$30
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b588F   LDA #$03
-        STA a586C
+        STA slothMode
         JSR s586E
         AND #$07
         ORA #$01
         STA a586D
         LDX #$31
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-a58A3   .BYTE $00
+dualJoystickMode   .BYTE $00
 a58A4   .BYTE $00
-b58A5   CMP #$01
+
+MaybeJPressed   
+        CMP #KEY_J
         BNE b58BE
-        LDA a58A3
+
+        ; J=Dual Joystick mode off/on 
+        LDA dualJoystickMode
         BEQ b58B1
         JMP j57F1
 
 b58B1   JSR s5C79
         LDA #$02
-        STA a58A3
+        STA dualJoystickMode
         LDX #$34
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-b58BE   CMP #$02
-        BNE b58EA
-        INC a58E9
-        LDA a58E9
+b58BE   CMP #KEY_SEMICOLON
+        BNE MaybeUPressed
+
+        ; ;=Select second user's lightform 
+        INC secondUserLightform
+        LDA secondUserLightform
         CMP #$18
         BNE b58CE
         LDA #$00
-b58CE   STA a58E9
+b58CE   STA secondUserLightform
         AND #$18
         BEQ b58E3
-        LDA a58E9
+        LDA secondUserLightform
         SEC 
         SBC #$08
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$35
         JMP j555B
 
-b58E3   LDX a58E9
-        JMP s4F10
+b58E3   LDX secondUserLightform
+        JMP PossiblyLoadPresetData
 
-a58E9   .BYTE $00
-b58EA   CMP #$0B
+secondUserLightform   .BYTE $00
+
+MaybeUPressed   
+        CMP #KEY_U
         BNE b58FA
-        LDA a5B66
+
+        ; U=Define User-Definable Lightform 
+        LDA autoDemoEnabled
         BNE b58F9
-        LDA aEA
+        LDA currentPatternIndex
         AND #$18
-        BNE b58FE
+        BNE ClearDownCurrentPattern
 b58F9   RTS 
 
 b58FA   JMP j5967
 
-a58FD   .BYTE $00
-b58FE   LDA #$03
-        STA a58FD
-        LDX aEA
+beginDrawingForeground   .BYTE $00
+;-------------------------------------------------------------------------
+; ClearDownCurrentPattern   
+;-------------------------------------------------------------------------
+ClearDownCurrentPattern   
+        LDA #$03
+        STA beginDrawingForeground
+        LDX currentPatternIndex
         LDA pixelXPositionLoPtrArray,X
-        STA aFD
+        STA generalLoPtr
         LDA pixelXPositionHiPtrArray,X
-        STA InputCharacter
+        STA generalHiPtr
+
         LDY #$00
         LDA #$55
-b5913   STA (pFD),Y
+b5913   STA (generalLoPtr),Y
         INY 
         CPY #$40
         BNE b5913
@@ -3820,7 +3948,7 @@ b5913   STA (pFD),Y
 ; j5924
 ;-------------------------------------------------------------------------
 j5924
-        LDY a58FD
+        LDY beginDrawingForeground
         CPY #$02
         BNE b592E
         JMP j5980
@@ -3839,9 +3967,9 @@ b592E   CMP #$0C
 b5946   LDA #$3A
         SEC 
         SBC a5966
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$36
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         JSR s5480
         LDA #$08
         SEC 
@@ -3857,15 +3985,17 @@ a5966   .BYTE $00
 ; j5967
 ;-------------------------------------------------------------------------
 j5967
-        CMP #$3F
-        BNE b59BB
-        LDA a5B66
+        CMP #KEY_A
+        BNE EvenMoreKeyChecking
+
+        ; A=Auto Demo on/off 
+        LDA autoDemoEnabled
         BNE b597D
         LDA #$03
-        STA a5B66
-        JSR s5DF0
+        STA autoDemoEnabled
+        JSR EnableDemoMode
         LDX #$37
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b597D   JMP b5862
 
@@ -3893,9 +4023,9 @@ b5996   CMP #$0C
 ; j59A0
 ;-------------------------------------------------------------------------
 j59A0
-        LDX #$38
+        LDX #KEY_F
         LDA a5ED4
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDA aC4
         CMP #$13
         BEQ b59D3
@@ -3907,16 +4037,19 @@ b59B1   CMP #$34
         STA a5F45
         RTS 
 
-b59BB   CMP #$78
+EvenMoreKeyChecking   
+        CMP #KEY_SHIFT | KEY_F
         BNE b59F9
+
+        ; SHIFT-F=Begin drawing on foreground screen 
         LDY a4DDF
         BNE b59F9
-        LDY a5B66
+        LDY autoDemoEnabled
         BNE b59F9
         LDA #$02
-        STA a58FD
+        STA beginDrawingForeground
         LDX #$38
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b59D3   LDA aC3
         AND #$80
@@ -3924,7 +4057,7 @@ b59D3   LDA aC3
         JMP j555B
 
 b59DC   LDX #$39
-        JSR s4F10
+        JSR PossiblyLoadPresetData
         JSR s5480
         LDY #$07
         LDA #$10
@@ -3934,69 +4067,77 @@ b59DC   LDX #$39
         LDA #$00
         SEC 
         SBC aC3
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         JMP j5452
 
-b59F9   CMP #$7D
+b59F9   CMP #KEY_SHIFT | KEY_G
         BNE b5A1C
-        INC a5A42
-        LDA a5A42
+
+        ; SHIFT-G=Change symmetry of foreground graphics plot 
+        INC symmetryForeground
+        LDA symmetryForeground
         CMP #$05
         BNE b5A09
         LDA #$00
-b5A09   STA a5A42
+b5A09   STA symmetryForeground
         CLC 
         ADC #$08
         TAX 
         CPX #$09
         BEQ b5A17
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b5A17   LDX #$3E
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-b5A1C   CMP #$3D
+b5A1C   CMP #KEY_G
         BNE b5A38
-        LDA aDB
+
+        ; G=Draw foreground graphics at current cursor position 
+        LDA pixelXPosition
         SEC 
         SBC p1000
-        STA a5A43
-        LDA acDC
+        STA drawForegroundAtXPos
+        LDA pixelYPosition
         SEC 
         SBC a1400
-        STA a5A44
+        STA drawForegroundAtYPos
         LDA #$02
-        STA a5A45
+        STA wipeForegroundGraphics
         RTS 
 
-b5A38   CMP #$2E
+b5A38   CMP #KEY_W
         BNE b5A46
         LDA #$01
-        STA a5A45
+        STA wipeForegroundGraphics
         RTS 
 
-a5A42   .BYTE $00
-a5A43   .BYTE $00
-a5A44   .BYTE $00
-a5A45   .BYTE $02
-b5A46   CMP #$38
+symmetryForeground   .BYTE $00
+drawForegroundAtXPos   .BYTE $00
+drawForegroundAtYPos   .BYTE $00
+wipeForegroundGraphics   .BYTE $02
+
+b5A46   CMP #KEY_F
         BNE b5A58
+
+        ; F=Draw foreground graphics in original place 
         LDA #$02
-        STA a5A45
+        STA wipeForegroundGraphics
         LDA #$00
-        STA a5A43
-        STA a5A44
+        STA drawForegroundAtXPos
+        STA drawForegroundAtYPos
         RTS 
 
 b5A58   PHA 
         AND #$3F
-        CMP #$39
+        CMP #KEY_H
         BEQ b5A63
         PLA 
         JMP j5A99
 
+; H,C,V,B,N,M,[=Individual colour Variable Keys 
 b5A63   LDA #$00
-        LDY a54C5
+        LDY currentColourControlEffect
         BEQ b5A70
 b5A6A   CLC 
         ADC #$08
@@ -4013,7 +4154,7 @@ b5A79   LDA #$00
         INX 
         DEY 
         BNE b5A79
-        JMP j550D
+        JMP ColourFlowResync
 
 b5A85   LDY #$07
         INX 
@@ -4024,18 +4165,19 @@ b5A88   LDA f4C68,X
         INX 
         DEY 
         BNE b5A88
-        JMP j550D
+        JMP ColourFlowResync
 
 ;-------------------------------------------------------------------------
 ; j5A99
 ;-------------------------------------------------------------------------
 j5A99
-        CMP #$2B
+        CMP #KEY_Y
         BNE b5AC1
-        LDA a5ABF
+        ; Y=enable/disable status line
+        LDA disableStatusLine
         BNE b5AB2
         LDA #$01
-        STA a5ABF
+        STA disableStatusLine
         LDA #<f4EE5
         STA a8003
         LDA #>f4EE5
@@ -4043,67 +4185,79 @@ j5A99
         RTS 
 
 b5AB2   LDA #$00
-        STA a5ABF
-        JSR s4D7D
+        STA disableStatusLine
+        JSR ProcessKeyboardInput
         LDX #$3A
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-a5ABF   .BYTE $00
+disableStatusLine   .BYTE $00
 a5AC0   .BYTE $10
-b5AC1   .BYTE $C9,$81,$D0,$0E,$EE,$C0,$5A
+
+b5AC1   CMP #KEY_CTRL | KEY_J
+        BNE EvenMoreKeyCheckingJ
+        .BYTE $EE,$C0,$5A
 ;-------------------------------------------------------------------------
 ; j5AC8
 ;-------------------------------------------------------------------------
 j5AC8
         LDA a5AC0
-        STA a547F
+        STA somethingToDoWithSmoothingDelay
         LDX #$3B
         JMP j555B
 
-        CMP #$41
+EvenMoreKeyCheckingJ
+        CMP #KEY_SHIFT | KEY_J
         BNE b5ADD
         DEC a5AC0
         JMP j5AC8
 
-b5ADD   CMP #$2A
+b5ADD   CMP #KEY_E
         BNE b5AF7
-        LDA a2CAF
+        ; E=Explosion mode on/off 
+        LDA explosionMode
         EOR #$80
-        STA a2CAF
+        STA explosionMode
         AND #$80
         BNE b5AF2
         LDX #$3C
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
 b5AF2   LDX #$3D
-        JMP s4F10
+        JMP PossiblyLoadPresetData
 
-b5AF7   LDY a58FD
+b5AF7   LDY beginDrawingForeground
         BNE b5B0A
-        LDY a5B66
+        LDY autoDemoEnabled
         BNE b5B0A
-        CMP #$AF
+
+        CMP #KEY_CTRL | KEY_Q
         BNE b5B0B
+
+        ; CTRL -Q=Start parameter save 
         LDA #$03
-        STA a5A45
+        STA wipeForegroundGraphics
 b5B0A   RTS 
 
-b5B0B   CMP #$AE
+b5B0B   CMP #KEY_CTRL | KEY_W
         BNE b5B15
+        ; CTRL -W=Start parameter load 
         LDA #$04
-        STA a5A45
+        STA wipeForegroundGraphics
         RTS 
 
-b5B15   CMP #$BF
+b5B15   CMP #KEY_CTRL | KEY_A
         BNE b5B1F
+
+        ; CTRL -A=Start dynamics save 
         LDA #$05
-        STA a5A45
+        STA wipeForegroundGraphics
         RTS 
 
-b5B1F   CMP #$BE
+b5B1F   CMP #KEY_CTRL | KEY_S
         BNE b5B29
+        ; CTRL -S=Start dynamics load 
         LDA #$06
-        STA a5A45
+        STA wipeForegroundGraphics
 b5B28   RTS 
 
 b5B29   CMP #$FC
@@ -4115,36 +4269,36 @@ b5B29   CMP #$FC
 ;-------------------------------------------------------------------------
 s5B30
         LDA #<fA000
-        STA aFD
+        STA generalLoPtr
         LDA #>fA000
-        STA InputCharacter
+        STA generalHiPtr
         LDA #$01
         STA a4C66
         STA a4C67
         LDA #<fB000
-        STA aC5
+        STA keyboardInputArray
         LDA #>fB000
         STA aC6
         LDY #$00
         TYA 
-        STA (pFD),Y
+        STA (generalLoPtr),Y
         STA fB000
         LDA #$01
-        STA a5B66
-        LDA aDB
+        STA autoDemoEnabled
+        LDA pixelXPosition
         STA a5C75
-        LDA acDC
+        LDA pixelYPosition
         STA a5C76
-        LDA a5C77
+        LDA selectedPreset
         STA a5C78
 b5B65   RTS 
 
-a5B66   .BYTE $03
+autoDemoEnabled   .BYTE $03
 ;-------------------------------------------------------------------------
-; s5B67
+; MaybeGetKeyboardInput
 ;-------------------------------------------------------------------------
-s5B67
-        LDA a5B66
+MaybeGetKeyboardInput
+        LDA autoDemoEnabled
         BEQ b5B65
         CMP #$01
         BEQ b5B73
@@ -4152,7 +4306,7 @@ s5B67
 
 b5B73   LDY #$00
         LDA FR1      ;FR1     floating point register 1
-        CMP (pFD),Y
+        CMP (generalLoPtr),Y
         BNE b5B81
         INC a4C67
         JMP GetKeyboardInput
@@ -4160,21 +4314,21 @@ b5B73   LDY #$00
 b5B81   TAX 
         INY 
         LDA a4C67
-        STA (pFD),Y
-        LDA aFD
+        STA (generalLoPtr),Y
+        LDA generalLoPtr
         CLC 
         ADC #$02
-        STA aFD
-        LDA InputCharacter
+        STA generalLoPtr
+        LDA generalHiPtr
         ADC #$00
-        STA InputCharacter
+        STA generalHiPtr
         CMP #$B0
         BNE b5B9C
 b5B99   JMP b5862
 
 b5B9C   TXA 
         LDY #$00
-        STA (pFD),Y
+        STA (generalLoPtr),Y
         LDA #$01
         STA a4C67
 ;-------------------------------------------------------------------------
@@ -4182,26 +4336,26 @@ b5B9C   TXA
 ;-------------------------------------------------------------------------
 GetKeyboardInput
         LDY #$00
-        LDA CH       ;CH      keyboard FIFO byte
-        CMP (pC5),Y
+        LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
+        CMP (keyboardInputArray),Y
         BNE b5BB4
         INC a4C66
         BNE b5BD7
 b5BB4   INY 
         LDA a4C66
-        STA (pC5),Y
-        LDA aC5
+        STA (keyboardInputArray),Y
+        LDA keyboardInputArray
         CLC 
         ADC #$02
-        STA aC5
+        STA keyboardInputArray
         LDA aC6
         ADC #$00
         STA aC6
         CMP #$C0
         BEQ b5B99
         LDY #$00
-        LDA CH       ;CH      keyboard FIFO byte
-        STA (pC5),Y
+        LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
+        STA (keyboardInputArray),Y
         LDA #$01
         STA a4C66
 b5BD7   RTS 
@@ -4211,11 +4365,11 @@ b5BD7   RTS
 ;-------------------------------------------------------------------------
 s5BD8
         LDA #<fA000
-        STA aFD
+        STA generalLoPtr
         LDA #>fA000
-        STA InputCharacter
+        STA generalHiPtr
         LDA #<fB000
-        STA aC5
+        STA keyboardInputArray
         LDA #>fB000
         STA aC6
         LDA #$01
@@ -4225,13 +4379,13 @@ s5BD8
         STA aDF
         JSR s44C3
         LDA a5C75
-        STA aDB
+        STA pixelXPosition
         LDA a5C76
-        STA acDC
+        STA pixelYPosition
         LDA #$02
-        STA a5B66
+        STA autoDemoEnabled
         LDX a5C78
-        JSR s56F5
+        JSR LoadPreset
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -4244,10 +4398,10 @@ j5C0D
 
 b5C14   DEC a4C66
         BNE b5C39
-        LDA aC5
+        LDA keyboardInputArray
         CLC 
         ADC #$02
-        STA aC5
+        STA keyboardInputArray
         LDA aC6
         ADC #$00
         STA aC6
@@ -4256,36 +4410,36 @@ b5C14   DEC a4C66
         JMP b5B99
 
 b5C2D   LDY #$00
-        LDA (pC5),Y
+        LDA (keyboardInputArray),Y
         STA DEGFLG
         INY 
-        LDA (pC5),Y
+        LDA (keyboardInputArray),Y
         STA a4C66
 b5C39   DEC a4C67
         BNE b5C5E
-        LDA aFD
+        LDA generalLoPtr
         CLC 
         ADC #$02
-        STA aFD
-        LDA InputCharacter
+        STA generalLoPtr
+        LDA generalHiPtr
         ADC #$00
-        STA InputCharacter
+        STA generalHiPtr
         CMP #$B0
         BNE b5C52
         JMP s5BD8
 
 b5C52   LDY #$00
-        LDA (pFD),Y
+        LDA (generalLoPtr),Y
         STA FLPTR
         INY 
-        LDA (pFD),Y
+        LDA (generalLoPtr),Y
         STA a4C67
 b5C5E   LDA DEGFLG
         CMP #$CC
         BEQ b5C72
         CMP #$FF
         BEQ b5C6B
-        STA CH       ;CH      keyboard FIFO byte
+        STA inputCharacter       ;inputCharacter      keyboard FIFO byte
 b5C6B   LDA FLPTR
         CMP #$CC
         BEQ b5C72
@@ -4295,22 +4449,22 @@ b5C72   JMP s5BD8
 
 a5C75   .BYTE $00
 a5C76   .BYTE $00
-a5C77   .BYTE $00
+selectedPreset   .BYTE $00
 a5C78   .BYTE $00
 ;-------------------------------------------------------------------------
 ; s5C79
 ;-------------------------------------------------------------------------
 s5C79
-        LDA aDB
+        LDA pixelXPosition
         STA a5CF6
-        LDA acDC
+        LDA pixelYPosition
         STA a5CF7
         LDA #$00
         STA a58A4
 b5C88   LDA #<fA000
-        STA aFD
+        STA generalLoPtr
         LDA #>fA000
-        STA InputCharacter
+        STA generalHiPtr
         LDA #$01
         STA a4C67
         RTS 
@@ -4319,45 +4473,45 @@ b5C88   LDA #<fA000
 ; s5C96
 ;-------------------------------------------------------------------------
 s5C96
-        LDA aDB
+        LDA pixelXPosition
         STA a5CF3
-        LDA acDC
+        LDA pixelYPosition
         STA a5CF4
-        LDA aEA
+        LDA currentPatternIndex
         PHA 
-        LDA a58E9
-        STA aEA
+        LDA secondUserLightform
+        STA currentPatternIndex
         PLA 
-        STA a58E9
+        STA secondUserLightform
         LDA #$FF
         STA a5CF5
         LDA a5CF6
-        STA aDB
+        STA pixelXPosition
         LDA a5CF7
-        STA acDC
+        STA pixelYPosition
         LDA #$00
         STA aDF
         JSR s44C3
-        LDA a58A3
+        LDA dualJoystickMode
         CMP #$02
         BEQ b5CF8
         DEC a4C67
         BNE b5CEE
-        LDA aFD
+        LDA generalLoPtr
         CLC 
         ADC #$02
-        STA aFD
-        LDA InputCharacter
+        STA generalLoPtr
+        LDA generalHiPtr
         ADC #$00
-        STA InputCharacter
+        STA generalHiPtr
         LDY #$00
-        LDA (pFD),Y
+        LDA (generalLoPtr),Y
         CMP #$CC
         BEQ b5C88
         STA FR1      ;FR1     floating point register 1
         STA FLPTR
         INY 
-        LDA (pFD),Y
+        LDA (generalLoPtr),Y
         STA a4C67
         RTS 
 
@@ -4399,32 +4553,32 @@ j5D1F
         JSR s4815
         LDA #$28
         STA aD7
-        LDA aD1
+        LDA bottomMostYPos
         CLC 
         ROR 
         STA aD8
-        LDA a58FD
+        LDA beginDrawingForeground
         CMP #$02
         BNE b5D39
         JMP j5F08
 
 b5D39   LDA #$00
         STA aD0
-        LDA aEA
+        LDA currentPatternIndex
         STA aE9
-        LDA a4A1E
+        LDA cursorSpeed
         PHA 
         LDA #$03
-        STA a4A1E
+        STA cursorSpeed
 b5D4A   LDA aD6
         STA aD9
         JSR LoopThroughPixelsAndPaint
         LDA aD6
         BNE b5D4A
         LDA #$00
-        STA a58FD
+        STA beginDrawingForeground
         PLA 
-        STA a4A1E
+        STA cursorSpeed
         JSR s4225
         JMP MainGameLoop
 
@@ -4439,7 +4593,7 @@ b5D65   LDA a5D64
 ; j5D70
 ;-------------------------------------------------------------------------
 j5D70
-        LDA a58FD
+        LDA beginDrawingForeground
         CMP #$02
         BNE b5D7A
         JMP j5EB8
@@ -4455,22 +4609,22 @@ b5D85   LDA aD6
         LDA #$30
         STA a5D64
         LDY a5966
-        LDA aDB
+        LDA pixelXPosition
         SEC 
         SBC #$28
-        STA (pFD),Y
+        STA (generalLoPtr),Y
         TYA 
         CLC 
         ADC #$40
         TAY 
-        LDA aD1
+        LDA bottomMostYPos
         CLC 
         ROR 
         STA a5DBC
-        LDA acDC
+        LDA pixelYPosition
         SEC 
         SBC a5DBC
-        STA (pFD),Y
+        STA (generalLoPtr),Y
         INC a5966
         LDA a5966
         CMP #$3A
@@ -4494,7 +4648,7 @@ j5DBD
         JMP j5E2A
 
 b5DCD   LDA a5E1E
-        BEQ s5DF0
+        BEQ EnableDemoMode
         LDA a5E1F
         AND #$07
         TAX 
@@ -4508,9 +4662,9 @@ b5DCD   LDA a5E1E
         DEC a5E1E
         BNE j5E2A
 ;-------------------------------------------------------------------------
-; s5DF0
+; EnableDemoMode
 ;-------------------------------------------------------------------------
-s5DF0
+EnableDemoMode
         JSR s586E
         AND #$7F
         STA a5E1C
@@ -4579,13 +4733,13 @@ b5E63   JSR s586E
         ADC #$10
         STA a5EB6
         LDA #$01
-        STA a5A45
+        STA wipeForegroundGraphics
         INC a2CAE
         LDA a2CAE
         CMP #$03
         BNE b5E86
         LDA #$02
-        STA a5A45
+        STA wipeForegroundGraphics
         LDA #$00
         STA a2CAE
 b5E86   INC a5EB7
@@ -4593,15 +4747,15 @@ b5E86   INC a5EB7
         AND #$0F
         TAX 
         BNE b5EA1
-        INC a56EF
-        LDA a56EF
+        INC selectedPresetBank
+        LDA selectedPresetBank
         CMP #$05
         BNE b5EA1
         LDA #$00
-        STA a56EF
+        STA selectedPresetBank
         TAX 
-b5EA1   JSR s56F5
-        LDA a4B08
+b5EA1   JSR LoadPreset
+        LDA screenMode
         CMP #$04
         BEQ b5EB0
         CMP #$05
@@ -4609,7 +4763,7 @@ b5EA1   JSR s56F5
         RTS 
 
 b5EB0   LDA #$01
-        STA a5A45
+        STA wipeForegroundGraphics
         RTS 
 
 a5EB6   .BYTE $0A
@@ -4622,9 +4776,9 @@ j5EB8
         BEQ b5EBE
         RTS 
 
-b5EBE   LDA aDB
+b5EBE   LDA pixelXPosition
         STA a5ED5
-        LDA acDC
+        LDA pixelYPosition
         STA a5ED6
         LDA #$01
         STA a5F45
@@ -4676,7 +4830,7 @@ j5F08
         STA aC3
         LDA #$00
         STA a5F45
-        LDA a4A1E
+        LDA cursorSpeed
         PHA 
         LDX #$00
 b5F1B   LDA #$FF
@@ -4687,15 +4841,15 @@ b5F1B   LDA #$FF
         DEX 
         BNE b5F1B
         LDA #$03
-        STA a4A1E
-        LDA a5A42
+        STA cursorSpeed
+        LDA symmetryForeground
         STA aD0
         JMP j5EEC
 
 b5F39   PLA 
-        STA a4A1E
+        STA cursorSpeed
         LDA #$00
-        STA a58FD
+        STA beginDrawingForeground
         JMP MainGameLoop
 
 a5F45   .BYTE $00
@@ -5100,6 +5254,7 @@ a7000   .BYTE $00,$00,$00,$00,$00,$01,$02,$03
         .BYTE $06,$07,$01,$02,$03,$04,$05,$06
         .BYTE $07,$01,$02,$03,$04,$05,$06,$07
         .BYTE $01,$02,$03,$04,$05,$06,$07,$01
+; THere's text in here
         .BYTE $02,$03,$01,$41,$94,$43,$2E,$4B
         .BYTE $45,$59,$53,$3A,$20,$20,$20,$4F
         .BYTE $4F,$5A,$45,$20,$53,$54,$45,$50

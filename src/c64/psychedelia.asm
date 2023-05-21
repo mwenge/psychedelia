@@ -16,48 +16,48 @@
 ;    May you find forgiveness for yourself and forgive others.
 ;    May you share freely, never taking more than you give.
 
-pixelXPositionZP              = $02
-pixelYPositionZP              = $03
-currentIndexToColorValues     = $04
-colorRamTableLoPtr2           = $05
-colorRamTableHiPtr2           = $06
-previousPixelXPositionZP      = $08
-previousPixelYPositionZP      = $09
-colorRamTableLoPtr            = $0A
-colorRamTableHiPtr            = $0B
-currentColorToPaint           = $0C
-xPosLoPtr                     = $0D
-xPosHiPtr                     = $0E
-currentPatternElement         = $0F
-yPosLoPtr                     = $10
-yPosHiPtr                     = $11
-timerBetweenKeyStrokes        = $12
-shouldDrawCursor              = $13
-currentSymmetrySettingForStep = $14
-currentSymmetrySetting        = $15
-offsetForYPos                 = $16
-skipPixel                     = $17
-colorBarColorRamLoPtr         = $18
-colorBarColorRamHiPtr         = $19
-currentColorSet               = $1A
-presetSequenceDataLoPtr       = $1B
-presetSequenceDataHiPtr       = $1C
-currentSequencePtrLo          = $1D
-currentSequencePtrHi          = $1E
-lastJoystickInput             = $21
-customPatternLoPtr            = $22
-customPatternHiPtr            = $23
-minIndexToColorValues         = $24
-initialIndexToColorValues     = $25
-currentIndexToPresetValue     = $26
-lastKeyPressed                = $C5
-presetLoPtr                   = $FE
-presetHiPtr                   = $FF
-shiftKey                      = $028D
-storageOfSomeKind             = $7FFF
-presetSequenceData            = $C000
-colorRamLoPtr                 = $FB
-colorRamHiPtr                 = $FC
+pixelXPosition                   = $02
+pixelYPosition                   = $03
+baseLevelForCurrentPixel         = $04
+currentLineInColorRamLoPtr2      = $05
+currentLineInColorRamHiPtr2      = $06
+previousCursorXPositionZP        = $08
+previousPixelYPositionZP         = $09
+currentLineInColorRamLoPtr       = $0A
+currentLineInColorRamHiPtr       = $0B
+currentColorToPaint              = $0C
+xPosLoPtr                        = $0D
+xPosHiPtr                        = $0E
+currentPatternElement            = $0F
+yPosLoPtr                        = $10
+yPosHiPtr                        = $11
+timerBetweenKeyStrokes           = $12
+shouldDrawCursor                 = $13
+currentSymmetrySettingForStep    = $14
+currentSymmetrySetting           = $15
+offsetForYPos                    = $16
+skipPixel                        = $17
+colorBarColorRamLoPtr            = $18
+colorBarColorRamHiPtr            = $19
+currentColorSet                  = $1A
+presetSequenceDataLoPtr          = $1B
+presetSequenceDataHiPtr          = $1C
+currentSequencePtrLo             = $1D
+currentSequencePtrHi             = $1E
+lastJoystickInput                = $21
+customPatternLoPtr               = $22
+customPatternHiPtr               = $23
+minIndexToColorValues            = $24
+initialBaseLevelForCustomPresets = $25
+currentIndexToPresetValue        = $26
+lastKeyPressed                   = $C5
+presetLoPtr                      = $FE
+presetHiPtr                      = $FF
+shiftKey                         = $028D
+storageOfSomeKind                = $7FFF
+presetSequenceData               = $C000
+colorRamLoPtr                    = $FB
+colorRamHiPtr                    = $FC
 
 
 .include "constants.asm"
@@ -164,15 +164,15 @@ presetKeyCodes
 
 
 ;-------------------------------------------------------
-; GetColorRAMPtrFromLineTable
+; LoadXAndYPosition
 ;-------------------------------------------------------
-GetColorRAMPtrFromLineTable   
-        LDX pixelYPositionZP
+LoadXAndYPosition   
+        LDX pixelYPosition
         LDA colorRAMLineTableLoPtrArray,X
-        STA colorRamTableLoPtr2
+        STA currentLineInColorRamLoPtr2
         LDA colorRAMLineTableHiPtrArray,X
-        STA colorRamTableHiPtr2
-        LDY pixelXPositionZP
+        STA currentLineInColorRamHiPtr2
+        LDY pixelXPosition
 ReturnEarlyFromRoutine   
         RTS 
 
@@ -182,24 +182,24 @@ tempIndex = $FD
 ;-------------------------------------------------------
 PaintPixel   
         ; Return early if the index or offset are invalid
-        LDA pixelXPositionZP
+        LDA pixelXPosition
         AND #$80
         BNE ReturnEarlyFromRoutine
-        LDA pixelXPositionZP
+        LDA pixelXPosition
         CMP #$28
         BPL ReturnEarlyFromRoutine
-        LDA pixelYPositionZP
+        LDA pixelYPosition
         AND #$80
         BNE ReturnEarlyFromRoutine
-        LDA pixelYPositionZP
+        LDA pixelYPosition
         CMP #$18
         BPL ReturnEarlyFromRoutine
 
-        JSR GetColorRAMPtrFromLineTable
+        JSR LoadXAndYPosition
         LDA skipPixel
         BNE ActuallyPaintPixel
 
-        LDA (colorRamTableLoPtr2),Y
+        LDA (currentLineInColorRamLoPtr2),Y
         AND #$0F
 
         LDX #$00
@@ -213,7 +213,7 @@ GetIndexInPresetsLoop
 FoundMatchingIndex   
         TXA 
         STA tempIndex
-        LDX currentIndexToColorValues
+        LDX baseLevelForCurrentPixel
         INX 
         CPX tempIndex
         BEQ ActuallyPaintPixel
@@ -222,9 +222,9 @@ FoundMatchingIndex
 
         ; Actually paint the pixel to color ram.
 ActuallyPaintPixel   
-        LDX currentIndexToColorValues
+        LDX baseLevelForCurrentPixel
         LDA presetColorValuesArray,X
-        STA (colorRamTableLoPtr2),Y
+        STA (currentLineInColorRamLoPtr2),Y
         RTS 
 
 ;-------------------------------------------------------
@@ -233,20 +233,21 @@ ActuallyPaintPixel
 LoopThroughPixelsAndPaint   
         JSR PaintPixelForCurrentSymmetry
         LDY #$00
-        LDA currentIndexToColorValues
+        LDA baseLevelForCurrentPixel
         CMP #$07
-        BNE b0921
+        BNE CanLoopAndPaint
         RTS 
 
-b0921   LDA #$07
+CanLoopAndPaint   
+        LDA #$07
         STA countToMatchCurrentIndex
 
-        LDA pixelXPositionZP
-        STA previousPixelXPositionZP
-        LDA pixelYPositionZP
+        LDA pixelXPosition
+        STA previousCursorXPositionZP
+        LDA pixelYPosition
         STA previousPixelYPositionZP
 
-        LDX presetIndex
+        LDX patternIndex
         LDA pixelXPositionLoPtrArray,X
         STA xPosLoPtr
         LDA pixelXPositionHiPtrArray,X
@@ -259,14 +260,14 @@ b0921   LDA #$07
         ; Paint pixels in the sequence until hitting a break
         ; at $55
 PixelPaintLoop   
-        LDA previousPixelXPositionZP
+        LDA previousCursorXPositionZP
         CLC 
         ADC (xPosLoPtr),Y
-        STA pixelXPositionZP
+        STA pixelXPosition
         LDA previousPixelYPositionZP
         CLC 
         ADC (yPosLoPtr),Y
-        STA pixelYPositionZP
+        STA pixelYPosition
 
         ; Push Y to the stack.
         TYA 
@@ -285,17 +286,18 @@ PixelPaintLoop
 
         DEC countToMatchCurrentIndex
         LDA countToMatchCurrentIndex
-        CMP currentIndexToColorValues
-        BEQ b0973
+        CMP baseLevelForCurrentPixel
+        BEQ RestorePositionsAndReturn
         CMP #$01
-        BEQ b0973
+        BEQ RestorePositionsAndReturn
         INY 
         JMP PixelPaintLoop
 
-b0973   LDA previousPixelXPositionZP
-        STA pixelXPositionZP
+RestorePositionsAndReturn   
+        LDA previousCursorXPositionZP
+        STA pixelXPosition
         LDA previousPixelYPositionZP
-        STA pixelYPositionZP
+        STA pixelYPosition
         RTS 
 
 ; The pattern data structure consists of up to 7 rows, each
@@ -346,9 +348,9 @@ randomByteAddress   =*+$01
 PaintPixelForCurrentSymmetry   
         ; First paint the normal pattern without any
         ; symmetry.
-        LDA pixelXPositionZP
+        LDA pixelXPosition
         PHA 
-        LDA pixelYPositionZP
+        LDA pixelYPosition
         PHA 
         JSR PaintPixel
 
@@ -357,9 +359,9 @@ PaintPixelForCurrentSymmetry
 
 CleanUpAndReturnFromSymmetry   
         PLA 
-        STA pixelYPositionZP
+        STA pixelYPosition
         PLA 
-        STA pixelXPositionZP
+        STA pixelXPosition
         RTS 
 
         RTS
@@ -372,8 +374,8 @@ HasSymmetry
         ; symmetry so prepare for that.
         LDA #$27
         SEC 
-        SBC pixelXPositionZP
-        STA pixelXPositionZP
+        SBC pixelXPosition
+        STA pixelXPosition
 
         ; If it has X_Y_SYMMETRY then we just 
         ; need to paint that, and we're done.
@@ -399,8 +401,8 @@ HasSymmetry
         ; First we do the Y axis.
         LDA #$17
         SEC 
-        SBC pixelYPositionZP
-        STA pixelYPositionZP
+        SBC pixelYPosition
+        STA pixelYPosition
         JSR PaintPixel
 
         ; Paint one on the X axis.
@@ -408,33 +410,37 @@ PaintXAxisPixelForSymmetry
         PLA 
         TAY 
         PLA 
-        STA pixelXPositionZP
+        STA pixelXPosition
         TYA 
         PHA 
         JSR PaintPixel
         PLA 
-        STA pixelYPositionZP
+        STA pixelYPosition
         RTS 
 
 XAxisSymmetry   
         LDA #$17
         SEC 
-        SBC pixelYPositionZP
-        STA pixelYPositionZP
+        SBC pixelYPosition
+        STA pixelYPosition
         JMP PaintXAxisPixelForSymmetry
 
 XYSymmetry   
         LDA #$17
         SEC 
-        SBC pixelYPositionZP
-        STA pixelYPositionZP
+        SBC pixelYPosition
+        STA pixelYPosition
         JSR PaintPixel
         PLA 
-        STA pixelYPositionZP
+        STA pixelYPosition
         PLA 
-        STA pixelXPositionZP
+        STA pixelXPosition
         RTS 
 
+; The pixel buffers that contain the next 64
+; pixels to be painted. These are filled by
+; MainInterruptHandler, which adds a new byte
+; to each buffer every 3/4 seconds.
 pixelXPositionArray
         .BYTE $00,$00,$FF,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -453,7 +459,7 @@ pixelYPositionArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-currentIndexForCurrentStepArray
+baseLevelArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -505,19 +511,18 @@ symmetrySettingForStepCount
 ReinitializeSequences
         LDX #$00
         TXA 
-ReinitLoop   
-        STA pixelXPositionArray,X
+_Loop   STA pixelXPositionArray,X
         STA pixelYPositionArray,X
         LDA #$FF
-        STA currentIndexForCurrentStepArray,X
+        STA baseLevelArray,X
         LDA #$00
         STA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
         STA patternIndexArray,X
         STA symmetrySettingForStepCount,X
         INX 
-p0C13   CPX #$40
-        BNE ReinitLoop
+        CPX #$40
+        BNE _Loop
 
         STA timerBetweenKeyStrokes
         STA currentPatternElement
@@ -533,11 +538,12 @@ p0C13   CPX #$40
 LaunchPsychedelia    
         JSR SetUpInterruptHandlers
 
+        ; Clear down the interrupt handler code for some reason.
         LDX #$10
-b0C29   TXA 
+_Loop   TXA 
         STA SetUpInterruptHandlers,X
         DEX 
-        BNE b0C29
+        BNE _Loop
 
         JSR ReinitializeScreen
         JSR ReinitializeSequences
@@ -547,7 +553,7 @@ b0C29   TXA
 ; MainPaintLoop
 ;-------------------------------------------------------
 MainPaintLoop    
-        INC currentBufferLength
+        INC currentIndexToPixelBuffers
 
         LDA lastKeyPressed
         CMP #$02 ; Left/Right cursor key
@@ -556,20 +562,18 @@ MainPaintLoop
         ; Left/Right cursor key pauses the paint animation.
         ; This section just loops around if the left/right keys
         ; are pressed and keeps looping until they're pressed again.
-LastKeyLoop   
-        LDA lastKeyPressed
+_Loop   LDA lastKeyPressed
         CMP #$40 ;  No key pressed
-        BNE LastKeyLoop
-MPKeyLoop   
-        LDA lastKeyPressed
+        BNE _Loop
+
+_Loop2  LDA lastKeyPressed
         CMP #$02 ; Left/Right cursor key
-        BNE MPKeyLoop
+        BNE _Loop2
 
         ; Keep looping until key pressed again.
-LoopUntilPressedAgain   
-        LDA lastKeyPressed
+_Loop3  LDA lastKeyPressed
         CMP #$40 ;No key pressed
-        BNE LoopUntilPressedAgain
+        BNE _Loop3
 
         ; Check if we can just do a normal paint or if
         ; we have to handle a customer preset mode or
@@ -581,6 +585,7 @@ HandleAnyCurrentModes
         ; Handle if we're in a specific mode.
         CMP #$17 ; Custom Preset active?
         BNE MaybeInSavePromptMode
+
         ; Custom Preset active.
         JMP HandleCustomPreset
 
@@ -593,47 +598,57 @@ MaybeInSavePromptMode
 InitializeScreenAndPaint   
         JSR ReinitializeScreen
 
+        ; currentIndexToPixelBuffers is our index into the 
+        ; pixel buffers. It gets incremented every
+        ; pass through MainPaintLoop until it reaches
+        ; the value set by bufferLength. So it determines
+        ; how much of each pixel buffer we paint.
 DoANormalPaint   
-        LDA currentBufferLength
+        LDA currentIndexToPixelBuffers
         CMP bufferLength
         BNE CheckCurrentBuffer
 
-        ; Reset the step count
+        ; Reset the index back to the start of the pixel buffers.
         LDA #$00
-        STA currentBufferLength
+        STA currentIndexToPixelBuffers
 CheckCurrentBuffer   
-        LDX currentBufferLength
-        LDA currentIndexForCurrentStepArray,X
+        LDX currentIndexToPixelBuffers
+        LDA baseLevelArray,X
         CMP #$FF
         BNE ShouldDoAPaint
+
+        ; 
         STX shouldDrawCursor
         JMP MainPaintLoop
 
 ShouldDoAPaint   
-        STA currentIndexToColorValues
+        STA baseLevelForCurrentPixel
+        ; X is currentIndexToPixelBuffers
         DEC framesRemainingToNextPaintForStep,X
         BNE GoBackToStartOfLoop
 
         ; Actually paint some pixels to the screen.
 
         ; Reset the delay for this step.
+        ; X is currentIndexToPixelBuffers
         LDA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
 
         ; Get the x and y positions for this pixel.
+        ; X is currentIndexToPixelBuffers
         LDA pixelXPositionArray,X
-        STA pixelXPositionZP
+        STA pixelXPosition
         LDA pixelYPositionArray,X
-        STA pixelYPositionZP
+        STA pixelYPosition
 
         LDA patternIndexArray,X
-        STA presetIndex
+        STA patternIndex
 
         LDA symmetrySettingForStepCount,X
         STA currentSymmetrySettingForStep
 
-        ; Line Mode sets the top bit of currentIndexToColorValues
-        LDA currentIndexToColorValues
+        ; Line Mode sets the top bit of baseLevelForCurrentPixel
+        LDA baseLevelForCurrentPixel
         AND #$80
         BNE PaintLineModeAndLoop
 
@@ -643,11 +658,11 @@ ShouldDoAPaint
         PLA 
         TAX 
 
-        DEC currentIndexForCurrentStepArray,X
+        DEC baseLevelArray,X
 GoBackToStartOfLoop   
         JMP MainPaintLoop
 
-currentBufferLength   .BYTE $00
+currentIndexToPixelBuffers   .BYTE $00
 
 PaintLineModeAndLoop
         ; Loops back to MainPaintLoop
@@ -664,8 +679,8 @@ SetUpInterruptHandlers
         STA $0315    ;IRQ
 
         LDA #$0A
-        STA pixelXPosition
-        STA colorRAMLineTableIndex
+        STA cursorXPosition
+        STA cursorYPosition
 
         LDA #$01
         STA $D015    ;Sprite display Enable
@@ -680,6 +695,14 @@ SetUpInterruptHandlers
 countStepsBeforeCheckingJoystickInput   .BYTE $02,$00
 ;-------------------------------------------------------
 ; MainInterruptHandler
+; By default this runs every 1/60th of a second. 
+; Its main job is to fill the pixel buffers (e.g.
+; pixelXPositionArray, pixelYPositionArray and so on)
+; so that the MainPaintLoop can use them to paint the
+; screen. The counter countStepsBeforeCheckingJoystickInput
+; ensures that we only update the pixel buffers every 256th
+; time the interrupt is called. stepsRemainingInSequencerSequence
+; does the same for the sequencer. 
 ;-------------------------------------------------------
 MainInterruptHandler
         ; The sequencer is played by the interrupt handler.
@@ -690,87 +713,105 @@ MainInterruptHandler
         BNE SequencerNotActiveCheckJoystickInput
 
         ; If the sequencer is active we'll end up here and
-        ; load the sequencer data so that it can be played.
+        ; load a byte from the sequencer data to the pixel
+        ; buffers.
         LDA sequencerSpeed
         STA stepsRemainingInSequencerSequence
+
+CalledFromNMI
         JSR LoadDataForSequencer
 
 SequencerNotActiveCheckJoystickInput   
+        ; Our counter reaches zero every 256 interrupts,
+        ; otherwise we just return early.
         DEC countStepsBeforeCheckingJoystickInput
-        BEQ b0D03
-        JMP JumpToCheckKeyboardInput
-        ;Returns?
+        BEQ CanUpdatePixelBuffers
+
+        ; No need to do anything so return early.
+        JMP CheckKeyboardAndReturnFromInterrupt
 
         ; Once in every 256 interrupts, check the joystick
         ; for input and act on it.
-b0D03   LDA #$00
+CanUpdatePixelBuffers   
+        LDA #$00
         STA currentColorToPaint
         LDA cursorSpeed
         STA countStepsBeforeCheckingJoystickInput
-        JSR UpdateLineinColorRAMUsingIndex
+        JSR PaintCursorAtCurrentPosition
 
         JSR GetJoystickInput
         LDA lastJoystickInput
         AND #$03
         CMP #$03
-        BEQ b0D40 ; Neither up nor down have been pushed.
+        BEQ CheckIfCursorMovedLeftOrRight ; Neither up nor down have been pushed.
 
         CMP #$02
-        BEQ b0D25 ; Player has pressed down.
+        BEQ PlayerHasPressedDown ; Player has pressed down.
         
         ; Player has pressed up. Incremeent up two lines
         ; so that when we decrement down one, we're still
         ; one up!
-        INC colorRAMLineTableIndex
-        INC colorRAMLineTableIndex
+        INC cursorYPosition
+        INC cursorYPosition
 
         ; Player has pressed down.
-b0D25   DEC colorRAMLineTableIndex
-        LDA colorRAMLineTableIndex
+PlayerHasPressedDown   
+        DEC cursorYPosition
+        LDA cursorYPosition
         CMP #$FF
-        BNE b0D37
-        LDA #$17
-        STA colorRAMLineTableIndex
-        JMP b0D40
+        BNE CheckIfCursorAtBottom
 
-b0D37   CMP #$18
-        BNE b0D40
+        ; Cursor has reached the top of the screen, so loop
+        ; around to bottom.
+        LDA #$17
+        STA cursorYPosition
+        JMP CheckIfCursorMovedLeftOrRight
+
+CheckIfCursorAtBottom   
+        CMP #$18
+        BNE CheckIfCursorMovedLeftOrRight
+        ; Cursor has reached the bottom of the screen, so loop
+        ; around to top
         LDA #$00
-        STA colorRAMLineTableIndex
+        STA cursorYPosition
 
         ; Player has pressed left or right?
-b0D40   LDA lastJoystickInput
+CheckIfCursorMovedLeftOrRight   
+        LDA lastJoystickInput
         AND #$0C
         CMP #$0C
-        BEQ b0D6D ; Player has pressed neither left nor right.
+        BEQ CheckIfPlayerPressedFire ; Player has pressed neither left nor right.
 
         CMP #$08
-        BEQ b0D52 ; Player has pressed left.
+        BEQ CursorMovedLeft ; Player has pressed left.
 
         ; Player has pressed right.
-        INC pixelXPosition
-        INC pixelXPosition
+        INC cursorXPosition
+        INC cursorXPosition
 
         ; Player has pressed left.
-b0D52   DEC pixelXPosition
+CursorMovedLeft   
+        DEC cursorXPosition
         ; Handle any wrap around from left to right.
-        LDA pixelXPosition
+        LDA cursorXPosition
         CMP #$FF
-        BNE b0D64
+        BNE CheckIfCursorAtExtremeRight
 
         ; Cursor has wrapped around, move it to the extreme
         ; right of the screen.
         LDA #$27
-        STA pixelXPosition
-        JMP b0D6D
+        STA cursorXPosition
+        JMP CheckIfPlayerPressedFire
 
         ; Handle any wrap around from right to left.
-b0D64   CMP #$28
-        BNE b0D6D
+CheckIfCursorAtExtremeRight   
+        CMP #$28
+        BNE CheckIfPlayerPressedFire
         LDA #$00
-        STA pixelXPosition
+        STA cursorXPosition
 
-b0D6D   LDA lastJoystickInput
+CheckIfPlayerPressedFire   
+        LDA lastJoystickInput
         AND #$10
         BEQ PlayerHasntPressedFire
 
@@ -790,12 +831,13 @@ PlayerHasntPressedFire
 
 IncrementStepsSincePressedFire   
         INC stepsSincePressedFire
+
 DecrementPulseWidthCounter   
         LDA currentPulseWidth
         BEQ DecrementPulseSpeedCounter
         DEC currentPulseWidth
         BEQ DecrementPulseSpeedCounter
-        JMP UpdateDisplayedPattern
+        JMP UpdatePixelBuffersForPattern
 
 DecrementPulseSpeedCounter   
         DEC currentPulseSpeedCounter
@@ -808,46 +850,52 @@ RefreshPulseSpeed
         LDA pulseWidth
         STA currentPulseWidth
 
-UpdateDisplayedPattern    
+        ; Finally, update the pixel buffers with a byte
+        ; each for the current pattern.        
+UpdatePixelBuffersForPattern    
         INC currentStepCount
         LDA currentStepCount
         CMP bufferLength
-        BNE b0DBC
+        BNE UpdateBaseLevelArray
 
         LDA #$00
         STA currentStepCount
 
-b0DBC   TAX 
-        LDA currentIndexForCurrentStepArray,X
+UpdateBaseLevelArray   
+        TAX 
+        LDA baseLevelArray,X
         CMP #$FF
-        BEQ b0DD6
+        BEQ UpdatePositionArrays
         LDA shouldDrawCursor
         AND trackingActivated
         BEQ DrawCursorAndReturnFromInterrupt
         TAX 
-        LDA currentIndexForCurrentStepArray,X
+        LDA baseLevelArray,X
         CMP #$FF
         BNE DrawCursorAndReturnFromInterrupt
 
         STX currentStepCount
-b0DD6   LDA pixelXPosition
+
+UpdatePositionArrays   
+        LDA cursorXPosition
         STA pixelXPositionArray,X
-        LDA colorRAMLineTableIndex
+        LDA cursorYPosition
         STA pixelYPositionArray,X
+
         LDA lineModeActivated
         BEQ LineModeNotActive
 
         ; Line Mode Active
         LDA #$19
         SEC 
-        SBC colorRAMLineTableIndex
+        SBC cursorYPosition
         ORA #$80
-        STA currentIndexForCurrentStepArray,X
+        STA baseLevelArray,X
         JMP ApplySmoothingDelay
 
 LineModeNotActive   
         LDA baseLevel
-        STA currentIndexForCurrentStepArray,X
+        STA baseLevelArray,X
         LDA currentPatternElement
         STA patternIndexArray,X
 
@@ -861,46 +909,48 @@ ApplySmoothingDelay
 DrawCursorAndReturnFromInterrupt    
         LDA #$01
         STA currentColorToPaint
-        JSR UpdateLineinColorRAMUsingIndex
+        JSR PaintCursorAtCurrentPosition
         ; Falls through
 
 ;-------------------------------------------------------
-; JumpToCheckKeyboardInput
+; CheckKeyboardAndReturnFromInterrupt
 ;-------------------------------------------------------
-JumpToCheckKeyboardInput    
+CheckKeyboardAndReturnFromInterrupt    
         JSR CheckKeyboardInput
+        ; This returns control to the KERNAL so it can
+        ; do whatver it normally does during an interrupt.
         JMP RETURN_INTERRUPT
 
 ;-------------------------------------------------------
-; GetColorRAMPtrFromLineTableUsingIndex
+; LoadXAndYOfCursorPosition
 ;-------------------------------------------------------
-GetColorRAMPtrFromLineTableUsingIndex   
-        LDX colorRAMLineTableIndex
+LoadXAndYOfCursorPosition   
+        LDX cursorYPosition
         LDA colorRAMLineTableLoPtrArray,X
-        STA colorRamTableLoPtr
+        STA currentLineInColorRamLoPtr
         LDA colorRAMLineTableHiPtrArray,X
-        STA colorRamTableHiPtr
-        LDY pixelXPosition
-ReturnFromColorRamPtr   
+        STA currentLineInColorRamHiPtr
+        LDY cursorXPosition
+ReturnEarlyFromCursorPaint   
         RTS 
 
 ;-------------------------------------------------------
-; UpdateLineinColorRAMUsingIndex
+; PaintCursorAtCurrentPosition
 ;-------------------------------------------------------
-UpdateLineinColorRAMUsingIndex   
+PaintCursorAtCurrentPosition   
         LDA displaySavePromptActive
-        BNE ReturnFromColorRamPtr
-        JSR GetColorRAMPtrFromLineTableUsingIndex
+        BNE ReturnEarlyFromCursorPaint
+        JSR LoadXAndYOfCursorPosition
         LDA currentColorToPaint
-        STA (colorRamTableLoPtr),Y
+        STA (currentLineInColorRamLoPtr),Y
         RTS 
 
 
-pixelXPosition         .BYTE $0A
-colorRAMLineTableIndex .BYTE $0A
-currentStepCount       .BYTE $00
-stepsSincePressedFire  .BYTE $00
-stepsExceeded255       .BYTE $00
+cursorXPosition       .BYTE $0A
+cursorYPosition       .BYTE $0A
+currentStepCount      .BYTE $00
+stepsSincePressedFire .BYTE $00
+stepsExceeded255      .BYTE $00
 
 ; This is where the presets get loaded to. It represents
 ; the data structure for the presets.
@@ -920,7 +970,7 @@ baseLevel               .BYTE $07
 presetColorValuesArray  .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
 trackingActivated       .BYTE $FF
 lineModeActivated       .BYTE $00
-presetIndex            .BYTE $05
+patternIndex            .BYTE $05
 
 
 customPattern0XPosArray = $C800
@@ -1212,12 +1262,12 @@ JustLPressed
         ; Briefly display the new linemode setting on the bottom of the screen.
         JSR ClearLastLineOfScreen
         LDX #$00
-b1043   LDA lineModeSettingDescriptions,Y
+_Loop   LDA lineModeSettingDescriptions,Y
         STA lastLineBufferPtr,X
         INY 
         INX 
         CPX #$10
-        BNE b1043
+        BNE _Loop
         JMP WriteLastLineBufferToScreen
         ; Returns
 
@@ -1435,13 +1485,12 @@ MaybeUpArrowPressed
 
         ; Rewrite the screen using the new pixel.
         LDX #$00
-UpdatePixelLoop   
-        STA SCREEN_RAM + $0000,X
+_Loop   STA SCREEN_RAM + $0000,X
         STA SCREEN_RAM + $0100,X
         STA SCREEN_RAM + $0200,X
         STA SCREEN_RAM + $02C0,X
         DEX 
-        BNE UpdatePixelLoop
+        BNE _Loop
         STA currentPixel
         RTS 
 
@@ -1530,6 +1579,10 @@ b1229   LDA lastLineBufferPtr - $01,X
         RTS 
 
 .enc "petscii"  ;define an ascii->petscii encoding
+        .cdef "{{", $A8  ;characters
+        .cdef "}}", $A9  ;characters
+        .cdef "@@", $AC  ;characters
+        .cdef "??", $BF  ;characters
         .cdef "  ", $A0  ;characters
         .cdef "--", $AD  ;characters
         .cdef ",,", $2c  ;characters
@@ -1561,53 +1614,53 @@ txtSymmetrySettingDescriptions
 ; PaintLineMode
 ;-------------------------------------------------------
 PaintLineMode 
-        LDA currentIndexToColorValues
+        LDA baseLevelForCurrentPixel
         AND #$7F
         STA offsetForYPos
         LDA #$19
         SEC 
         SBC offsetForYPos
-        STA pixelYPositionZP
-        DEC pixelYPositionZP
+        STA pixelYPosition
+        DEC pixelYPosition
         LDA #$00
-        STA currentIndexToColorValues
+        STA baseLevelForCurrentPixel
         LDA #$01
         STA skipPixel
         JSR PaintPixelForCurrentSymmetry
-        INC pixelYPositionZP
+        INC pixelYPosition
         LDA #$00
         STA skipPixel
 
         LDA lineWidth
         EOR #$07
-        STA currentIndexToColorValues
+        STA baseLevelForCurrentPixel
 LineModeLoop   
         JSR PaintPixelForCurrentSymmetry
-        INC pixelYPositionZP
-        INC currentIndexToColorValues
-        LDA currentIndexToColorValues
+        INC pixelYPosition
+        INC baseLevelForCurrentPixel
+        LDA baseLevelForCurrentPixel
         CMP #$08
         BNE ResetLineModeColorValue
         JMP CleanUpAndExitLineModePaint
 
-        INC currentIndexToColorValues
+        INC baseLevelForCurrentPixel
 ResetLineModeColorValue   
-        STA currentIndexToColorValues
-        LDA pixelYPositionZP
+        STA baseLevelForCurrentPixel
+        LDA pixelYPosition
         CMP #$19
         BNE LineModeLoop
 
 CleanUpAndExitLineModePaint    
-        LDX currentBufferLength
-        DEC currentIndexForCurrentStepArray,X
-        LDA currentIndexForCurrentStepArray,X
+        LDX currentIndexToPixelBuffers
+        DEC baseLevelArray,X
+        LDA baseLevelArray,X
         CMP #$80
         BEQ ResetIndexAndExitLineModePaint
         JMP MainPaintLoop
 
 ResetIndexAndExitLineModePaint   
         LDA #$FF
-        STA currentIndexForCurrentStepArray,X
+        STA baseLevelArray,X
         STX shouldDrawCursor
         JMP MainPaintLoop
 
@@ -1716,7 +1769,7 @@ b1406   LDA #$04
         ; The active mode is 'Color Change'.
 UpdateColorChange   
         LDX #$00
-b1417   LDA currentIndexForCurrentStepArray,X
+b1417   LDA baseLevelArray,X
         CMP #$FF
         BNE ResetSelectedVariableAndReturn
 
@@ -2106,12 +2159,12 @@ currentModeActive  .BYTE $00
 ;-------------------------------------------------------
 ReinitializeScreen
         LDA #$00
-        STA currentBufferLength
+        STA currentIndexToPixelBuffers
         STA shouldDrawCursor
 
         LDX #$00
         LDA #$FF
-b172a   STA currentIndexForCurrentStepArray,X
+b172a   STA baseLevelArray,X
         INX
         CPX #$40
         BNE b172A
@@ -2276,11 +2329,11 @@ b183D   LDY #$02
         LDA #$C0
         JMP j184E
 
-b184B   LDA pixelXPosition
+b184B   LDA cursorXPosition
 
 j184E    
         STA (currentSequencePtrLo),Y
-        LDA colorRAMLineTableIndex
+        LDA cursorYPosition
         INY 
         STA (currentSequencePtrLo),Y
         LDA currentPatternElement
@@ -2347,7 +2400,7 @@ j18A9
         LDA #$00
         STA currentStepCount
 b18BB   LDX currentStepCount
-        LDA currentIndexForCurrentStepArray,X
+        LDA baseLevelArray,X
         CMP #$FF
         BEQ b18D7
 
@@ -2357,12 +2410,12 @@ b18BB   LDX currentStepCount
 
         STA currentStepCount
         TAX 
-        LDA currentIndexForCurrentStepArray,X
+        LDA baseLevelArray,X
         CMP #$FF
         BNE b1901
 
 b18D7   LDA baseLevel
-        STA currentIndexForCurrentStepArray,X
+        STA baseLevelArray,X
         LDA (currentSequencePtrLo),Y
         CMP #$C0
         BEQ b1901
@@ -2470,7 +2523,7 @@ LoadDataForSequencer
         LDA #$00
         STA currentStepCount
 b1992   TAX 
-        LDA currentIndexForCurrentStepArray,X
+        LDA baseLevelArray,X
         CMP #$FF
         BEQ LoadValuesFromSequencerData
 
@@ -2478,7 +2531,7 @@ b1992   TAX
         AND trackingActivated
         BEQ MoveToNextPositionInSequencer
         TAX 
-        LDA currentIndexForCurrentStepArray,X
+        LDA baseLevelArray,X
         CMP #$FF
         BNE MoveToNextPositionInSequencer
 
@@ -2489,7 +2542,7 @@ LoadValuesFromSequencerData
         BEQ MoveToNextPositionInSequencer
 
         LDA baseLevel
-        STA currentIndexForCurrentStepArray,X
+        STA baseLevelArray,X
 
         LDA startOfSequencerData + $01
         STA initialFramesRemainingToNextPaintForStep,X
@@ -2645,19 +2698,19 @@ b1AAC   BNE b1AA4
         STA dynamicStorage
         LDA #$01
         STA dynamicStorage + $01
-        LDA pixelXPosition
-        STA previousPixelXPosition
-        LDA colorRAMLineTableIndex
-        STA previousColorRAMLineTableIndex
+        LDA cursorXPosition
+        STA previousCursorXPosition
+        LDA cursorYPosition
+        STA previousCursorYPosition
         RTS 
 
 b1AC5   LDA #$00
         STA currentColorToPaint
-        JSR UpdateLineinColorRAMUsingIndex
-        LDA previousPixelXPosition
-        STA pixelXPosition
-        LDA previousColorRAMLineTableIndex
-        STA colorRAMLineTableIndex
+        JSR PaintCursorAtCurrentPosition
+        LDA previousCursorXPosition
+        STA cursorXPosition
+        LDA previousCursorYPosition
+        STA cursorYPosition
         LDA #$FF
         STA displaySavePromptActive
         RTS 
@@ -2801,20 +2854,20 @@ b1BC6   LDA #>dynamicStorage
         STA recordingOffset
         LDA #$00
         STA currentColorToPaint
-        JSR UpdateLineinColorRAMUsingIndex
-        LDA previousPixelXPosition
-        STA pixelXPosition
-        LDA previousColorRAMLineTableIndex
-        STA colorRAMLineTableIndex
+        JSR PaintCursorAtCurrentPosition
+        LDA previousCursorXPosition
+        STA cursorXPosition
+        LDA previousCursorYPosition
+        STA cursorYPosition
         RTS 
 
 recordingOffset
         .BYTE $00
-previousPixelXPosition
+previousCursorXPosition
         .BYTE $0C
-previousColorRAMLineTableIndex
+previousCursorYPosition
         .BYTE $0C
-a1BEA
+customPatternIndex
         .BYTE $00
 displaySavePromptActive
         .BYTE $00
@@ -2846,7 +2899,7 @@ b1C0B   LDA #CUSTOM_PRESET_ACTIVE
         TXA 
         CLC 
         ADC #$08
-        STA a1BEA
+        STA customPatternIndex
         JSR ClearLastLineOfScreen
 
         LDX #$00
@@ -2859,7 +2912,7 @@ b1C28   LDA txtDefineAllLevelPixels,X
         JSR WriteLastLineBufferToScreen
 
         LDA #$06
-        STA initialIndexToColorValues
+        STA initialBaseLevelForCustomPresets
 
         ; Write $00,$55 to the first two bytes
         ; of the custom pattern.
@@ -2894,23 +2947,23 @@ b1C28   LDA txtDefineAllLevelPixels,X
 ;-------------------------------------------------------
 HandleCustomPreset    
         LDA #$13
-        STA pixelXPosition
+        STA cursorXPosition
         LDA #$0C
-        STA colorRAMLineTableIndex
+        STA cursorYPosition
         JSR ReinitializeScreen
 
-b1C68   LDA a1BEA
-        STA presetIndex
-        LDA initialIndexToColorValues
-        STA currentIndexToColorValues
+b1C68   LDA customPatternIndex
+        STA patternIndex
+        LDA initialBaseLevelForCustomPresets
+        STA baseLevelForCurrentPixel
         LDA #$00
         STA currentSymmetrySettingForStep
         LDA #$13
-        STA pixelXPositionZP
+        STA pixelXPosition
         LDA #$0C
-        STA pixelYPositionZP
+        STA pixelYPosition
         JSR LoopThroughPixelsAndPaint
-        LDA initialIndexToColorValues
+        LDA initialBaseLevelForCustomPresets
         BNE b1C68
 
         JSR ReinitializeScreen
@@ -2968,9 +3021,9 @@ EnterPressed
         STY currentIndexToPresetValue
         LDA #$07
         STA minIndexToColorValues
-        DEC initialIndexToColorValues
+        DEC initialBaseLevelForCustomPresets
         BEQ b1CE6
-        LDA initialIndexToColorValues
+        LDA initialBaseLevelForCustomPresets
         EOR #$07
         CLC 
         ADC #$31
@@ -2987,7 +3040,7 @@ MaybeLeftArrowPressed2
         BNE b1CEE
 
         LDY currentIndexToPresetValue
-        LDA pixelXPosition
+        LDA cursorXPosition
         SEC 
         SBC #$13
         STA (customPatternLoPtr),Y
@@ -2999,7 +3052,7 @@ MaybeLeftArrowPressed2
         CLC 
         ADC #$7F
         TAY 
-        LDA colorRAMLineTableIndex
+        LDA cursorYPosition
         SEC 
 b1D0D   SBC #$0C
         STA (customPatternLoPtr),Y
@@ -3272,7 +3325,7 @@ b1EFB   RTS
 
 .enc "petscii" 
 txtContinueLoadOrAbort
-        .TEXT $A8,'C',$A9,'ONTINUE LOAD',$AC,' OR ',$A8,'A',$A9,'BORT',$BF,' '
+        .TEXT '{C}ONTINUE LOAD@ OR {A}BORT? '
         .TEXT '           '
 .enc "none" 
 demoModeActive          .BYTE $00
@@ -3338,9 +3391,23 @@ demoMessage
 * = $1FA9
 demoModeCountDownToChangePreset
         .BYTE $20
+
+;-------------------------------------------------------
+; NMIInterruptHandler
+; Not really sure of the purpose of the values being
+; pushed to the stack here. Is it all to prevent the
+; RESTORE key from resetting things?
+;-------------------------------------------------------
 NMIInterruptHandler
-        .BYTE $A2,$F8,$9A,$A9,$0C,$48,$A9
-        .BYTE $30,$48,$A9,$23,$48,$40
+        LDX #<CalledFromNMI
+        TXS
+        LDA #>CalledFromNMI
+        PHA
+        LDA #$30
+        PHA
+        LDA #$23
+        PHA
+        RTI
 
 
 copyFromLoPtr = $FB
@@ -3361,21 +3428,21 @@ MovePresetDataIntoPosition
         STA copyToHiPtr
 
         LDX #$10
-b1FC8   LDA (copyFromLoPtr),Y
+_Loop   LDA (copyFromLoPtr),Y
         STA (copyToLoPtr),Y
         DEY 
-        BNE b1FC8
+        BNE _Loop
 
         INC copyFromHiPtr
         INC copyToHiPtr
         DEX 
-        BNE b1FC8
+        BNE _Loop
 
         LDX #$09
-b1FD8   LDA originalStorageOfSomeKind,X
+_Loop2  LDA originalStorageOfSomeKind,X
         STA storageOfSomeKind,X
         DEX 
-        BNE b1FD8
+        BNE _Loop2
         RTS 
 
 originalStorageOfSomeKind=*-$01   

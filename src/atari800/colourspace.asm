@@ -69,14 +69,14 @@ presetLoPtr = $EF
 presetHiPtr = $F0
 storedPixelYPosition = $F1
 alsoStoredPixelYPosition = $F2
-INBUFF = $F3
-aF4 = $F4
+pulseSpeed = $F3
+pulseSpeed2 = $F4
 smoothingDelay = $F5
 aF6 = $F6
 bufferLength = $F7
 aF8 = $F8
-aF9 = $F9
-aFA = $FA
+currentPulseWidth = $F9
+currentPulseWidth2 = $FA
 DEGFLG = $FB
 FLPTR = $FC
 generalLoPtr = $FD
@@ -686,7 +686,6 @@ a2FCA   .BYTE $00,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55
 
-
 .include "presets.asm"
 ;-------------------------------------------------------------------------
 ; LaunchColourspace
@@ -845,11 +844,11 @@ j40F3
         LDA #$00
         STA screenMode
         STA alsoStoredPixelYPosition      ;alsoStoredPixelYPosition     
-        STA INBUFF   ;INBUFF  
-        STA aF4
+        STA pulseSpeed   ;pulseSpeed  
+        STA pulseSpeed2
         STA FR2
-        STA aF9
-        STA aFA
+        STA currentPulseWidth
+        STA currentPulseWidth2
         STA textOutputControl
         LDA #$FF
         STA aDF
@@ -1674,24 +1673,24 @@ b48AD   LDA lastJoystickInput      ;lastJoystickInput     floating point registe
         BNE b48B9
 b48B8   RTS 
 
-b48B9   LDA INBUFF   ;INBUFF  
+b48B9   LDA pulseSpeed   ;pulseSpeed  
         BEQ b48D9
-        DEC aF4
+        DEC pulseSpeed2
         BEQ b48C2
         RTS 
 
-b48C2   LDA aF9
+b48C2   LDA currentPulseWidth
         BEQ b48D1
-        DEC aFA
+        DEC currentPulseWidth2
         BEQ b48D1
         LDA #$01
-        STA aF4
+        STA pulseSpeed2
         JMP b48D9
 
-b48D1   LDA aF9
-        STA aFA
-        LDA INBUFF   ;INBUFF  
-        STA aF4
+b48D1   LDA currentPulseWidth
+        STA currentPulseWidth2
+        LDA pulseSpeed   ;pulseSpeed  
+        STA pulseSpeed2
 b48D9   INC aE3
         LDA aE3
         CMP aF6
@@ -2133,7 +2132,7 @@ b4C30   JSR s4AF8
 
 a4C66   .BYTE $01
 a4C67   .BYTE $01
-f4C68   .BYTE $00,$18,$38,$58,$78,$98,$B8,$D8
+colorValuesOfSomeSort   .BYTE $00,$18,$38,$58,$78,$98,$B8,$D8
 f4C70   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 f4C78   .BYTE $01,$01,$01,$01,$01,$01,$01,$01
 f4C80   .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
@@ -2144,7 +2143,7 @@ f4C98   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 ; s4CA0
 ;-------------------------------------------------------------------------
 s4CA0
-        LDA a4CF2
+        LDA stroboscopicsEnabled
         BEQ b4CA8
         JMP j4CF4
 
@@ -2190,18 +2189,18 @@ b4CE8   LDA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         SBC f4C78,X
         JMP j4CD1
 
-a4CF3   =*+$01
-a4CF2   BRK #$00
+somethingToDoWithStrobo   =*+$01
+stroboscopicsEnabled   BRK #$00
 ;-------------------------------------------------------------------------
 ; j4CF4
 ;-------------------------------------------------------------------------
 j4CF4
-        LDA a4CF2
+        LDA stroboscopicsEnabled
         BNE b4CFA
         RTS 
 
-b4CFA   DEC a4CF3
-        LDA a4CF3
+b4CFA   DEC somethingToDoWithStrobo
+        LDA somethingToDoWithStrobo
         CMP #$FE
         BNE b4D1B
         LDX #$08
@@ -2211,8 +2210,8 @@ b4D06   LDA BOTSCR,X ;BOTSCR  number of text rows in text window
         STA BOTSCR,X ;BOTSCR  number of text rows in text window
         DEX 
         BNE b4D06
-        LDA a4CF2
-        STA a4CF3
+        LDA stroboscopicsEnabled
+        STA somethingToDoWithStrobo
 b4D1A   RTS 
 
 b4D1B   CMP #$00
@@ -2235,7 +2234,7 @@ f4D2A   RTS
 LookForKeyboardInput
         LDA autoDemoEnabled
         BEQ b4D3B
-        JSR MaybeGetKeyboardInput
+        JSR GetInputForDemo
 b4D3B   LDA a586D
         BEQ b4D57
         DEC a586D
@@ -2280,11 +2279,12 @@ b4D88   LDA #<f4EE5
 b4D93   LDY #$FF
         STY inputCharacter       ;inputCharacter      keyboard FIFO byte
         LDY beginDrawingForeground
-        BEQ b4DA0
+        BEQ MaybeSKeyPressed
         JMP j5924
 
-b4DA0   CMP #KEY_S
-        BNE b4DBF
+MaybeSKeyPressed   
+        CMP #KEY_S
+        BNE MaybeMKeyPressed
 
         ; S=Symmetry change 
         LDA currentSymmetry
@@ -2303,8 +2303,9 @@ b4DAF   STA currentSymmetry
 b4DBB   JSR UpdateStatusLine
         RTS 
 
-b4DBF   CMP #KEY_M
-        BNE b4DE0
+MaybeMKeyPressed   
+        CMP #KEY_M
+        BNE MaybeZKeyPressed
 
         ; M=Screen Mode 
         LDA screenMode
@@ -2323,8 +2324,9 @@ b4DCF   STA screenMode
         RTS 
 
 a4DDF   .BYTE $00
-b4DE0   CMP #KEY_Z
-        BNE b4DF4
+MaybeZKeyPressed   
+        CMP #KEY_Z
+        BNE MaybeShiftZPressed
 
         ; Z/SHIFT - Z=Vary Vertical Resolution SPAC
         INC verticalResolutionSPAC
@@ -2336,8 +2338,9 @@ b4DEE   LDA #$01
         STA a4DDF
         RTS 
 
-b4DF4   CMP #KEY_SHIFT | KEY_Z
-        BNE b4E05
+MaybeShiftZPressed   
+        CMP #KEY_SHIFT | KEY_Z
+        BNE MaybeSpaceKeyPressed
 
         ; Z/SHIFT - Z=Vary Vertical Resolution SPAC
         DEC verticalResolutionSPAC
@@ -2347,8 +2350,9 @@ b4DF4   CMP #KEY_SHIFT | KEY_Z
         INC verticalResolutionSPAC
         JMP b4DEE
 
-b4E05   CMP #KEY_SPACE
-        BNE b4E2B
+MaybeSpaceKeyPressed   
+        CMP #KEY_SPACE
+        BNE MaybeShiftOrControlPressed
 
         ; Update selected pattern.
         INC currentPatternIndex
@@ -2362,99 +2366,111 @@ b4E15   AND #$18
         LDA currentPatternIndex
         SEC 
         SBC #$08
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$35
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
 b4E26   LDX currentPatternIndex
         JMP UpdateStatusLine
 
-b4E2B   PHA 
+MaybeShiftOrControlPressed   
+        PHA 
         AND #$C0
-        BNE b4E34
+        BNE MaybeColorVariableKeyPressed
         PLA 
-        JMP LotsMoreKeyboardChecking
+        JMP MaybeFullStopPressed
 
-b4E34   PLA 
+MaybeColorVariableKeyPressed   
+        PLA 
         PHA 
         AND #$3F
         ; H,C,V,B,N,M,[=Individual colour Variable Keys 
         LDX #$00
 b4E3A   CMP colorVariableKeys,X
-        BEQ b4E48
+        BEQ ColorVariableKeyPressed
         INX 
         CPX #$08
         BNE b4E3A
+
+        ; No matches, keep checking other keys.
         PLA 
-        JMP LotsMoreKeyboardChecking
+        JMP MaybeFullStopPressed
 
-b4E48   PLA 
-        JMP j549B
+        ; Update a color control value selected.
+ColorVariableKeyPressed   
+        PLA 
+        JMP UpdateColorControlValues
 
 ;-------------------------------------------------------------------------
-; j4E4C
+; UpdateColorsInSomeWay
 ;-------------------------------------------------------------------------
-j4E4C
+UpdateColorsInSomeWay
         AND #$80
         BNE b4E56
         DEC PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         DEC PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
 b4E56   INC PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         LDA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
-        STA somethingToDoWithSmoothingDelay
-        STA f4C68,X
+        STA lastKeyPressed
+        STA colorValuesOfSomeSort,X
         LDA #$30
         STA a4ECC
-        JSR s5439
+        JSR IncrementColorValue
         RTS 
 
 ; H,C,V,B,N,M,[=Individual colour Variable Keys 
 colorVariableKeys   .BYTE $27,$16,$12,$10,$15,$23,$25,$20
 ;-------------------------------------------------------------------------
-; LotsMoreKeyboardChecking
+; MaybeFullStopPressed
 ;-------------------------------------------------------------------------
-LotsMoreKeyboardChecking
-        CMP #$22
-        BNE b4EA3
+MaybeFullStopPressed
+        CMP #KEY_FULLSTOP
+        BNE MaybeSlashPressed
 
-        INC a4EA2
-        LDA a4EA2
+        ; ]=Set strobo flash rate 
+        INC stroboFlashRate
+        LDA stroboFlashRate
         CMP #$08
         BNE b4E86
         LDA #$01
-        STA a4EA2
-b4E86   LDA a4EA2
-        STA somethingToDoWithSmoothingDelay
+        STA stroboFlashRate
+b4E86   LDA stroboFlashRate
+        STA lastKeyPressed
         LDX #$16
         JSR UpdateStatusLine
         JSR WriteStatusLine
-        LDA a4CF2
+        LDA stroboscopicsEnabled
         BEQ b4E9F
-        LDA a4EA2
-        STA a4CF2
-b4E9F   JMP j5452
+        LDA stroboFlashRate
+        STA stroboscopicsEnabled
+b4E9F   JMP IncrementDisplayedValue
 
-a4EA2   .BYTE $02
-b4EA3   CMP #$26
+stroboFlashRate   .BYTE $02
+;-------------------------------------------------------------------------
+; MaybeSlashPressed
+;-------------------------------------------------------------------------
+MaybeSlashPressed
+        CMP #KEY_SLASH
         BNE b4ECE
-        LDA a4CF2
+        ; ?=Turn stroboscopics on/off 
+        LDA stroboscopicsEnabled
         BNE b4EBC
-        LDA a4EA2
-        STA a4CF2
+        LDA stroboFlashRate
+        STA stroboscopicsEnabled
         LDA #$00
-        STA a4CF3
+        STA somethingToDoWithStrobo
         LDX #$14
         JMP UpdateStatusLine
 
 b4EBC   LDA #$00
-        STA a4CF2
-        STA a4CF3
+        STA stroboscopicsEnabled
+        STA somethingToDoWithStrobo
         LDX #$15
         JSR UpdateStatusLine
         JMP j4D1F
 
 a4ECC   BRK #$00
-b4ECE   JMP j54F3
+b4ECE   JMP MaybeAsteriskPressed
 
 f4ED1   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -2581,9 +2597,9 @@ statusLineText
         .TEXT ''
 .enc "none" 
 ;-------------------------------------------------------------------------
-; s5439
+; IncrementColorValue
 ;-------------------------------------------------------------------------
-s5439
+IncrementColorValue
         TXA
         TAY 
         LDA #$17
@@ -2599,11 +2615,12 @@ s5439
         ADC #$10
         LDY #$0D
         STA (presetLoPtr),Y
+
 ;-------------------------------------------------------------------------
-; j5452
+; IncrementDisplayedValue
 ;-------------------------------------------------------------------------
-j5452
-        LDX somethingToDoWithSmoothingDelay
+IncrementDisplayedValue
+        LDX lastKeyPressed
         LDA #$10
         LDY #$11
         STA (presetLoPtr),Y
@@ -2629,7 +2646,7 @@ b547B   DEX
         BNE b5465
 b547E   RTS 
 
-somethingToDoWithSmoothingDelay   .BYTE $00
+lastKeyPressed   .BYTE $00
 ;-------------------------------------------------------------------------
 ; WriteStatusLine
 ;-------------------------------------------------------------------------
@@ -2650,12 +2667,12 @@ b5492   LDA #$A2
         JMP j548D
 
 ;-------------------------------------------------------------------------
-; j549B
+; UpdateColorControlValues
 ;-------------------------------------------------------------------------
-j549B
+UpdateColorControlValues
         LDY currentColourControlEffect
         BNE b54A3
-        JMP j4E4C
+        JMP UpdateColorsInSomeWay
 
 b54A3   CPY #$01
         BNE b54C6
@@ -2666,16 +2683,16 @@ b54A3   CPY #$01
 b54B1   INC f4C70,X
         LDA f4C70,X
         STA f4C88,X
-;-------------------------------------------------------------------------
-; j54BA
-;-------------------------------------------------------------------------
+
 j54BA
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDA #$30
         STA a4ECC
-        JMP s5439
+        JMP IncrementColorValue
+        ; Returns
 
 currentColourControlEffect   .BYTE $00
+
 b54C6   CPY #$02
         BNE b54DD
         AND #$80
@@ -2696,11 +2713,11 @@ b54E7   INC f4C80,X
         JMP j54BA
 
 ;-------------------------------------------------------------------------
-; j54F3
+; MaybeAsteriskPressed
 ;-------------------------------------------------------------------------
-j54F3
+MaybeAsteriskPressed
         CMP #KEY_ASTERISK
-        BNE b5509
+        BNE MaybeShiftAsteriskPressed
         INC currentColourControlEffect
         LDA currentColourControlEffect
         AND #$03
@@ -2710,8 +2727,9 @@ j54F3
         TAX 
         JMP UpdateStatusLine
 
-b5509   CMP #KEY_SHIFT | KEY_ASTERISK
-        BNE b5530
+MaybeShiftAsteriskPressed   
+        CMP #KEY_SHIFT | KEY_ASTERISK
+        BNE MaybePPressed
 
         ; SHIFT-*=Colourflow resync
 ;-------------------------------------------------------------------------
@@ -2719,7 +2737,7 @@ b5509   CMP #KEY_SHIFT | KEY_ASTERISK
 ;-------------------------------------------------------------------------
 ColourFlowResync
         LDX #$00
-b550F   LDA f4C68,X
+b550F   LDA colorValuesOfSomeSort,X
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         LDA f4C80,X
         STA f4C90,X
@@ -2733,46 +2751,52 @@ b550F   LDA f4C68,X
         LDX #$1F
         JMP UpdateStatusLine
 
-b5530   PHA 
+MaybePPressed
+        PHA 
         AND #$3F
         CMP #KEY_P
-        BEQ b553B
+        BEQ MaybeShiftCtrlPressedWithP
+
         ; P=Pulse Speed variable key
         PLA 
-        JMP CheckMoreKeys
+        JMP MaybeXPressed
 
-b553B   PLA 
-        AND #$C0
-        BEQ b5564
-        CMP #$80
-        BEQ b5548
-        DEC INBUFF   ;INBUFF  
-        DEC INBUFF   ;INBUFF  
-b5548   INC INBUFF   ;INBUFF  
+MaybeShiftCtrlPressedWithP   
+        PLA 
+        AND #KEY_SHIFT | KEY_CTRL
+        BEQ ReturnFromThisKeyboardCheck
+        CMP #KEY_CTRL
+        BEQ CtrlPPressed
+
+        DEC pulseSpeed   ;pulseSpeed  
+        DEC pulseSpeed   ;pulseSpeed  
+CtrlPPressed   
+        INC pulseSpeed   ;pulseSpeed  
         BNE b554E
-        INC INBUFF   ;INBUFF  
-b554E   LDA INBUFF   ;INBUFF  
+        INC pulseSpeed   ;pulseSpeed  
+b554E   LDA pulseSpeed   ;pulseSpeed  
         AND #$0F
-        STA aF4
-        STA INBUFF   ;INBUFF  
-        STA somethingToDoWithSmoothingDelay
+        STA pulseSpeed2
+        STA pulseSpeed   ;pulseSpeed  
+        STA lastKeyPressed
         LDX #$20
 ;-------------------------------------------------------------------------
-; j555B
+; UpdateStatusLineAndReturn
 ;-------------------------------------------------------------------------
-j555B
+UpdateStatusLineAndReturn
         JSR UpdateStatusLine
         JSR WriteStatusLine
-        JMP j5452
+        JMP IncrementDisplayedValue
 
-b5564   RTS 
+ReturnFromThisKeyboardCheck
+        RTS 
 
 ;-------------------------------------------------------------------------
-; CheckMoreKeys
+; MaybeXPressed
 ;-------------------------------------------------------------------------
-CheckMoreKeys
+MaybeXPressed
         CMP #KEY_X
-        BNE b557D
+        BNE MaybeCKeyPressed
 
         ; X=Speed Boost adjust 
         INC speedBoostAdjust
@@ -2781,12 +2805,13 @@ CheckMoreKeys
         BNE b5573
         LDA #$01
 b5573   STA speedBoostAdjust
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$21
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
-b557D   CMP #KEY_C
-        BNE b559F
+MaybeCKeyPressed   
+        CMP #KEY_C
+        BNE MaybeVKeyPressed
 
         ; C=Cursor Speed adjust
         INC cursorSpeed
@@ -2797,12 +2822,13 @@ b557D   CMP #KEY_C
         INC cursorSpeed
 b5591   LDA cursorSpeed
         STA a4A1F
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$22
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
-b559F   CMP #KEY_V
-        BNE b55B3
+MaybeVKeyPressed   
+        CMP #KEY_V
+        BNE MaybeTKeyPressed
 
         ; V=Vector Mode on/off 
         LDA vectorMode
@@ -2815,8 +2841,9 @@ b559F   CMP #KEY_V
         TAX 
         JMP UpdateStatusLine
 
-b55B3   CMP #KEY_T
-        BNE b55C6
+MaybeTKeyPressed   
+        CMP #KEY_T
+        BNE MaybeDPressed
         ; T=Tracking on/off 
         LDA vectorMode
         EOR #$01
@@ -2827,12 +2854,13 @@ b55B3   CMP #KEY_T
         TAX 
         JMP UpdateStatusLine
 
-b55C6   PHA 
+MaybeDPressed   
+        PHA 
         AND #$3F
         CMP #KEY_D
         BEQ b55D1
         PLA 
-        JMP j55EB
+        JMP MaybeBPressed
 
         ; D=Smoothing Delay variable key 
 b55D1   PLA 
@@ -2844,18 +2872,19 @@ b55D1   PLA
         DEC smoothingDelay
 b55DE   INC smoothingDelay
         LDA smoothingDelay
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$27
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
 b55EA   RTS 
 
 ;-------------------------------------------------------------------------
-; j55EB
+; MaybeBPressed
 ;-------------------------------------------------------------------------
-j55EB
+MaybeBPressed
         CMP #KEY_B
-        BNE b5622
+        BNE MaybePresetKeysPressed
+
         ; B=Buffer Length adjust 
         LDA bufferLength
         CLC 
@@ -2864,14 +2893,14 @@ j55EB
         BNE b55FA
         LDA #$01
 b55FA   STA bufferLength
-        STA somethingToDoWithSmoothingDelay
-        JSR s5605
+        STA lastKeyPressed
+        JSR PropagateNewBufferLength
         JMP CheckPresetKeys
 
 ;-------------------------------------------------------------------------
-; s5605
+; PropagateNewBufferLength
 ;-------------------------------------------------------------------------
-s5605
+PropagateNewBufferLength
         LDA #$09
         STA aF8
         LDX bufferLength
@@ -2890,20 +2919,25 @@ b561C   RTS
 ;-------------------------------------------------------------------------
 CheckPresetKeys
         LDX #$28
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
-b5622   PHA 
+MaybePresetKeysPressed   
+        PHA 
         AND #$3F
+
         LDX #$00
 b5627   CMP presetKeys,X
-        BEQ b5635
+        BEQ PresetKeyPressed
         INX 
         CPX #$10
         BNE b5627
-        PLA 
-        JMP j578B
 
-b5635   PLA 
+        PLA 
+        JMP MaybeOKeyPressed
+
+        ; ESC,1,2,3,4,5,6,7,8,9,0, , ,DEL,-=,are preset keys
+PresetKeyPressed   
+        PLA 
         AND #$C0
         CMP #$40
         BEQ b564F
@@ -2911,16 +2945,16 @@ b5635   PLA
         BNE b5641
         RTS 
 
-b5641   STX somethingToDoWithSmoothingDelay
+b5641   STX lastKeyPressed
         STX selectedPreset
         JSR LoadPreset
         LDX #$29
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
-b564F   STX somethingToDoWithSmoothingDelay
-        JSR s568F
+b564F   STX lastKeyPressed
+        JSR StorePresetValues
         LDX #$2A
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
 presetKeys   .BYTE $1C,$1F,$1E,$1A,$18,$1D,$1B,$33
              .BYTE $35,$30,$32,$36,$37,$34,$0E,$0F
@@ -2951,50 +2985,52 @@ b568A   STA presetLoPtr
         RTS 
 
 ;-------------------------------------------------------------------------
-; s568F
+; StorePresetValues
 ;-------------------------------------------------------------------------
-s568F
+StorePresetValues
         JSR LoadSelectedPresetPointers
         LDA cursorSpeed
-        JSR s56EB
+        JSR StorePresetByte
         LDA vectorMode
-        JSR s56EB
+        JSR StorePresetByte
         LDA speedBoostAdjust
-        JSR s56EB
+        JSR StorePresetByte
         LDA currentPatternIndex
-        JSR s56EB
+        JSR StorePresetByte
         LDA verticalResolutionSPAC
-        JSR s56EB
-        LDA INBUFF   ;INBUFF  
-        JSR s56EB
-        LDA aF9
-        JSR s56EB
+        JSR StorePresetByte
+        LDA pulseSpeed   ;pulseSpeed  
+        JSR StorePresetByte
+        LDA currentPulseWidth
+        JSR StorePresetByte
         LDA smoothingDelay
-        JSR s56EB
+        JSR StorePresetByte
         LDA currentSymmetry
-        JSR s56EB
+        JSR StorePresetByte
         LDA screenMode
-        JSR s56EB
+        JSR StorePresetByte
         LDA bufferLength
-        JSR s56EB
-        LDA a4CF2
-        JSR s56EB
-        LDA a4EA2
-        JSR s56EB
+        JSR StorePresetByte
+        LDA stroboscopicsEnabled
+        JSR StorePresetByte
+        LDA stroboFlashRate
+        JSR StorePresetByte
+
         LDX #$00
-b56D9   LDA f4C68,X
-        JSR s56EB
+b56D9   LDA colorValuesOfSomeSort,X
+        JSR StorePresetByte
         INX 
         CPX #$21
         BNE b56D9
+
         LDA explosionMode
-        JSR s56EB
+        JSR StorePresetByte
         RTS 
 
 ;-------------------------------------------------------------------------
-; s56EB
+; StorePresetByte
 ;-------------------------------------------------------------------------
-s56EB
+StorePresetByte
         STA (presetLoPtr),Y
         INY 
         RTS 
@@ -3018,11 +3054,11 @@ LoadPreset
         JSR GetByteFromPreset
         STA verticalResolutionSPAC
         JSR GetByteFromPreset
-        STA INBUFF   ;INBUFF  
-        STA aF4
+        STA pulseSpeed   ;pulseSpeed  
+        STA pulseSpeed2
         JSR GetByteFromPreset
-        STA aF9
-        STA aFA
+        STA currentPulseWidth
+        STA currentPulseWidth2
         JSR GetByteFromPreset
         STA smoothingDelay
         JSR GetByteFromPreset
@@ -3032,22 +3068,25 @@ LoadPreset
         JSR GetByteFromPreset
         STA bufferLength
         JSR GetByteFromPreset
-        STA a4CF2
+        STA stroboscopicsEnabled
         LDA #$00
-        STA a4CF3
+        STA somethingToDoWithStrobo
         JSR GetByteFromPreset
-        STA a4EA2
+        STA stroboFlashRate
+
         LDX #$00
 b5748   JSR GetByteFromPreset
-        STA f4C68,X
+        STA colorValuesOfSomeSort,X
         INX 
         CPX #$21
         BNE b5748
+
         JSR GetByteFromPreset
         AND #$80
         STA explosionMode
+
         LDX #$00
-b575D   LDA f4C68,X
+b575D   LDA colorValuesOfSomeSort,X
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         LDA f4C70,X
         STA f4C88,X
@@ -3058,11 +3097,13 @@ b575D   LDA f4C68,X
         INX 
         CPX #$08
         BNE b575D
+
         LDA f4C70
         STA COLOR4   ;COLOR4  shadow for COLBK ($D01A)
         LDA #$01
         STA a4DDF
-        JMP s5605
+        JMP PropagateNewBufferLength
+        ;Returns
 
 ;-------------------------------------------------------------------------
 ; GetByteFromPreset
@@ -3073,16 +3114,17 @@ GetByteFromPreset
         RTS 
 
 ;-------------------------------------------------------------------------
-; j578B
+; MaybeOKeyPressed
 ;-------------------------------------------------------------------------
-j578B
+MaybeOKeyPressed
         PHA 
         AND #$3F
-        CMP #$08
+        CMP #KEY_O
         BEQ b5796
         PLA 
-        JMP j57B2
+        JMP MaybeCapsKeyPressed
 
+        ; O=Pulse Width variable key 
 b5796   PLA 
         AND #$C0
         BNE b579C
@@ -3090,21 +3132,21 @@ b5796   PLA
 
 b579C   CMP #$80
         BEQ b57A4
-        DEC aF9
-        DEC aF9
-b57A4   INC aF9
-        LDA aF9
-        STA aFA
-        STA somethingToDoWithSmoothingDelay
+        DEC currentPulseWidth
+        DEC currentPulseWidth
+b57A4   INC currentPulseWidth
+        LDA currentPulseWidth
+        STA currentPulseWidth2
+        STA lastKeyPressed
         LDX #$2B
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
 ;-------------------------------------------------------------------------
-; j57B2
+; MaybeCapsKeyPressed
 ;-------------------------------------------------------------------------
-j57B2
+MaybeCapsKeyPressed
         CMP #KEY_CAPSTOGGLE
-        BNE b57D0
+        BNE MaybeRKeyPressed
         ; CAPS=Preset Bank Select 
         INC selectedPresetBank
         LDA selectedPresetBank
@@ -3113,16 +3155,17 @@ j57B2
         LDA #$00
         STA selectedPresetBank
 b57C5   LDA selectedPresetBank
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$2C
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
-b57D0   PHA 
+MaybeRKeyPressed   
+        PHA 
         AND #$3F
         CMP #KEY_R
         BEQ b57DB
         PLA 
-        JMP ContinueCheckingKeys
+        JMP MaybeQKeyPressed
 
         ; R=Stop Record Mode/Begin Playback/Stop Playback CTRL
 b57DB   PLA 
@@ -3194,7 +3237,7 @@ b583F   LDA autoDemoEnabled
         CMP #$01
         BEQ b585A
         CMP #$00
-        BNE b5862
+        BNE DisableDemoMode
         LDA fA000
         CMP #$CC
         BNE b5852
@@ -3208,10 +3251,13 @@ b585A   LDY #$00
         LDA #$CC
         STA (generalLoPtr),Y
         STA (keyboardInputArray),Y
-b5862   LDX #$2F
+
+DisableDemoMode   
+        LDX #$2F
         LDA #$00
         STA autoDemoEnabled
         JMP UpdateStatusLine
+        ; Returns
 
 slothMode   .BYTE $0F
 a586D   .BYTE $00
@@ -3225,9 +3271,9 @@ s586E
         RTS 
 
 ;-------------------------------------------------------------------------
-; ContinueCheckingKeys
+; MaybeQKeyPressed
 ;-------------------------------------------------------------------------
-ContinueCheckingKeys
+MaybeQKeyPressed
         CMP #KEY_Q
         BNE MaybeJPressed
 
@@ -3256,7 +3302,7 @@ a58A4   .BYTE $00
 
 MaybeJPressed   
         CMP #KEY_J
-        BNE b58BE
+        BNE MaybeSemiColonPressed
 
         ; J=Dual Joystick mode off/on 
         LDA dualJoystickMode
@@ -3269,7 +3315,8 @@ b58B1   JSR s5C79
         LDX #$34
         JMP UpdateStatusLine
 
-b58BE   CMP #KEY_SEMICOLON
+MaybeSemiColonPressed   
+        CMP #KEY_SEMICOLON
         BNE MaybeUPressed
 
         ; ;=Select second user's lightform 
@@ -3284,9 +3331,9 @@ b58CE   STA secondUserLightform
         LDA secondUserLightform
         SEC 
         SBC #$08
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$35
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
 b58E3   LDX secondUserLightform
         JMP UpdateStatusLine
@@ -3295,7 +3342,7 @@ secondUserLightform   .BYTE $00
 
 MaybeUPressed   
         CMP #KEY_U
-        BNE b58FA
+        BNE JumpToMaybeAPressed
 
         ; U=Define User-Definable Lightform 
         LDA autoDemoEnabled
@@ -3305,7 +3352,8 @@ MaybeUPressed
         BNE ClearDownCurrentPattern
 b58F9   RTS 
 
-b58FA   JMP j5967
+JumpToMaybeAPressed   
+        JMP MaybeAPressed
 
 beginDrawingForeground   .BYTE $00
 ;-------------------------------------------------------------------------
@@ -3355,7 +3403,7 @@ b592E   CMP #$0C
 b5946   LDA #$3A
         SEC 
         SBC a5966
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$36
         JSR UpdateStatusLine
         JSR WriteStatusLine
@@ -3366,15 +3414,15 @@ b5946   LDA #$3A
         ADC #$10
         LDY #$07
         STA (presetLoPtr),Y
-        JMP j5452
+        JMP IncrementDisplayedValue
 
 a5966   .BYTE $00
 ;-------------------------------------------------------------------------
-; j5967
+; MaybeAPressed
 ;-------------------------------------------------------------------------
-j5967
+MaybeAPressed
         CMP #KEY_A
-        BNE EvenMoreKeyChecking
+        BNE MaybeShiftFPressed
 
         ; A=Auto Demo on/off 
         LDA autoDemoEnabled
@@ -3384,14 +3432,15 @@ j5967
         JSR EnableDemoMode
         LDX #$37
         JMP UpdateStatusLine
+        ;Returns
 
-b597D   JMP b5862
+b597D   JMP DisableDemoMode
 
 ;-------------------------------------------------------------------------
 ; j5980
 ;-------------------------------------------------------------------------
 j5980
-        CMP #$21
+        CMP #KEY_SPACE
         BNE b5996
         INC a5ED4
         LDA a5ED4
@@ -3401,7 +3450,7 @@ j5980
 b5990   STA a5ED4
         JMP j59A0
 
-b5996   CMP #$0C
+b5996   CMP #KEY_RETURN
         BNE b59B1
         LDA #$03
         STA a5F45
@@ -3411,13 +3460,13 @@ b5996   CMP #$0C
 ; j59A0
 ;-------------------------------------------------------------------------
 j59A0
-        LDX #KEY_F
+        LDX #$38
         LDA a5ED4
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDA aC4
         CMP #$13
         BEQ b59D3
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
 b59B1   CMP #$34
         BNE j59A0
@@ -3425,15 +3474,15 @@ b59B1   CMP #$34
         STA a5F45
         RTS 
 
-EvenMoreKeyChecking   
+MaybeShiftFPressed   
         CMP #KEY_SHIFT | KEY_F
-        BNE b59F9
+        BNE MaybeShiftGPressed
 
         ; SHIFT-F=Begin drawing on foreground screen 
         LDY a4DDF
-        BNE b59F9
+        BNE MaybeShiftGPressed
         LDY autoDemoEnabled
-        BNE b59F9
+        BNE MaybeShiftGPressed
         LDA #$02
         STA beginDrawingForeground
         LDX #$38
@@ -3442,7 +3491,7 @@ EvenMoreKeyChecking
 b59D3   LDA aC3
         AND #$80
         BNE b59DC
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
 b59DC   LDX #$39
         JSR UpdateStatusLine
@@ -3455,11 +3504,12 @@ b59DC   LDX #$39
         LDA #$00
         SEC 
         SBC aC3
-        STA somethingToDoWithSmoothingDelay
-        JMP j5452
+        STA lastKeyPressed
+        JMP IncrementDisplayedValue
 
-b59F9   CMP #KEY_SHIFT | KEY_G
-        BNE b5A1C
+MaybeShiftGPressed   
+        CMP #KEY_SHIFT | KEY_G
+        BNE MaybeGPressed
 
         ; SHIFT-G=Change symmetry of foreground graphics plot 
         INC symmetryForeground
@@ -3478,8 +3528,9 @@ b5A09   STA symmetryForeground
 b5A17   LDX #$3E
         JMP UpdateStatusLine
 
-b5A1C   CMP #KEY_G
-        BNE b5A38
+MaybeGPressed   
+        CMP #KEY_G
+        BNE MaybeWPressed
 
         ; G=Draw foreground graphics at current cursor position 
         LDA pixelXPosition
@@ -3494,8 +3545,9 @@ b5A1C   CMP #KEY_G
         STA textOutputControl
         RTS 
 
-b5A38   CMP #KEY_W
-        BNE b5A46
+MaybeWPressed   
+        CMP #KEY_W
+        BNE MaybeFPressed
         LDA #$01
         STA textOutputControl
         RTS 
@@ -3505,8 +3557,9 @@ drawForegroundAtXPos   .BYTE $00
 drawForegroundAtYPos   .BYTE $00
 textOutputControl   .BYTE $02
 
-b5A46   CMP #KEY_F
-        BNE b5A58
+MaybeFPressed   
+        CMP #KEY_F
+        BNE MaybeHPressed
 
         ; F=Draw foreground graphics in original place 
         LDA #$02
@@ -3516,14 +3569,15 @@ b5A46   CMP #KEY_F
         STA drawForegroundAtYPos
         RTS 
 
-b5A58   PHA 
+MaybeHPressed   
+        PHA 
         AND #$3F
         CMP #KEY_H
         BEQ b5A63
         PLA 
-        JMP j5A99
+        JMP MaybeYPressed
 
-; H,C,V,B,N,M,[=Individual colour Variable Keys 
+        ; H,C,V,B,N,M,[=Individual colour Variable Keys 
 b5A63   LDA #$00
         LDY currentColourControlEffect
         BEQ b5A70
@@ -3538,7 +3592,7 @@ b5A70   TAX
         INX 
         LDY #$07
 b5A79   LDA #$00
-        STA f4C68,X
+        STA colorValuesOfSomeSort,X
         INX 
         DEY 
         BNE b5A79
@@ -3546,21 +3600,19 @@ b5A79   LDA #$00
 
 b5A85   LDY #$07
         INX 
-b5A88   LDA f4C68,X
+b5A88   LDA colorValuesOfSomeSort,X
         CLC 
         ADC a5AC0
-        STA f4C68,X
+        STA colorValuesOfSomeSort,X
         INX 
         DEY 
         BNE b5A88
         JMP ColourFlowResync
 
-;-------------------------------------------------------------------------
-; j5A99
-;-------------------------------------------------------------------------
-j5A99
+MaybeYPressed
         CMP #KEY_Y
-        BNE b5AC1
+        BNE MaybeCtrlJPressed
+
         ; Y=enable/disable status line
         LDA disableStatusLine
         BNE b5AB2
@@ -3581,26 +3633,29 @@ b5AB2   LDA #$00
 disableStatusLine   .BYTE $00
 a5AC0   .BYTE $10
 
-b5AC1   CMP #KEY_CTRL | KEY_J
-        BNE EvenMoreKeyCheckingJ
+MaybeCtrlJPressed   
+        CMP #KEY_CTRL | KEY_J
+        BNE MaybeShiftJPressed
         .BYTE $EE,$C0,$5A
 ;-------------------------------------------------------------------------
 ; j5AC8
 ;-------------------------------------------------------------------------
 j5AC8
         LDA a5AC0
-        STA somethingToDoWithSmoothingDelay
+        STA lastKeyPressed
         LDX #$3B
-        JMP j555B
+        JMP UpdateStatusLineAndReturn
 
-EvenMoreKeyCheckingJ
+MaybeShiftJPressed
         CMP #KEY_SHIFT | KEY_J
-        BNE b5ADD
+        BNE MaybeEKeyPressed
         DEC a5AC0
         JMP j5AC8
 
-b5ADD   CMP #KEY_E
-        BNE b5AF7
+MaybeEKeyPressed   
+        CMP #KEY_E
+        BNE MaybeCtrlQPressed
+
         ; E=Explosion mode on/off 
         LDA explosionMode
         EOR #$80
@@ -3613,43 +3668,51 @@ b5ADD   CMP #KEY_E
 b5AF2   LDX #$3D
         JMP UpdateStatusLine
 
-b5AF7   LDY beginDrawingForeground
+MaybeCtrlQPressed   
+        LDY beginDrawingForeground
         BNE b5B0A
         LDY autoDemoEnabled
         BNE b5B0A
 
         CMP #KEY_CTRL | KEY_Q
-        BNE b5B0B
+        BNE MaybeCtrlWPressed
 
         ; CTRL -Q=Start parameter save 
         LDA #$03
         STA textOutputControl
 b5B0A   RTS 
 
-b5B0B   CMP #KEY_CTRL | KEY_W
-        BNE b5B15
+MaybeCtrlWPressed   
+        CMP #KEY_CTRL | KEY_W
+        BNE MaybeCtrlAPressed
         ; CTRL -W=Start parameter load 
         LDA #$04
         STA textOutputControl
         RTS 
 
-b5B15   CMP #KEY_CTRL | KEY_A
-        BNE b5B1F
+MaybeCtrlAPressed   
+        CMP #KEY_CTRL | KEY_A
+        BNE MaybeCtrlSPressed
 
         ; CTRL -A=Start dynamics save 
         LDA #$05
         STA textOutputControl
         RTS 
 
-b5B1F   CMP #KEY_CTRL | KEY_S
-        BNE b5B29
+MaybeCtrlSPressed   
+        CMP #KEY_CTRL | KEY_S
+        BNE MaybeShiftCtrlCapsLockPressed
+
         ; CTRL -S=Start dynamics load 
         LDA #$06
         STA textOutputControl
-b5B28   RTS 
+ReturnFromKeyboardCheck   
+        RTS 
 
-b5B29   CMP #$FC
-        BNE b5B28
+MaybeShiftCtrlCapsLockPressed   
+        CMP #KEY_CTRL | KEY_SHIFT | KEY_CAPSTOGGLE
+        BNE ReturnFromKeyboardCheck
+        ; Show Credits
         JMP WriteCreditsText
 
 ;-------------------------------------------------------------------------
@@ -3683,14 +3746,14 @@ b5B65   RTS
 
 autoDemoEnabled   .BYTE $03
 ;-------------------------------------------------------------------------
-; MaybeGetKeyboardInput
+; GetInputForDemo
 ;-------------------------------------------------------------------------
-MaybeGetKeyboardInput
+GetInputForDemo
         LDA autoDemoEnabled
         BEQ b5B65
         CMP #$01
         BEQ b5B73
-        JMP j5C0D
+        JMP GetRandomKeyboardInput
 
 b5B73   LDY #$00
         LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
@@ -3712,13 +3775,14 @@ b5B81   TAX
         STA generalHiPtr
         CMP #$B0
         BNE b5B9C
-b5B99   JMP b5862
+b5B99   JMP DisableDemoMode
 
 b5B9C   TXA 
         LDY #$00
         STA (generalLoPtr),Y
         LDA #$01
         STA a4C67
+
 ;-------------------------------------------------------------------------
 ; GetKeyboardInput
 ;-------------------------------------------------------------------------
@@ -3777,12 +3841,12 @@ s5BD8
         RTS 
 
 ;-------------------------------------------------------------------------
-; j5C0D
+; GetRandomKeyboardInput
 ;-------------------------------------------------------------------------
-j5C0D
+GetRandomKeyboardInput
         CMP #$03
         BNE b5C14
-        JMP j5DBD
+        JMP GetRandomJoytstickMovement
 
 b5C14   DEC a4C66
         BNE b5C39
@@ -4025,9 +4089,9 @@ b5DB7   LDA #$00
 
 a5DBC   .BYTE $00
 ;-------------------------------------------------------------------------
-; j5DBD
+; GetRandomJoytstickMovement
 ;-------------------------------------------------------------------------
-j5DBD
+GetRandomJoytstickMovement
         LDA a5E1C
         BEQ b5DCD
         DEC a5E1C
@@ -4049,6 +4113,7 @@ b5DCD   LDA a5E1E
         STA a5E20
         DEC a5E1E
         BNE j5E2A
+
 ;-------------------------------------------------------------------------
 ; EnableDemoMode
 ;-------------------------------------------------------------------------

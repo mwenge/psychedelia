@@ -325,17 +325,17 @@ j2C33
 ; j2C3B
 ;-------------------------------------------------------------------------
 j2C3B
-        LDA wipeForegroundGraphics
+        LDA textOutputControl
         CMP #$02
         BEQ b2C57
         CMP #$01
         BEQ b2C49
-        JMP j2DA9
+        JMP SomeKindOfIO
 
 b2C49   JSR s4815
-        JSR s4225
+        JSR CreateLinePtrArray2
         LDA #$00
-        STA wipeForegroundGraphics
+        STA textOutputControl
         JMP MainGameLoop
 
 b2C57   LDA #$10
@@ -350,7 +350,7 @@ b2C65   LDY #$00
         CMP #$FF
         BNE b2C76
 b2C6D   LDA #$00
-        STA wipeForegroundGraphics
+        STA textOutputControl
         CLI 
         JMP MainGameLoop
 
@@ -507,8 +507,8 @@ s2D79
         LDX #$20
         JSR CIOV     ;$E456 (jmp) CIOV
         LDA #$00
-        STA wipeForegroundGraphics
-        JMP j2E91
+        STA textOutputControl
+        JMP ClearLoadSaveText
 
 ;-------------------------------------------------------------------------
 ; s2D8B
@@ -526,21 +526,21 @@ s2D8B
         STA ICAX2
         LDX #$20
         JMP CIOV     ;$E456 (jmp) CIOV
+        ;Returns
 
+PUT_CHARACTER = $0B
 ;-------------------------------------------------------------------------
-; j2DA9
+; SomeKindOfIO
 ;-------------------------------------------------------------------------
-j2DA9
-        JSR s2E6D
-        LDA wipeForegroundGraphics
+SomeKindOfIO
+        JSR UpdateLoadSaveText
+        LDA textOutputControl
         CMP #$03
         BNE b2DDA
         JSR s2D5B
-        LDA #$0B
+        LDA #PUT_CHARACTER
         STA ICCOM
-;-------------------------------------------------------------------------
-; j2DBB
-;-------------------------------------------------------------------------
+
 j2DBB
         LDA #<p1000
         STA ICBAL
@@ -565,18 +565,17 @@ b2DDA   CMP #$04
 b2DE9   CMP #$05
         BNE b2E12
         JSR s2D5B
-        LDA #$0B
+        LDA #PUT_CHARACTER
         STA ICCOM
-;-------------------------------------------------------------------------
-; j2DF5
-;-------------------------------------------------------------------------
+
+a20A0 = $20A0
 j2DF5
         LDA #$00
         STA ICBAL
         STA ICBLL
-        LDA #$A0
+        LDA #<a20A0
         STA ICBAH
-        LDA #$20
+        LDA #>a20A0
         STA ICBLH
         LDX #$20
         JSR CIOV     ;$E456 (jmp) CIOV
@@ -588,22 +587,20 @@ b2E12   JSR s2D8B
         STA ICCOM
         JMP j2DF5
 
-f2E1D   .BYTE $30,$21,$32,$21,$2D,$25,$34,$25
-        .BYTE $32
-a2E26   .BYTE $00,$33,$21,$36,$25,$00,$2D,$2F
-        .BYTE $24,$25,$00,$30,$21,$32,$21,$2D
-        .BYTE $25,$34,$25,$32,$00,$2C,$2F,$21
-        .BYTE $24,$00,$2D,$2F,$24,$25,$00,$24
-        .BYTE $39,$2E,$21,$2D,$29,$23,$33,$00
-        .BYTE $33,$21,$36,$25,$00,$2D,$2F,$24
-        .BYTE $25,$00,$00,$24,$39,$2E,$21,$2D
-        .BYTE $29,$23,$33,$00,$2C,$2F,$21,$24
-        .BYTE $00,$2D,$2F,$24,$25,$00,$00
+.enc "atascii"
+parameterSaveLoadText
+        .TEXT 'PARAMETER'
+a2E26
+        .TEXT ' SAVE MODE PARAMETER'
+        .TEXT ' LOAD MODE DYNAMICS '
+        .TEXT 'SAVE MODE  DYNAMICS '
+        .TEXT 'LOAD MODE  '
+.enc "none"
 ;-------------------------------------------------------------------------
-; s2E6D
+; UpdateLoadSaveText
 ;-------------------------------------------------------------------------
-s2E6D
-        LDA wipeForegroundGraphics
+UpdateLoadSaveText
+        LDA textOutputControl
         SEC 
         SBC #$03
         BEQ b2E7E
@@ -615,7 +612,7 @@ b2E78   CLC
         BNE b2E78
 b2E7E   TAX 
         LDY #$00
-b2E81   LDA f2E1D,X
+b2E81   LDA parameterSaveLoadText,X
         STA f4ED1,Y
         STA f4EE5,Y
         INX 
@@ -625,9 +622,9 @@ b2E81   LDA f2E1D,X
         RTS 
 
 ;-------------------------------------------------------------------------
-; j2E91
+; ClearLoadSaveText
 ;-------------------------------------------------------------------------
-j2E91
+ClearLoadSaveText
         LDX #$00
         LDA a2E26
 b2E96   STA f4ED1,X
@@ -641,12 +638,12 @@ b2E96   STA f4ED1,X
         .BYTE $55,$55,$55,$55,$55,$55,$55,$10
         .BYTE $10,$13,$A2,$00
 ;-------------------------------------------------------------------------
-; j2EB6
+; WriteCreditsText
 ;-------------------------------------------------------------------------
-j2EB6
+WriteCreditsText
         LDX #$00
 b2EB8   LDY a2ED8
-        LDA f2ED9,Y
+        LDA creditsText,Y
         STA f4ED1,X
         STA f4EE5,X
         INX 
@@ -654,44 +651,33 @@ b2EB8   LDY a2ED8
         CPX #$14
         BNE b2EB8
         INY 
-        LDA f2ED9,Y
+        LDA creditsText,Y
         BNE b2ED7
         LDA #$00
         STA a2ED8
 b2ED7   RTS 
 
 a2ED8   .BYTE $00
-f2ED9   .BYTE $23,$2F,$2C,$2F,$35,$32,$33,$30
-        .BYTE $21,$23,$25,$00,$37,$21,$33,$00
-        .BYTE $2D,$21,$24,$25,$22,$39,$00,$39
-        .BYTE $21,$2B,$00,$34,$28,$25,$00,$28
-        .BYTE $21,$29,$32,$39,$00,$00,$00,$00
-        .BYTE $29,$2E,$00,$2D,$21,$32,$0F,$21
-        .BYTE $30,$32,$00,$11,$19,$18,$15,$0E
-        .BYTE $0E,$0E,$0E,$00,$29,$00,$32,$25
-        .BYTE $23,$2F,$2D,$2D,$25,$2E,$24,$00
-        .BYTE $2C,$21,$32,$27,$25,$00,$00,$00
-        .BYTE $21,$2D,$2F,$35,$2E,$34,$33,$00
-        .BYTE $2F,$26,$00,$26,$2C,$2F,$39,$24
-        .BYTE $0C,$00,$00,$00,$27,$25,$2E,$25
-        .BYTE $33,$29,$33,$00,$21,$2E,$24,$00
+
+.enc "atascii"
+creditsText   
+        .TEXT 'COLOURSPACE WAS MADE'
+        .TEXT 'BY YAK THE HAIRY    '
+        .TEXT 'IN MAR/APR 1985.... '
+        .TEXT 'I RECOMMEND LARGE   '
+        .TEXT 'AMOUNTS OF FLOYD,   '
+        .TEXT 'GENESIS AND '
         .BYTE $B3,$B4,$A5,$B6,$A5,$80,$80,$80
         .BYTE $A8,$A9,$AC,$AC,$A1,$A7,$A5,$00
-        .BYTE $34,$2F,$00,$27,$2F,$00,$37,$29
-        .BYTE $34,$28,$00,$00,$34,$28,$25,$00
-        .BYTE $3A,$21,$32,$2A,$21,$3A,$00,$24
-        .BYTE $29,$33,$30,$2C,$21,$39,$33,$0E
-        .BYTE $33,$30,$25,$23,$29,$21,$2C,$00
-        .BYTE $34,$28,$21,$2E,$38,$38,$00,$34
-        .BYTE $2F,$1A,$00,$00,$32,$29,$23,$28
-        .BYTE $29,$25,$0C,$00,$32,$2F,$2E,$2E
-        .BYTE $29,$25,$0C,$00,$00,$00,$00,$00
-        .BYTE $32,$2F,$27,$0C,$00,$24,$21,$36
-        .BYTE $25,$0C,$00,$33,$34,$25,$36,$25
-        .BYTE $00,$25,$34,$23,$21,$2E,$24,$00
-        .BYTE $21,$2C,$33,$2F,$00,$34,$28,$25
-        .BYTE $00,$33,$2C,$2F,$34,$28,$33,$00
-        .BYTE $00
+
+        .TEXT 'TO GO WITH  THE ZARJ'
+        .TEXT 'AZ DISPLAYS.SPECIAL '
+        .TEXT 'THANXX TO:  RICHIE, '
+        .TEXT 'RONNIE,     ROG, DAV'
+        .TEXT 'E, STEVE ETCAND ALSO'
+        .TEXT ' THE SLOTHS  '
+.enc "none"
+
 a2FCA   .BYTE $00,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
@@ -699,7 +685,9 @@ a2FCA   .BYTE $00,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55
-possibleDisplayLists   .BYTE $01,$01,$01,$01,$05,$00,$00,$10
+
+possibleDisplayLists
+        .BYTE $01,$01,$01,$01,$05,$00,$00,$10
         .BYTE $01,$00,$40,$00,$02,$00,$18,$38
         .BYTE $58,$78,$98,$B8,$D8,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$01,$01,$01
@@ -1241,17 +1229,17 @@ b402A   LDA a4019
         CMP #$1C
         BNE b400A
 
-b4032   JSR s415E
-        JSR s4225
+b4032   JSR CreateLinePtrArray1
+        JSR CreateLinePtrArray2
         JSR s4257
         JMP j40F3
 
         .BYTE $00
 a403F   .BYTE $00
 ;-------------------------------------------------------------------------
-; s4040
+; LooksLikeWritingToScreen
 ;-------------------------------------------------------------------------
-s4040
+LooksLikeWritingToScreen
         LDA #>$8000
         STA aC1
         LDA #<$8000
@@ -1266,27 +1254,27 @@ s4040
         LDY #$00
         STY bottomMostYPos
         LDA #$70
-        JSR s40EA
-        JSR s40EA
+        JSR WriteValueToDisplayList
+        JSR WriteValueToDisplayList
         LDA #$46
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA a8003
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA p8004
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA #$90
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA screenMode
         BEQ b4082
         JMP j4AC0
 
 b4082   LDX verticalResolutionSPAC
 b4084   LDA #$4F
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA aC3
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA aC4
-        JSR s40EA
+        JSR WriteValueToDisplayList
         DEX 
         BNE b4084
         LDA aC3
@@ -1299,16 +1287,14 @@ b4084   LDA #$4F
         INC bottomMostYPos
         DEC a403F
         BNE b4082
-;-------------------------------------------------------------------------
-; j40AA
-;-------------------------------------------------------------------------
+
 j40AA
         LDA #$41
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA #$00
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA #$80
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA #<p00
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
         LDA #>p00
@@ -1325,9 +1311,7 @@ j40AA
 b40D7   LDA bottomMostYPos
         CMP pixelYPosition
         BPL b40E9
-;-------------------------------------------------------------------------
-; j40DD
-;-------------------------------------------------------------------------
+
 j40DD
         LDX pixelYPosition
         STX storedPixelYPosition
@@ -1338,9 +1322,9 @@ j40DD
 b40E9   RTS 
 
 ;-------------------------------------------------------------------------
-; s40EA
+; WriteValueToDisplayList
 ;-------------------------------------------------------------------------
-s40EA
+WriteValueToDisplayList
         STA (aC0),Y
         INC aC0
         BNE b40F2
@@ -1377,7 +1361,7 @@ j40F3
         STA FR2
         STA aF9
         STA aFA
-        STA wipeForegroundGraphics
+        STA textOutputControl
         LDA #$FF
         STA aDF
         LDA #$01
@@ -1398,13 +1382,13 @@ j40F3
         STA bottomMostYPos
         LDA #$05
         STA verticalResolutionSPAC
-        JSR s4040
+        JSR LooksLikeWritingToScreen
         JMP MainGameLoop
 
 ;-------------------------------------------------------------------------
-; s415E
+; CreateLinePtrArray1
 ;-------------------------------------------------------------------------
-s415E
+CreateLinePtrArray1
         LDA #<a7000
         STA aC3
         LDA #>a7000
@@ -1517,9 +1501,9 @@ f4212   .BYTE $00,$B4,$5A,$3C,$2D,$24,$1E,$19
         .BYTE $16,$14,$12,$10,$0F,$0E,$0D,$0C
         .BYTE $0B,$0B,$0A
 ;-------------------------------------------------------------------------
-; s4225
+; CreateLinePtrArray2
 ;-------------------------------------------------------------------------
-s4225
+CreateLinePtrArray2
         LDX #$00
 b4227   LDA $7E10,X
         STA aC0
@@ -2144,7 +2128,7 @@ b483E   LDA beginDrawingForeground
         BEQ b4846
         JMP j5D1F
 
-b4846   LDA wipeForegroundGraphics
+b4846   LDA textOutputControl
         BEQ b484E
         JMP j2C3B
 
@@ -2181,7 +2165,7 @@ GoBackToStartOfLoop
         BEQ MainGameLoop
         LDA #$00
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
-        JSR s4040
+        JSR LooksLikeWritingToScreen
         LDA #$00
         STA a4DDF
         JMP MainGameLoop
@@ -2450,11 +2434,11 @@ b4ADE   JSR s4AF8
 ;-------------------------------------------------------------------------
 s4AF8
         LDA #$4F
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA aC3
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA aC4
-        JSR s40EA
+        JSR WriteValueToDisplayList
         RTS 
 
 screenMode   .BYTE $02
@@ -2633,11 +2617,11 @@ b4C21   LDA aC3
         LDX #$5A
 b4C30   JSR s4AF8
         LDA #$4F
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA aEB
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA FPCOC
-        JSR s40EA
+        JSR WriteValueToDisplayList
         LDA aC3
         CLC 
         ADC #$28
@@ -2790,10 +2774,8 @@ b4D6E   LDA a4F4C
         BNE b4D87
         LDA disableStatusLine
         BEQ b4D88
-;-------------------------------------------------------------------------
-; ProcessKeyboardInput
-;-------------------------------------------------------------------------
-ProcessKeyboardInput
+
+RepointTextMaybe
         LDA #<f4ED1
         STA a8003
         LDA #>f4ED1
@@ -2854,6 +2836,7 @@ b4DCF   STA screenMode
 a4DDF   .BYTE $00
 b4DE0   CMP #KEY_Z
         BNE b4DF4
+
         ; Z/SHIFT - Z=Vary Vertical Resolution SPAC
         INC verticalResolutionSPAC
         LDA verticalResolutionSPAC
@@ -3033,168 +3016,81 @@ b4F38   LDA statusLineTextLoByte
         STA a4F4C
         RTS 
 
+.enc "atascii"  ;define an ascii->atascii encoding
+        .cdef " Z", $00
+.enc "none"
+
 statusLineTextLoByte   .BYTE $01
 statusLineTextHiByte   .BYTE $01
 a4F4C   .BYTE $14
+
+.enc "atascii" 
 statusLineText
-        .BYTE $34,$28,$25,$00,$34,$37,$29,$33
-        .BYTE $34,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$34,$28,$25,$00
-        .BYTE $33,$2D,$2F,$2F,$34,$28,$00,$23
-        .BYTE $32,$2F,$33,$33,$26,$2C,$2F,$37
-        .BYTE $34,$28,$25,$00,$24,$25,$2E,$34
-        .BYTE $35,$32,$25,$33,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$24,$25,$2C,$34
-        .BYTE $2F,$29,$24,$33,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $30,$35,$2C,$33,$21,$32,$00,$23
-        .BYTE $32,$2F,$33,$33,$25,$33,$00,$00
-        .BYTE $00,$00,$00,$00,$33,$2C,$2F,$34
-        .BYTE $28,$26,$35,$2C,$00,$2D,$35,$2C
-        .BYTE $34,$29,$23,$32,$2F,$33,$33,$00
-        .BYTE $23,$32,$2F,$33,$33,$0D,$21,$2E
-        .BYTE $24,$0D,$21,$0D,$22,$29,$34,$00
-        .BYTE $00,$00,$00,$00,$33,$34,$21,$32
-        .BYTE $12,$0D,$33,$2D,$21,$2C,$2C,$00
-        .BYTE $21,$2E,$24,$00,$26,$21,$33,$34
-        .BYTE $2E,$2F,$00,$33,$39,$2D,$2D,$25
-        .BYTE $34,$32,$39,$00,$21,$34,$00,$21
-        .BYTE $2C,$2C,$00,$00,$22,$35,$27,$27
-        .BYTE $25,$32,$00,$2F,$26,$26,$0C,$00
-        .BYTE $2E,$2F,$33,$25,$39,$01,$01,$00
-        .BYTE $38,$0D,$39,$00,$33,$39,$2D,$2D
-        .BYTE $25,$34,$32,$39,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$38,$0D,$21,$38
-        .BYTE $29,$33,$00,$33,$39,$2D,$2D,$25
-        .BYTE $34,$32,$39,$00,$00,$00,$00,$00
-        .BYTE $31,$35,$21,$24,$00,$2D,$2F,$24
-        .BYTE $25,$00,$33,$39,$2D,$2D,$25,$34
-        .BYTE $32,$39,$00,$00,$36,$21,$32,$29
-        .BYTE $21,$22,$2C,$25,$00,$32,$25,$33
-        .BYTE $2F,$2C,$35,$34,$29,$2F,$2E,$00
-        .BYTE $28,$29,$32,$25,$33,$00,$0B,$00
-        .BYTE $28,$21,$32,$24,$00,$32,$25,$26
-        .BYTE $2C,$25,$23,$34,$23,$35,$32,$36
-        .BYTE $25,$24,$00,$23,$2F,$2C,$2F,$35
-        .BYTE $32,$33,$30,$21,$23,$25,$00,$11
-        .BYTE $23,$35,$32,$36,$25,$24,$00,$23
-        .BYTE $2F,$2C,$2F,$35,$32,$33,$30,$21
-        .BYTE $23,$25,$00,$12,$23,$35,$32,$36
-        .BYTE $25,$00,$0B,$00,$28,$21,$32,$24
-        .BYTE $00,$32,$25,$26,$2C,$25,$23,$34
-        .BYTE $28,$2F,$2F,$30,$39,$00,$14,$38
-        .BYTE $00,$23,$35,$32,$36,$39,$32,$25
-        .BYTE $26,$2C,$25,$38,$3A,$21,$32,$2A
-        .BYTE $21,$3A,$00,$29,$2E,$34,$25,$32
-        .BYTE $2C,$21,$23,$25,$00,$32,$25,$33
-        .BYTE $33,$34,$32,$2F,$22,$2F,$33,$23
-        .BYTE $2F,$30,$29,$23,$33,$00,$2F,$2E
-        .BYTE $00,$00,$00,$00,$33,$34,$32,$2F
-        .BYTE $22,$2F,$33,$23,$2F,$30,$29,$23
-        .BYTE $33,$00,$2F,$26,$26,$00,$00,$00
-        .BYTE $33,$34,$32,$2F,$22,$2F,$00,$3A
-        .BYTE $21,$30,$00,$32,$21,$34,$25,$00
-        .BYTE $00,$10,$10,$10,$22,$21,$33,$25
-        .BYTE $00,$23,$2F,$2C,$2F,$35,$32,$00
-        .BYTE $03,$10,$00,$00,$00,$10,$10,$10
-        .BYTE $2F,$2F,$3A,$25,$00,$00,$32,$21
-        .BYTE $34,$25,$00,$00,$03,$10,$00,$00
-        .BYTE $00,$10,$10,$10,$2F,$2F,$3A,$25
-        .BYTE $00,$00,$33,$34,$25,$30,$00,$00
-        .BYTE $03,$10,$00,$00,$00,$10,$10,$10
-        .BYTE $2F,$2F,$3A,$25,$00,$23,$39,$23
-        .BYTE $2C,$25,$00,$00,$03,$10,$00,$00
-        .BYTE $00,$10,$10,$10,$23,$0E,$2B,$25
-        .BYTE $39,$33,$1A,$00,$00,$00,$00,$00
-        .BYTE $00,$23,$2F,$2C,$2F,$35,$32,$33
-        .BYTE $23,$0E,$2B,$25,$39,$33,$1A,$00
-        .BYTE $00,$00,$2F,$2F,$3A,$25,$00,$32
-        .BYTE $21,$34,$25,$33,$23,$0E,$2B,$25
-        .BYTE $39,$33,$1A,$00,$00,$00,$2F,$2F
-        .BYTE $3A,$25,$00,$33,$34,$25,$30,$33
-        .BYTE $23,$0E,$2B,$25,$39,$33,$1A,$00
-        .BYTE $00,$2F,$2F,$3A,$25,$00,$23,$39
-        .BYTE $23,$2C,$25,$33,$23,$2F,$2C,$2F
-        .BYTE $35,$32,$26,$2C,$2F,$37,$00,$32
-        .BYTE $25,$33,$39,$2E,$23,$28,$25,$24
-        .BYTE $30,$35,$2C,$33,$25,$00,$26,$2C
-        .BYTE $2F,$37,$00,$32,$21,$34,$25,$1A
-        .BYTE $00,$10,$10,$10,$33,$30,$25,$25
-        .BYTE $24,$00,$22,$2F,$2F,$33,$34,$1A
-        .BYTE $00,$00,$00,$00,$00,$10,$10,$10
-        .BYTE $23,$35,$32,$33,$2F,$32,$00,$33
-        .BYTE $30,$25,$25,$24,$1A,$00,$00,$00
-        .BYTE $00,$10,$10,$10,$18,$0D,$37,$21
-        .BYTE $39,$00,$2D,$2F,$24,$25,$00,$25
-        .BYTE $2E,$27,$21,$27,$25,$24,$00,$00
-        .BYTE $36,$25,$23,$34,$2F,$32,$00,$2D
-        .BYTE $2F,$24,$25,$00,$25,$2E,$27,$21
-        .BYTE $27,$25,$24,$00,$2C,$2F,$27,$29
-        .BYTE $23,$00,$34,$32,$21,$23,$2B,$29
-        .BYTE $2E,$27,$00,$2F,$26,$26,$00,$00
-        .BYTE $2C,$2F,$27,$29,$23,$00,$34,$32
-        .BYTE $21,$23,$2B,$29,$2E,$27,$00,$2F
-        .BYTE $2E,$00,$00,$00,$33,$2D,$2F,$2F
-        .BYTE $34,$28,$29,$2E,$27,$00,$24,$25
-        .BYTE $2C,$21,$39,$1A,$00,$10,$10,$10
-        .BYTE $22,$35,$26,$26,$25,$32,$00,$2C
-        .BYTE $25,$2E,$27,$34,$28,$1A,$00,$00
-        .BYTE $00,$10,$10,$10,$32,$35,$2E,$2E
-        .BYTE $29,$2E,$27,$00,$30,$32,$25,$33
-        .BYTE $25,$34,$00,$03,$00,$10,$10,$10
-        .BYTE $33,$34,$21,$33,$28,$29,$2E,$27
-        .BYTE $00,$30,$32,$25,$33,$25,$34,$03
-        .BYTE $00,$10,$10,$10,$30,$35,$2C,$33
-        .BYTE $25,$00,$37,$29,$24,$34,$28,$1A
-        .BYTE $00,$00,$00,$00,$00,$10,$10,$10
-        .BYTE $32,$35,$2E,$00,$30,$32,$25,$33
-        .BYTE $25,$34,$00,$22,$21,$2E,$2B,$1A
-        .BYTE $00,$10,$10,$10,$32,$25,$23,$2F
-        .BYTE $32,$24,$29,$2E,$27,$00,$29,$2E
-        .BYTE $29,$34,$29,$21,$34,$25,$24,$00
-        .BYTE $30,$2C,$21,$39,$22,$21,$23,$2B
-        .BYTE $00,$00,$29,$2E,$29,$34,$29,$21
-        .BYTE $34,$25,$24,$00,$34,$00,$25,$00
-        .BYTE $32,$00,$2D,$00,$29,$00,$2E,$00
-        .BYTE $21,$00,$34,$00,$25,$00,$24,$00
-        .BYTE $3A,$21,$32,$2A,$21,$3A,$00,$33
-        .BYTE $2C,$2F,$34,$28,$00,$24,$29,$33
-        .BYTE $21,$22,$2C,$25,$3A,$21,$32,$2A
-        .BYTE $21,$3A,$00,$33,$2C,$2F,$34,$28
-        .BYTE $00,$25,$2E,$21,$22,$2C,$25,$00
-        .BYTE $2D,$29,$38,$00,$32,$25,$23,$0F
-        .BYTE $2C,$29,$36,$25,$00,$30,$2C,$21
-        .BYTE $39,$00,$00,$00,$2D,$29,$38,$25
-        .BYTE $24,$00,$2D,$2F,$24,$25,$00,$2F
-        .BYTE $26,$26,$00,$00,$00,$00,$00,$00
-        .BYTE $24,$35,$21,$2C,$00,$29,$2E,$30
-        .BYTE $35,$34,$00,$2D,$2F,$24,$25,$00
-        .BYTE $2F,$2E,$00,$00,$35,$33,$25,$32
-        .BYTE $0D,$2C,$29,$27,$28,$34,$26,$2F
-        .BYTE $32,$2D,$00,$03,$00,$10,$10,$10
-        .BYTE $2C,$25,$36,$25,$2C,$1A,$00,$10
-        .BYTE $00,$00,$00,$26,$32,$25,$25,$1A
-        .BYTE $00,$10,$10,$10,$21,$35,$34,$2F
-        .BYTE $00,$24,$25,$2D,$2F,$00,$2D,$2F
-        .BYTE $24,$25,$00,$2F,$2E,$00,$00,$00
-        .BYTE $30,$29,$38,$25,$2C,$00,$23,$2F
-        .BYTE $2C,$2F,$35,$32,$00,$03,$00,$00
-        .BYTE $00,$10,$10,$10,$23,$2F,$2C,$2F
-        .BYTE $35,$32,$00,$10,$00,$00,$00,$26
-        .BYTE $32,$25,$25,$1A,$00,$10,$10,$10
-        .BYTE $33,$34,$21,$34,$35,$33,$00,$24
-        .BYTE $29,$33,$30,$2C,$21,$39,$33,$00
-        .BYTE $2F,$2E,$00,$00,$33,$29,$2D,$2C
-        .BYTE $00,$21,$24,$24,$25,$32,$00,$36
-        .BYTE $21,$2C,$35,$25,$1A,$10,$10,$10
-        .BYTE $2E,$2F,$32,$2D,$21,$2C,$00,$30
-        .BYTE $21,$34,$34,$25,$32,$2E,$00,$2D
-        .BYTE $2F,$24,$25,$00,$25,$38,$30,$2C
-        .BYTE $2F,$33,$29,$2F,$2E,$00,$2D,$2F
-        .BYTE $24,$25,$00,$2F,$2E,$00,$00,$00
-        .BYTE $39,$0D,$21,$38,$29,$33,$00,$33
-        .BYTE $39,$2D,$2D,$25,$34,$32,$39,$0E
-        .BYTE $00,$00,$00,$00
+        .TEXT 'THE TWIST           '
+        .TEXT 'THE SMOOTH CROSSFLOW'
+        .TEXT 'THE DENTURES        '
+        .TEXT 'DELTOIDS            '
+        .TEXT 'PULSAR CROSSES      '
+        .TEXT 'SLOTHFUL MULTICROSS '
+        .TEXT 'CROSS-AND-A-BIT     '
+        .TEXT 'STAR2-SMALL AND FAST'
+        .TEXT 'NO SYMMETRY AT ALL  '
+        .TEXT 'BUGGER OFF, NOSEY!! '
+        .TEXT 'X-Y SYMMETRY        '
+        .TEXT 'X-AXIS SYMMETRY     '
+        .TEXT 'QUAD MODE SYMMETRY  '
+        .TEXT 'VARIABLE RESOLUTION '
+        .TEXT 'HIRES + HARD REFLECT'
+        .TEXT 'CURVED COLOURSPACE 1'
+        .TEXT 'CURVED COLOURSPACE 2'
+        .TEXT 'CURVE + HARD REFLECT'
+        .TEXT 'HOOPY 4X CURVYREFLEX'
+        .TEXT 'ZARJAZ INTERLACE RES'
+        .TEXT 'STROBOSCOPICS ON    '
+        .TEXT 'STROBOSCOPICS OFF   '
+        .TEXT 'STROBO ZAP RATE  000'
+        .TEXT 'BASE COLOUR #0   000'
+        .TEXT 'OOZE  RATE  #0   000'
+        .TEXT 'OOZE  STEP  #0   000'
+        .TEXT 'OOZE CYCLE  #0   000'
+        .TEXT 'C.KEYS:      COLOURS'
+        .TEXT 'C.KEYS:   OOZE RATES'
+        .TEXT 'C.KEYS:   OOZE STEPS'
+        .TEXT 'C.KEYS:  OOZE CYCLES'
+        .TEXT 'COLOURFLOW RESYNCHED'
+        .TEXT 'PULSE FLOW RATE: 000'
+        .TEXT 'SPEED BOOST:     000'
+        .TEXT 'CURSOR SPEED:    000'
+        .TEXT '8-WAY MODE ENGAGED  '
+        .TEXT 'VECTOR MODE ENGAGED '
+        .TEXT 'LOGIC TRACKING OFF  '
+        .TEXT 'LOGIC TRACKING ON   '
+        .TEXT 'SMOOTHING DELAY: 000'
+        .TEXT 'BUFFER LENGTH:   000'
+        .TEXT 'RUNNING PRESET # 000'
+        .TEXT 'STASHING PRESET# 000'
+        .TEXT 'PULSE WIDTH:     000'
+        .TEXT 'RUN PRESET BANK: 000'
+        .TEXT 'RECORDING INITIATED '
+        .TEXT 'PLAYBACK  INITIATED '
+        .TEXT 'T E R M I N A T E D '
+        .TEXT 'ZARJAZ SLOTH DISABLE'
+        .TEXT 'ZARJAZ SLOTH ENABLE '
+        .TEXT 'MIX REC/LIVE PLAY   '
+        .TEXT 'MIXED MODE OFF      '
+        .TEXT 'DUAL INPUT MODE ON  '
+        .TEXT 'USER-LIGHTFORM # 000'
+        .TEXT 'LEVEL: 0   FREE: 000'
+        .TEXT 'AUTO DEMO MODE ON   '
+        .TEXT 'PIXEL COLOUR #   000'
+        .TEXT 'COLOUR 0   FREE: 000'
+        .TEXT 'STATUS DISPLAYS ON  '
+        .TEXT 'SIML ADDER VALUE:000'
+        .TEXT 'NORMAL PATTERN MODE '
+        .TEXT 'EXPLOSION MODE ON   '
+        .TEXT 'Y-AXIS SYMMETRY.    '
+        .TEXT ''
+.enc "none" 
 ;-------------------------------------------------------------------------
 ; s5439
 ;-------------------------------------------------------------------------
@@ -3254,9 +3150,6 @@ WriteStatusLine
         LDA a8003
         STA aEF
         LDA p8004
-;-------------------------------------------------------------------------
-; j548D
-;-------------------------------------------------------------------------
 j548D
         STA aF0
         LDY #$00
@@ -4107,26 +4000,26 @@ b5A1C   CMP #KEY_G
         SBC a1400
         STA drawForegroundAtYPos
         LDA #$02
-        STA wipeForegroundGraphics
+        STA textOutputControl
         RTS 
 
 b5A38   CMP #KEY_W
         BNE b5A46
         LDA #$01
-        STA wipeForegroundGraphics
+        STA textOutputControl
         RTS 
 
 symmetryForeground   .BYTE $00
 drawForegroundAtXPos   .BYTE $00
 drawForegroundAtYPos   .BYTE $00
-wipeForegroundGraphics   .BYTE $02
+textOutputControl   .BYTE $02
 
 b5A46   CMP #KEY_F
         BNE b5A58
 
         ; F=Draw foreground graphics in original place 
         LDA #$02
-        STA wipeForegroundGraphics
+        STA textOutputControl
         LDA #$00
         STA drawForegroundAtXPos
         STA drawForegroundAtYPos
@@ -4190,7 +4083,7 @@ j5A99
 
 b5AB2   LDA #$00
         STA disableStatusLine
-        JSR ProcessKeyboardInput
+        JSR RepointTextMaybe
         LDX #$3A
         JMP UpdateStatusLine
 
@@ -4239,14 +4132,14 @@ b5AF7   LDY beginDrawingForeground
 
         ; CTRL -Q=Start parameter save 
         LDA #$03
-        STA wipeForegroundGraphics
+        STA textOutputControl
 b5B0A   RTS 
 
 b5B0B   CMP #KEY_CTRL | KEY_W
         BNE b5B15
         ; CTRL -W=Start parameter load 
         LDA #$04
-        STA wipeForegroundGraphics
+        STA textOutputControl
         RTS 
 
 b5B15   CMP #KEY_CTRL | KEY_A
@@ -4254,19 +4147,19 @@ b5B15   CMP #KEY_CTRL | KEY_A
 
         ; CTRL -A=Start dynamics save 
         LDA #$05
-        STA wipeForegroundGraphics
+        STA textOutputControl
         RTS 
 
 b5B1F   CMP #KEY_CTRL | KEY_S
         BNE b5B29
         ; CTRL -S=Start dynamics load 
         LDA #$06
-        STA wipeForegroundGraphics
+        STA textOutputControl
 b5B28   RTS 
 
 b5B29   CMP #$FC
         BNE b5B28
-        JMP j2EB6
+        JMP WriteCreditsText
 
 ;-------------------------------------------------------------------------
 ; s5B30
@@ -4553,7 +4446,7 @@ a5D09   =*+$02
 ; j5D1F
 ;-------------------------------------------------------------------------
 j5D1F
-        JSR s4225
+        JSR CreateLinePtrArray2
         JSR s4815
         LDA #$28
         STA currentPixelXPosition
@@ -4583,7 +4476,7 @@ b5D4A   LDA aD6
         STA beginDrawingForeground
         PLA 
         STA cursorSpeed
-        JSR s4225
+        JSR CreateLinePtrArray2
         JMP MainGameLoop
 
 a5D64   .BYTE $00
@@ -4737,13 +4630,13 @@ b5E63   JSR s586E
         ADC #$10
         STA a5EB6
         LDA #$01
-        STA wipeForegroundGraphics
+        STA textOutputControl
         INC a2CAE
         LDA a2CAE
         CMP #$03
         BNE b5E86
         LDA #$02
-        STA wipeForegroundGraphics
+        STA textOutputControl
         LDA #$00
         STA a2CAE
 b5E86   INC a5EB7
@@ -4767,7 +4660,7 @@ b5EA1   JSR LoadPreset
         RTS 
 
 b5EB0   LDA #$01
-        STA wipeForegroundGraphics
+        STA textOutputControl
         RTS 
 
 a5EB6   .BYTE $0A

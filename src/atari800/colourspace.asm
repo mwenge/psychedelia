@@ -1,3 +1,21 @@
+; This is the reverse-engineered source code for the game 'Colourspace'
+; written by Jeff Minter in 1985.
+;
+; The code in this file was created by disassembling a binary of the game released into
+; the public domain by Jeff Minter in 2019.
+;
+; The original code from which this source is derived is the copyright of Jeff Minter.
+;
+; The original home of this file is at: https://github.com/mwenge/psychedelia
+;
+; To the extent to which any copyright may apply to the act of disassembling and reconstructing
+; the code from its binary, the author disclaims copyright to this source code.  In place of
+; a legal notice, here is a blessing:
+;
+;    May you do good and not evil.
+;    May you find forgiveness for yourself and forgive others.
+;    May you share freely, never taking more than you give.
+;
 ;
 ; **** ZP FIELDS **** 
 ;
@@ -20,11 +38,11 @@ aB2 = $B2
 aB3 = $B3
 aB4 = $B4
 aB5 = $B5
-aC0 = $C0
-aC1 = $C1
+displayListInstructionsLoPtr = $C0
+displayListInstructionsHiPtr = $C1
 verticalResolutionSPAC = $C2
-aC3 = $C3
-aC4 = $C4
+screenMemoryLoPtr2 = $C3
+screenMemoryHiPtr2 = $C4
 aC6 = $C6
 aC7 = $C7
 aC8 = $C8
@@ -108,7 +126,8 @@ ICBLH = $0369
 ICAX1 = $036A
 ICAX2 = $036B
 a1400 = $1400
-a8003 = $8003
+screenMemoryLoPtr = $8003
+displayListInstructions = $8000
 ;
 ; **** POINTERS **** 
 ;
@@ -118,44 +137,26 @@ p0102 = $0102
 p0428 = $0428
 p0FFF = $0FFF
 p1000 = $1000
-p8004 = $8004
+screenMemoryHiPtr = $8004
 p8008 = $8008
 p8280 = $8280
-;
-; **** PREDEFINED LABELS **** 
-;
-DOSVEC = $000A
-VDSLST = $0200
-SDMCTL = $022F
-SDLSTL = $0230
-SDLSTH = $0231
-COLDST = $0244
-GPRIOR = $026F
-STICK0 = $0278
-STICK1 = $0279
-STRIG0 = $0284
-STRIG1 = $0285
-BOTSCR = $02BF
-PCOLR0 = $02C0
-COLOR2 = $02C6
-COLOR4 = $02C8
-inputCharacter = $02FC
-PRNBUF = $03C0
-CIOV = $E456
-SETBV = $E45C
-XITBV = $E462
-WARMSV = $E474
 
 .include "constants.asm"
 
 * = $1F00
 
-f1F00   SEC 
+;-------------------------------------------------------------------------
+; ALoadRoutine   
+;-------------------------------------------------------------------------
+ALoadRoutine   
+        SEC 
         LDY #$00
 b1F03   LDA (aB0),Y
-        .BYTE $91,$B2,$A5,$B4,$D0
-        .BYTE $02    ;JAM 
+        STA (aB2),Y
+        LDA aB4
+        BNE SkipHere
         DEC aB5
+SkipHere
         DEC aB4
         LDA aB4
         ORA aB5
@@ -168,7 +169,11 @@ b1F1C   DEY
         BCS b1F03
 b1F1F   RTS 
 
-f1F20   SEC 
+;-------------------------------------------------------------------------
+; AnotherLoadRoutine   
+;-------------------------------------------------------------------------
+AnotherLoadRoutine   
+        SEC 
         LDY #$00
 b1F23   LDA (aB0),Y
         STA (aB2),Y
@@ -186,28 +191,36 @@ b1F2D   DEC aB4
 b1F3C   BCS b1F23
 b1F3E   RTS 
 
+;-------------------------------------------------------------------------
+; Initialization
+;-------------------------------------------------------------------------
+Initialization
         LDA #$02
         STA BOOT     ;BOOT?   boot flag; 0 if none, 1 for disk, 2 for cassette
-        LDA #<p1F53
+        LDA #<SomeKindOfSetupRoutine
         STA CASINI   ;CASINI  cassette initialization vector
-        LDA #>p1F53
+        LDA #>SomeKindOfSetupRoutine
         STA a03
         LDA #$00
         STA COLDST   ;COLDST  cold start flag
         JMP WARMSV   ;$E474 (jmp) WARMSV
 
-p1F53   LDA a1FC6
+;-------------------------------------------------------------------------
+; SomeKindOfSetupRoutine   
+;-------------------------------------------------------------------------
+SomeKindOfSetupRoutine   
+        LDA a1FC6
         ASL 
         BCS b1F68
         LDY #$1E
-b1F5B   LDA f1F00,Y
+b1F5B   LDA ALoadRoutine,Y
         STA PRNBUF,Y
         DEY 
         BPL b1F5B
         LDY #$1F
         BCC b1F75
 b1F68   LDY #$1D
-b1F6A   LDA f1F20,Y
+b1F6A   LDA AnotherLoadRoutine,Y
         STA PRNBUF,Y
         DEY 
         BPL b1F6A
@@ -247,8 +260,9 @@ b1F77   LDA f1FC8,X
         STA a05
         JMP PRNBUF
 
-a1FC7   =*+$01
-a1FC6   BRK #$09
+a1FC6   .BYTE $00
+a1FC7   .BYTE $09
+
 a1FC9   =*+$01
 a1FCA   =*+$02
 f1FC8   JSR DoSomethingWithTheCasette
@@ -283,43 +297,41 @@ DoSomethingWithTheCasette
 
 .include "patterns.asm"
 ;-------------------------------------------------------------------------
-; j2C00
+; DeleteForegroundPoint
 ;-------------------------------------------------------------------------
-j2C00
-        LDA aC4
+DeleteForegroundPoint
+        LDA screenMemoryHiPtr2
         CMP #$0F
         BNE b2C09
-        JMP j2C33
+        JMP ClearAndProcessForeground
 
 b2C09   LDY #$00
-        LDA (aC3),Y
+        LDA (screenMemoryLoPtr2),Y
         STA previousPixelXPosition
-        LDA aC4
+        LDA screenMemoryHiPtr2
         PHA 
         CLC 
         ADC #$04
-        STA aC4
-        LDA (aC3),Y
+        STA screenMemoryHiPtr2
+        LDA (screenMemoryLoPtr2),Y
         STA previousPixelYPosition
         LDA #$00
         STA currentPaintState
         JSR PaintPixelForCurrentSymmetry
         PLA 
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA #$FF
-        STA (aC3),Y
-        DEC aC3
-        LDA aC3
+        STA (screenMemoryLoPtr2),Y
+        DEC screenMemoryLoPtr2
+        LDA screenMemoryLoPtr2
         CMP #$FF
-        BNE j2C33
-        DEC aC4
-;-------------------------------------------------------------------------
-; j2C33
-;-------------------------------------------------------------------------
-j2C33
+        BNE ClearAndProcessForeground
+        DEC screenMemoryHiPtr2
+
+ClearAndProcessForeground
         LDA #$00
-        STA a5F45
-        JMP j5EEC
+        STA foregroundDrawState
+        JMP ProcessForegroundDrawState
 
 ;-------------------------------------------------------------------------
 ; PaintForeground
@@ -330,7 +342,7 @@ PaintForeground
         BEQ ForegroundIsOn
         CMP #FOREGROUND_GRAPHICS_OFF
         BEQ ForegroundIsOff
-        JMP SomeKindOfIO
+        JMP LoadOrProcessParameters
 
 ForegroundIsOff   
         JSR ClearExplosionModeArray
@@ -342,14 +354,14 @@ ForegroundIsOff
 ForegroundIsOn   
         LDA #>p1000
         SEI 
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA #<p1000
-        STA aC3
+        STA screenMemoryLoPtr2
         LDA symmetryForeground
         STA currentSymmetrySetting
 ForegroundPaintLoop   
         LDY #$00
-        LDA (aC3),Y
+        LDA (screenMemoryLoPtr2),Y
         CMP #$FF
         BNE b2C76
 b2C6D   LDA #$00
@@ -360,29 +372,30 @@ b2C6D   LDA #$00
 b2C76   CLC 
         ADC drawForegroundAtXPos
         STA previousPixelXPosition
-        LDA aC4
+        LDA screenMemoryHiPtr2
         PHA 
         CLC 
         ADC #$04
-        STA aC4
-        LDA (aC3),Y
+        STA screenMemoryHiPtr2
+        LDA (screenMemoryLoPtr2),Y
         CLC 
         ADC drawForegroundAtYPos
         STA previousPixelYPosition
-        LDA aC4
+        LDA screenMemoryHiPtr2
         CLC 
         ADC #$04
-        STA aC4
-        LDA (aC3),Y
+        STA screenMemoryHiPtr2
+        LDA (screenMemoryLoPtr2),Y
         ORA #$40
         STA currentPaintState
         JSR PaintPixelForCurrentSymmetry
         PLA 
-        STA aC4
-        INC aC3
+        STA screenMemoryHiPtr2
+        INC screenMemoryLoPtr2
         BNE ForegroundPaintLoop
-        INC aC4
-        LDA aC4
+
+        INC screenMemoryHiPtr2
+        LDA screenMemoryHiPtr2
         CMP #$14
         BEQ b2C6D
         JMP ForegroundPaintLoop
@@ -485,9 +498,9 @@ PaintSomePixels
 
 p2D58   .BYTE $43,$3A,$9B
 ;-------------------------------------------------------------------------
-; s2D5B
+; OpenDeviceForSaving
 ;-------------------------------------------------------------------------
-s2D5B
+OpenDeviceForSaving
         LDA #$03
         STA ICCOM
         LDA #<p2D58
@@ -502,9 +515,9 @@ s2D5B
         JMP CIOV     ;$E456 (jmp) CIOV
 
 ;-------------------------------------------------------------------------
-; s2D79
+; CloseDevice
 ;-------------------------------------------------------------------------
-s2D79
+CloseDevice
         LDA #$0C
         STA ICCOM
         LDX #$20
@@ -514,37 +527,38 @@ s2D79
         JMP ClearLoadSaveText
 
 ;-------------------------------------------------------------------------
-; s2D8B
+; WriteScreenStateToDevice
 ;-------------------------------------------------------------------------
-s2D8B
+WriteScreenStateToDevice
         LDA #$03
         STA ICCOM
         LDA #<p2D58
         STA ICBAL
         LDA #>p2D58
         STA ICBAH
-        LDA #<p8004
+        LDA #<screenMemoryHiPtr
         STA ICAX1
-        LDA #>p8004
+        LDA #>screenMemoryHiPtr
         STA ICAX2
         LDX #$20
         JMP CIOV     ;$E456 (jmp) CIOV
         ;Returns
 
 PUT_CHARACTER = $0B
+a20A0 = $20A0
 ;-------------------------------------------------------------------------
-; SomeKindOfIO
+; LoadOrProcessParameters
 ;-------------------------------------------------------------------------
-SomeKindOfIO
+LoadOrProcessParameters
         JSR UpdateLoadSaveText
         LDA textOutputControl
         CMP #START_PARM_SAVE
-        BNE b2DDA
-        JSR s2D5B
+        BNE MaybeStartParameterLoad
+        JSR OpenDeviceForSaving
         LDA #PUT_CHARACTER
         STA ICCOM
 
-j2DBB
+ProcessParameters
         LDA #<p1000
         STA ICBAL
         LDA #>p1000
@@ -555,24 +569,27 @@ j2DBB
         STA ICBLH
         LDX #$20
         JSR CIOV     ;$E456 (jmp) CIOV
-        JSR s2D79
+        JSR CloseDevice
         JMP MainGameLoop
 
-b2DDA   CMP #$04
-        BNE b2DE9
-        JSR s2D8B
+MaybeStartParameterLoad   
+        CMP #START_PARM_LOAD
+        BNE MaybeSaveDynamics
+        JSR WriteScreenStateToDevice
         LDA #$07
         STA ICCOM
-        JMP j2DBB
+        JMP ProcessParameters
 
-b2DE9   CMP #$05
-        BNE b2E12
-        JSR s2D5B
+MaybeSaveDynamics   
+        CMP #START_DYNAMICS_SAVE
+        BNE StartDynamicsLoad
+
+        ; Save dynamics.
+        JSR OpenDeviceForSaving
         LDA #PUT_CHARACTER
         STA ICCOM
 
-a20A0 = $20A0
-j2DF5
+ProcessDynamics
         LDA #$00
         STA ICBAL
         STA ICBLL
@@ -582,18 +599,19 @@ j2DF5
         STA ICBLH
         LDX #$20
         JSR CIOV     ;$E456 (jmp) CIOV
-        JSR s2D79
+        JSR CloseDevice
         JMP MainGameLoop
 
-b2E12   JSR s2D8B
+StartDynamicsLoad   
+        JSR WriteScreenStateToDevice
         LDA #$07
         STA ICCOM
-        JMP j2DF5
+        JMP ProcessDynamics
 
 .enc "atascii"
 parameterSaveLoadText
         .TEXT 'PARAMETER'
-a2E26
+loadSaveText
         .TEXT ' SAVE MODE PARAMETER'
         .TEXT ' LOAD MODE DYNAMICS '
         .TEXT 'SAVE MODE  DYNAMICS '
@@ -616,8 +634,8 @@ b2E78   CLC
 b2E7E   TAX 
         LDY #$00
 b2E81   LDA parameterSaveLoadText,X
-        STA f4ED1,Y
-        STA f4EE5,Y
+        STA statusTextLineOne,Y
+        STA statusTextLineTwo,Y
         INX 
         INY 
         CPY #$14
@@ -629,9 +647,9 @@ b2E81   LDA parameterSaveLoadText,X
 ;-------------------------------------------------------------------------
 ClearLoadSaveText
         LDX #$00
-        LDA a2E26
-b2E96   STA f4ED1,X
-        STA f4EE5,X
+        LDA loadSaveText
+b2E96   STA statusTextLineOne,X
+        STA statusTextLineTwo,X
         INX 
         CPX #$14
         BNE b2E96
@@ -647,8 +665,8 @@ WriteCreditsText
         LDX #$00
 b2EB8   LDY a2ED8
         LDA creditsText,Y
-        STA f4ED1,X
-        STA f4EE5,X
+        STA statusTextLineOne,X
+        STA statusTextLineTwo,X
         INX 
         INC a2ED8
         CPX #$14
@@ -727,76 +745,94 @@ b402A   LDA a4019
 
 b4032   JSR CreateLinePtrArray1
         JSR CreateLinePtrArray2
-        JSR s4257
+        JSR UpdateDefaultColors
         JMP InitializeColourSpace
 
         .BYTE $00
 a403F   .BYTE $00
 ;-------------------------------------------------------------------------
-; LooksLikeWritingToScreen
+; GenerateDisplayList
 ;-------------------------------------------------------------------------
-LooksLikeWritingToScreen
-        LDA #>$8000
-        STA aC1
-        LDA #<$8000
-        STA aC0
+GenerateDisplayList
+        LDA #>displayListInstructions
+        STA displayListInstructionsHiPtr
+        LDA #<displayListInstructions
+        STA displayListInstructionsLoPtr
         LDA #>a7000
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA #<a7000
-        STA aC3
+        STA screenMemoryLoPtr2
+
         LDX verticalResolutionSPAC
-        LDA f4212,X
+        LDA verticalResolutionArray,X
         STA a403F
+
         LDY #$00
         STY bottomMostYPos
-        LDA #$70
+
+        LDA #$70 ; 8 blank lines
         JSR WriteValueToDisplayList
         JSR WriteValueToDisplayList
+
+        ; Mode 6 setting screen memory to screenMemoryLoPtr
+        ; and screenMemoryHiPtr
         LDA #$46
         JSR WriteValueToDisplayList
-        LDA a8003
+        LDA screenMemoryLoPtr
         JSR WriteValueToDisplayList
-        LDA p8004
+        LDA screenMemoryHiPtr
         JSR WriteValueToDisplayList
+
+        ; Not sure what this is, more blank lines.
         LDA #$90
         JSR WriteValueToDisplayList
-        LDA screenMode
-        BEQ b4082
-        JMP j4AC0
 
-b4082   LDX verticalResolutionSPAC
+        LDA screenMode
+        BEQ NoScreenModeSelected
+        JMP MaybeHIResHardReflectMode
+
+
+        ; Mode 15 setting screen memory to screenMemoryLoPtr
+        ; and screenMemoryHiPtr
+NoScreenModeSelected   
+        LDX verticalResolutionSPAC
 b4084   LDA #$4F
         JSR WriteValueToDisplayList
-        LDA aC3
+        LDA screenMemoryLoPtr2
         JSR WriteValueToDisplayList
-        LDA aC4
+        LDA screenMemoryHiPtr2
         JSR WriteValueToDisplayList
         DEX 
         BNE b4084
-        LDA aC3
+
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$28
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         INC bottomMostYPos
         DEC a403F
-        BNE b4082
+        BNE NoScreenModeSelected
 
-j40AA
+WriteDisplayListFooter
+        ; JVB, restart same display list on next frame
         LDA #$41
         JSR WriteValueToDisplayList
-        LDA #$00
+        LDA #<displayListInstructions
         JSR WriteValueToDisplayList
-        LDA #$80
+        LDA #>displayListInstructions
         JSR WriteValueToDisplayList
+
         LDA #<p00
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
-        LDA #>p00
+
+        LDA #<displayListInstructions
         STA SDLSTL   ;SDLSTL  shadow for DLISTL ($D402)
-        LDA #$80
+        LDA #>displayListInstructions
         STA SDLSTH   ;SDLSTH  shadow for DLISTH ($D403)
+
         LDA #$22
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
         LDA dualJoystickMode
@@ -821,10 +857,10 @@ b40E9   RTS
 ; WriteValueToDisplayList
 ;-------------------------------------------------------------------------
 WriteValueToDisplayList
-        STA (aC0),Y
-        INC aC0
+        STA (displayListInstructionsLoPtr),Y
+        INC displayListInstructionsLoPtr
         BNE b40F2
-        INC aC1
+        INC displayListInstructionsHiPtr
 b40F2   RTS 
 
 ;-------------------------------------------------------------------------
@@ -845,7 +881,7 @@ InitializeColourSpace
         STA pixelXPosition
         LDA #>p0428
         STA pixelYPosition
-        LDA #$01
+        LDA #THE_SMOOTH_CROSSFLOW
         STA currentSymmetry
         TAX 
         JSR UpdateStatusLine
@@ -878,7 +914,7 @@ InitializeColourSpace
         STA bottomMostYPos
         LDA #$05
         STA verticalResolutionSPAC
-        JSR LooksLikeWritingToScreen
+        JSR GenerateDisplayList
         JMP MainGameLoop
 
 ;-------------------------------------------------------------------------
@@ -886,29 +922,29 @@ InitializeColourSpace
 ;-------------------------------------------------------------------------
 CreateLinePtrArray1
         LDA #<a7000
-        STA aC3
+        STA screenMemoryLoPtr2
         LDA #>a7000
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA #<p8280
         STA aC7
         LDA #>p8280
         STA aC8
         LDX #$00
-b4170   LDA aC3
+b4170   LDA screenMemoryLoPtr2
         STA $7E10,X
-        LDA aC4
+        LDA screenMemoryHiPtr2
         STA $7EC4,X
         LDA aC7
         STA f9EA0,X
         LDA aC8
         STA f9F54,X
-        LDA aC3
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$28
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA aC7
         CLC 
         ADC #$50
@@ -993,7 +1029,8 @@ b4200   TAY
         STA (pCB),Y
         RTS 
 
-f4212   .BYTE $00,$B4,$5A,$3C,$2D,$24,$1E,$19
+verticalResolutionArray   
+        .BYTE $00,$B4,$5A,$3C,$2D,$24,$1E,$19
         .BYTE $16,$14,$12,$10,$0F,$0E,$0D,$0C
         .BYTE $0B,$0B,$0A
 ;-------------------------------------------------------------------------
@@ -1002,22 +1039,22 @@ f4212   .BYTE $00,$B4,$5A,$3C,$2D,$24,$1E,$19
 CreateLinePtrArray2
         LDX #$00
 b4227   LDA $7E10,X
-        STA aC0
+        STA displayListInstructionsLoPtr
         LDA $7EC4,X
-        STA aC1
+        STA displayListInstructionsHiPtr
         LDY #$00
 b4233   LDA #$00
-        STA (aC0),Y
+        STA (displayListInstructionsLoPtr),Y
         INY 
         CPY #$28
         BNE b4233
         LDA f9EA0,X
-        STA aC0
+        STA displayListInstructionsLoPtr
         LDA f9F54,X
-        STA aC1
+        STA displayListInstructionsHiPtr
         LDY #$00
         LDA #$00
-b424A   STA (aC0),Y
+b424A   STA (displayListInstructionsLoPtr),Y
         INY 
         CPY #$50
         BNE b424A
@@ -1027,18 +1064,18 @@ b424A   STA (aC0),Y
         RTS 
 
 ;-------------------------------------------------------------------------
-; s4257
+; UpdateDefaultColors
 ;-------------------------------------------------------------------------
-s4257
+UpdateDefaultColors
         LDX #$00
-b4259   LDA f4265,X
+b4259   LDA defaultColorArray,X
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         INX 
         CPX #$08
         BNE b4259
         RTS 
 
-f4265   .BYTE $00,$18,$38,$58,$78,$98,$B8,$D8
+defaultColorArray   .BYTE $00,$18,$38,$58,$78,$98,$B8,$D8
 ;-------------------------------------------------------------------------
 ; PaintPixelForCurrentSymmetry
 ;-------------------------------------------------------------------------
@@ -1166,7 +1203,7 @@ b431C   DEC FR3
         RTS 
 
 ; Some patterns
-a4328
+theTwistXPosArray
         .BYTE $00,$55
         .BYTE $01,$02,$55
         .BYTE $01,$02,$03,$55
@@ -1174,7 +1211,7 @@ a4328
         .BYTE $00,$00,$00,$55
         .BYTE $FF,$FE,$55
         .BYTE $55
-a433E
+theTwistYPosArray
         .BYTE $FF,$55
         .BYTE $FF,$FE,$55
         .BYTE $00,$00,$00,$55
@@ -1182,7 +1219,7 @@ a433E
         .BYTE $01,$02,$03,$55
         .BYTE $01,$02,$55
         .BYTE $55
-a4354
+smoothCrossflowXPosArray
         .BYTE $FF,$01,$55
         .BYTE $FE,$02,$55
         .BYTE $FD,$03,$55
@@ -1190,7 +1227,7 @@ a4354
         .BYTE $FB,$05,$55
         .BYTE $FA,$06,$55
         .BYTE $55
-a4367
+smoothCrossflowYPosArray
         .BYTE $02,$FE,$55
         .BYTE $FF,$01,$55
         .BYTE $04,$FC,$55
@@ -1198,7 +1235,7 @@ a4367
         .BYTE $06,$FA,$55
         .BYTE $FD,$03,$55
         .BYTE $55
-a437A
+denturesXPosArray
         .BYTE $01,$55
         .BYTE $02,$55
         .BYTE $03,$55
@@ -1206,7 +1243,7 @@ a437A
         .BYTE $05,$55
         .BYTE $06,$55
         .BYTE $55
-a4387
+denturesYPosArray
         .BYTE $FE,$55
         .BYTE $02,$55
         .BYTE $FD,$55
@@ -1214,7 +1251,7 @@ a4387
         .BYTE $FC,$55
         .BYTE $04,$55
         .BYTE $55
-a4394
+deltoidsXPosArray
         .BYTE $FF,$00,$01,$55
         .BYTE $55
         .BYTE $FE,$FF,$00,$01,$02,$55
@@ -1222,7 +1259,7 @@ a4394
         .BYTE $FC,$00,$04,$55
         .BYTE $FA,$00,$06,$55
         .BYTE $55
-a43AC
+deltoidsYPosArray
         .BYTE $00,$FF,$00,$55
         .BYTE $55
         .BYTE $00,$FF,$FE,$FF,$00,$55
@@ -1230,7 +1267,7 @@ a43AC
         .BYTE $02,$FC,$02,$55
         .BYTE $04,$FA,$04,$55
         .BYTE $55
-a43C4
+pulsarCrossXPosArray
         .BYTE $00,$01,$00,$FF,$55
         .BYTE $00,$02,$00,$FE,$55
         .BYTE $00,$03,$00,$FD,$55
@@ -1238,7 +1275,7 @@ a43C4
         .BYTE $00,$05,$00,$FB,$55
         .BYTE $00,$06,$00,$FA,$55
         .BYTE $55
-a43E3
+pulsarCrossYPosArray
         .BYTE $FF,$00,$01,$00,$55
         .BYTE $FE,$00,$02,$00,$55
         .BYTE $FD,$00,$03,$00,$55
@@ -1246,7 +1283,7 @@ a43E3
         .BYTE $FB,$00,$05,$00,$55
         .BYTE $FA,$00,$06,$00,$55
         .BYTE $55
-a4402
+slothMultiCrossXPosArray
         .BYTE $FF,$01,$01,$FF,$55
         .BYTE $FE,$02,$02,$FE,$55
         .BYTE $FD,$FF,$01,$03,$03,$01,$FF,$FD,$55
@@ -1254,7 +1291,7 @@ a4402
         .BYTE $FC,$04,$04,$FC,$55
         .BYTE $FB,$FD,$03,$05,$05,$03,$FD,$FB,$55
         .BYTE $55
-a4429
+slothMultiCrossYPosArray
         .BYTE $FF,$FF,$01,$01,$55
         .BYTE $FE,$FE,$02,$02,$55
         .BYTE $FF,$FD,$FD,$FF,$01,$03,$03,$01,$55
@@ -1262,7 +1299,7 @@ a4429
         .BYTE $FC,$FC,$04,$04,$55
         .BYTE $FD,$FB,$FB,$FD,$03,$05,$05,$03,$55
         .BYTE $55
-a4450
+crossAndABitXPosArray
         .BYTE $FF,$01,$55
         .BYTE $FD,$03,$55
         .BYTE $FE,$02,$55
@@ -1270,7 +1307,7 @@ a4450
         .BYTE $08,$08,$55
         .BYTE $08,$08,$55
         .BYTE $55
-a4463
+crossAndABitYPosArray
         .BYTE $FF,$01,$55
         .BYTE $FD,$03,$55
         .BYTE $01,$FF,$55
@@ -1278,7 +1315,7 @@ a4463
         .BYTE $0B,$0F,$55
         .BYTE $0C,$0E,$55
         .BYTE $55
-a4476
+star2XPosArray
         .BYTE $FF,$55
         .BYTE $01,$55
         .BYTE $FE,$55
@@ -1286,7 +1323,7 @@ a4476
         .BYTE $01,$55
         .BYTE $FF,$55
         .BYTE $55
-a4483
+start2YPosArray
         .BYTE $FD,$55
         .BYTE $FE,$55
         .BYTE $FF,$55
@@ -1311,13 +1348,13 @@ VerticalBlankInterruptHandler
         LDA PCOLR0   ;PCOLR0  shadow for COLPM0 ($D012)
         STA $D01A    ;COLBK
         JSR LookForKeyboardInput
-        DEC a4A1F
+        DEC newCursorSpeed
         BNE b44B4
         LDA cursorSpeed
-        STA a4A1F
+        STA newCursorSpeed
         JSR GetJoystickInput
 b44B4   INC COLOR4   ;COLOR4  shadow for COLBK ($D01A)
-        JSR s4CA0
+        JSR CheckStrobesAndColorFlow
         PLA 
         TAY 
         PLA 
@@ -1328,9 +1365,9 @@ b44B4   INC COLOR4   ;COLOR4  shadow for COLBK ($D01A)
 b44C2   RTS 
 
 ;-------------------------------------------------------------------------
-; RecordPixelPaint
+; FetchValuesForPlayback
 ;-------------------------------------------------------------------------
-RecordPixelPaint
+FetchValuesForPlayback
         LDA autoDemoEnabled
         CMP #$02
         BEQ b44C2
@@ -1412,7 +1449,7 @@ GetJoystickInput
         LDA storedPixelYPosition
         STA pixelYPosition
 
-        JSR RecordPixelPaint
+        JSR FetchValuesForPlayback
         PLA 
         STA pixelYPosition
         JSR DuplicatePixelPosition
@@ -1420,7 +1457,7 @@ GetJoystickInput
         STA a5CF7
 b4549   LDA #$00
         STA aDF
-        JSR RecordPixelPaint
+        JSR FetchValuesForPlayback
 
         LDX speedBoostAdjust
 
@@ -1524,7 +1561,7 @@ UpdateStateFromJoystickMovement
 
         LDA #$01
         STA aDF
-        JSR RecordPixelPaint
+        JSR FetchValuesForPlayback
         LDA secondJoystickMadeAMovememnt
         BEQ b4614
 
@@ -1547,7 +1584,8 @@ UpdateStateFromJoystickMovement
 
 b4614   RTS 
 
-pixelXPositionArray   .BYTE $4B,$45,$59,$36,$09,$3A,$4E,$C0
+pixelXPositionArray   
+        .BYTE $4B,$45,$59,$36,$09,$3A,$4E,$C0
         .BYTE $01,$0C,$4B,$36,$31,$0B,$6B,$4E
         .BYTE $C0,$3B,$0E,$42,$4F,$54,$52,$4F
         .BYTE $09,$48,$4E,$C0,$15,$0C,$4B,$36
@@ -1555,7 +1593,8 @@ pixelXPositionArray   .BYTE $4B,$45,$59,$36,$09,$3A,$4E,$C0
         .BYTE $43,$48,$45,$43,$09,$4C,$4E,$C0
         .BYTE $1E,$0C,$4B,$5A,$4F,$09,$56,$4E
         .BYTE $C0,$33,$0C,$4B,$36,$33,$0C,$39
-pixelYPositionArray   .BYTE $54,$C0,$3D,$0C,$53,$48,$4F,$43
+pixelYPositionArray   
+        .BYTE $54,$C0,$3D,$0C,$53,$48,$4F,$43
         .BYTE $4F,$4C,$0A,$A3,$4E,$C0,$6F,$0C
         .BYTE $4B,$45,$59,$37,$0A,$A2,$4E,$C0
         .BYTE $63,$0C,$53,$54,$52,$4F,$09,$86
@@ -1563,7 +1602,8 @@ pixelYPositionArray   .BYTE $54,$C0,$3D,$0C,$53,$48,$4F,$43
         .BYTE $80,$54,$C0,$04,$0D,$47,$45,$54
         .BYTE $41,$09,$9F,$4E,$C0,$8C,$0D,$5A
         .BYTE $58,$59,$0C,$52,$54,$C0,$E8,$0C
-patternIndexArray   .BYTE $53,$48,$4F,$4E,$55,$4D,$0A,$CE
+patternIndexArray   
+        .BYTE $53,$48,$4F,$4E,$55,$4D,$0A,$CE
         .BYTE $4E,$C0,$79,$0C,$4B,$45,$59,$38
         .BYTE $08,$BC,$4E,$C0,$8B,$0C,$4B,$37
         .BYTE $0A,$CD,$4E,$C0,$5D,$0E,$54,$43
@@ -1571,7 +1611,8 @@ patternIndexArray   .BYTE $53,$48,$4F,$4E,$55,$4D,$0A,$CE
         .BYTE $4B,$45,$59,$38,$38,$0C,$4D,$4F
         .BYTE $C0,$A2,$0C,$4D,$45,$53,$47,$45
         .BYTE $53,$0B,$4A,$4F,$C0,$AD,$0C,$4D
-initialFramesRemainingToNextPaintForStep   .BYTE $53,$47,$4C,$4F,$0B,$4B,$4F,$C0
+initialFramesRemainingToNextPaintForStep   
+        .BYTE $53,$47,$4C,$4F,$0B,$4B,$4F,$C0
         .BYTE $C1,$0C,$4D,$53,$47,$48,$49,$09
         .BYTE $20,$4F,$C0,$25,$0F,$4E,$4F,$4D
         .BYTE $0A,$38,$4F,$C0,$CB,$0C,$4D,$45
@@ -1579,7 +1620,8 @@ initialFramesRemainingToNextPaintForStep   .BYTE $53,$47,$4C,$4F,$0B,$4B,$4F,$C0
         .BYTE $4D,$45,$53,$30,$09,$19,$51,$C0
         .BYTE $E4,$12,$56,$4C,$49,$0A,$C5,$54
         .BYTE $C0,$23,$0D,$4D,$4F,$44,$45,$0A
-framesRemainingToNextPaintForStep   .BYTE $7E,$54,$C0,$F2,$0C,$53,$48,$4F
+framesRemainingToNextPaintForStep   
+        .BYTE $7E,$54,$C0,$F2,$0C,$53,$48,$4F
         .BYTE $45,$09,$65,$54,$C0,$FB,$0C,$53
         .BYTE $48,$31,$09,$7B,$54,$C0,$82,$0D
         .BYTE $53,$48,$32,$0A,$92,$54,$C0,$F6
@@ -1587,7 +1629,8 @@ framesRemainingToNextPaintForStep   .BYTE $7E,$54,$C0,$F2,$0C,$53,$48,$4F
         .BYTE $C0,$90,$0F,$48,$49,$58,$0C,$A2
         .BYTE $2E,$C0,$0A,$11,$46,$41,$4C,$53
         .BYTE $49,$45,$0A,$A3,$54,$C0,$2D,$0D
-symmetrySettingForStepCount   .BYTE $4D,$43,$48,$31,$0A,$C6,$54,$C0
+symmetrySettingForStepCount   
+        .BYTE $4D,$43,$48,$31,$0A,$C6,$54,$C0
         .BYTE $37,$0D,$4D,$43,$48,$32,$0B,$B1
         .BYTE $54,$C0,$42,$0D,$4D,$43,$48,$31
         .BYTE $31,$0B,$BA,$54,$C0,$4D,$0D,$4D
@@ -1595,7 +1638,8 @@ symmetrySettingForStepCount   .BYTE $4D,$43,$48,$31,$0A,$C6,$54,$C0
         .BYTE $57,$0D,$4D,$43,$48,$33,$0B,$D4
         .BYTE $54,$C0,$62,$0D,$4D,$43,$48,$32
         .BYTE $31,$0B,$E7,$54,$C0,$7C,$12,$4D
-explosionModeArray   .BYTE $43,$48,$33,$31,$0A,$09,$55,$C0
+explosionModeArray   
+        .BYTE $43,$48,$33,$31,$0A,$09,$55,$C0
         .BYTE $77,$0D,$4B,$45,$59,$39,$0B,$30
         .BYTE $55,$C0,$97,$0D,$4B,$45,$59,$31
         .BYTE $30,$0A,$0D,$55,$C0,$91,$0E,$53
@@ -1603,7 +1647,8 @@ explosionModeArray   .BYTE $43,$48,$33,$31,$0A,$09,$55,$C0
         .BYTE $0F,$5A,$5A,$54,$4F,$50,$08,$3B
         .BYTE $55,$C0,$9F,$0D,$4B,$54,$0B,$65
         .BYTE $55,$C0,$AA,$0D,$4B,$45,$59,$31
-bottomMostYPosArray   .BYTE $31,$0A,$64,$55,$C0,$B4,$0D,$4B
+bottomMostYPosArray   
+        .BYTE $31,$0A,$64,$55,$C0,$B4,$0D,$4B
         .BYTE $54,$45,$4E,$09,$48,$55,$C0,$BD
         .BYTE $0D,$4B,$54,$49,$09,$4E,$55,$C0
         .BYTE $C6,$0D,$4B,$4B,$4B,$0B,$7D,$55
@@ -1644,7 +1689,7 @@ MainGameLoop
         STA currentBufferLength
 b483E   LDA beginDrawingForeground
         BEQ b4846
-        JMP j5D1F
+        JMP ForegroundPixelsMaybe
 
 b4846   LDA textOutputControl
         BEQ b484E
@@ -1681,13 +1726,13 @@ b4862   LDA explosionModeArray,X
         JSR LoopThroughPixelsAndPaint
 
 GoBackToStartOfLoop
-        LDA a4DDF
+        LDA selectedModePreventsForegroundDrawing
         BEQ MainGameLoop
         LDA #$00
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
-        JSR LooksLikeWritingToScreen
+        JSR GenerateDisplayList
         LDA #$00
-        STA a4DDF
+        STA selectedModePreventsForegroundDrawing
         JMP MainGameLoop
 
 ;-------------------------------------------------------------------------
@@ -1696,7 +1741,7 @@ GoBackToStartOfLoop
 UpdateStateArrays
         LDA beginDrawingForeground
         BEQ b48AD
-        JMP j5D70
+        JMP UpdatePixelsForeground
 
 b48AD   LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
         AND #$80
@@ -1767,7 +1812,8 @@ b490D   LDA pixelXPosition
         STA explosionModeArray,X
         RTS 
 
-f4937   .BYTE $00,$08,$04,$02,$01,$01,$01,$01
+vectorModeOffsets   
+        .BYTE $00,$08,$04,$02,$01,$01,$01,$01
         .BYTE $01,$01,$01,$01,$01,$02,$04,$08
 a4947   .BYTE $00
 a4948   .BYTE $08
@@ -1784,7 +1830,7 @@ ProcessJoystickMovementInVectorMode
         LDA a4947
         AND #$0F
         TAX 
-        LDA f4937,X
+        LDA vectorModeOffsets,X
         STA a4949
         LDA a4947
         AND #$10
@@ -1808,7 +1854,7 @@ b4980   LDA a494A
         LDA a4948
         AND #$0F
         TAX 
-        LDA f4937,X
+        LDA vectorModeOffsets,X
         STA a494A
         LDA a4948
         AND #$10
@@ -1847,12 +1893,12 @@ b49D1   DEC a4947
         STA a4948
         AND #$0F
         TAX 
-        LDA f4937,X
+        LDA vectorModeOffsets,X
         STA a494A
         LDA a4947
         AND #$0F
         TAX 
-        LDA f4937,X
+        LDA vectorModeOffsets,X
         STA a4949
 b49FC   LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
         AND #$01
@@ -1888,105 +1934,115 @@ a2F40 = $2F40
 a2FC0 = $2FC0
 
 cursorSpeed   .BYTE $01
-a4A1F   .BYTE $01
-pixelXPositionLoPtrArray   .BYTE <a4328,<a4354,<a437A,<a4394,<a43C4,<a4402,<a4450,<a4476
+newCursorSpeed   .BYTE $01
+pixelXPositionLoPtrArray   
+        .BYTE <theTwistXPosArray,<smoothCrossflowXPosArray,<denturesXPosArray,<deltoidsXPosArray
+        .BYTE <pulsarCrossXPosArray,<slothMultiCrossXPosArray,<crossAndABitXPosArray,<star2XPosArray
         .BYTE <a2000,<a2080,<a2100,<a2180,<a2200,<a2280,<a2300,<a2380
         .BYTE <a2400,<a2480,<a2500,<a2580,<a2600,<a2680,<a2700,<a2780
         .BYTE <a2800,<a2880,<a2900,<a2980,<a2A00,<a2A80,<a2B00,<a2B80
         .BYTE <a2C00,<a2C80,<a2D00,<a2D80,<a2E00,<a2E80,<a2F00,<a2F80
 
 
-pixelXPositionHiPtrArray   .BYTE >a4328,>a4354,>a437A,>a4394,>a43C4,>a4402,>a4450,>a4476
+pixelXPositionHiPtrArray   
+        .BYTE >theTwistXPosArray,>smoothCrossflowXPosArray,>denturesXPosArray,>deltoidsXPosArray
+        .BYTE >pulsarCrossXPosArray,>slothMultiCrossXPosArray,>crossAndABitXPosArray,>star2XPosArray
         .BYTE >a2000,>a2080,>a2100,>a2180,>a2200,>a2280,>a2300,>a2380
         .BYTE >a2400,>a2480,>a2500,>a2580,>a2600,>a2680,>a2700,>a2780
         .BYTE >a2800,>a2880,>a2900,>a2980,>a2A00,>a2A80,>a2B00,>a2B80
         .BYTE >a2C00,>a2C80,>a2D00,>a2D80,>a2E00,>a2E80,>a2F00,>a2F80
 
-pixelYPositionLoPtrArray   .BYTE <a433E,<a4367,<a4387,<a43AC,<a43E3,<a4429,<a4463,<a4483
+pixelYPositionLoPtrArray   
+        .BYTE <theTwistYPosArray,<smoothCrossflowYPosArray,<denturesYPosArray,<deltoidsYPosArray
+        .BYTE <pulsarCrossYPosArray,<slothMultiCrossYPosArray,<crossAndABitYPosArray,<start2YPosArray
         .BYTE <a2040,<a20C0,<a2140,<a21C0,<a2240,<a22C0,<a2340,<a23C0
         .BYTE <a2440,<a24C0,<a2540,<a25C0,<a2640,<a26C0,<a2740,<a27C0
         .BYTE <a2840,<a28C0,<a2940,<a29C0,<a2A40,<a2AC0,<a2B40,<a2BC0
         .BYTE <a2C40,<a2CC0,<a2D40,<a2DC0,<a2E40,<a2EC0,<a2F40,<a2FC0
 
 
-pixelYPositionHiPtrArray   .BYTE >a433E,>a4367,>a4387,>a43AC,>a43E3,>a4429,>a4463,>a4483
+pixelYPositionHiPtrArray   
+        .BYTE >theTwistYPosArray,>smoothCrossflowYPosArray,>denturesYPosArray,>deltoidsYPosArray
+        .BYTE >pulsarCrossYPosArray,>slothMultiCrossYPosArray,>crossAndABitYPosArray,>start2YPosArray
         .BYTE >a2040,>a20C0,>a2140,>a21C0,>a2240,>a22C0,>a2340,>a23C0
         .BYTE >a2440,>a24C0,>a2540,>a25C0,>a2640,>a26C0,>a2740,>a27C0
         .BYTE >a2840,>a28C0,>a2940,>a29C0,>a2A40,>a2AC0,>a2B40,>a2BC0
         .BYTE >a2C40,>a2CC0,>a2D40,>a2DC0,>a2E40,>a2EC0,>a2F40,>a2FC0
 
 ;-------------------------------------------------------------------------
-; j4AC0
+; MaybeHIResHardReflectMode
 ;-------------------------------------------------------------------------
-j4AC0
-        CMP #$01
+MaybeHIResHardReflectMode
+        CMP #HIRES_HARD_REFLECT_MODE
         BEQ b4AC7
-        JMP j4B09
+        JMP MaybeCurvedColorspace1Mode
 
 b4AC7   LDX #$59
-b4AC9   JSR s4AF8
-        LDA aC3
+b4AC9   JSR WriteValuesFromMemoryToDisplayList
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$28
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         DEX 
         BNE b4AC9
+
         LDX #$59
-b4ADE   JSR s4AF8
-        LDA aC3
+b4ADE   JSR WriteValuesFromMemoryToDisplayList
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$D8
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$FF
-        STA aC4
+        STA screenMemoryHiPtr2
         DEX 
         BNE b4ADE
         LDA #$5A
         STA bottomMostYPos
-        JMP j40AA
+        JMP WriteDisplayListFooter
 
 ;-------------------------------------------------------------------------
-; s4AF8
+; WriteValuesFromMemoryToDisplayList
 ;-------------------------------------------------------------------------
-s4AF8
+WriteValuesFromMemoryToDisplayList
         LDA #$4F
         JSR WriteValueToDisplayList
-        LDA aC3
+        LDA screenMemoryLoPtr2
         JSR WriteValueToDisplayList
-        LDA aC4
+        LDA screenMemoryHiPtr2
         JSR WriteValueToDisplayList
         RTS 
 
 screenMode   .BYTE $02
 ;-------------------------------------------------------------------------
-; j4B09
+; MaybeCurvedColorspace1Mode
 ;-------------------------------------------------------------------------
-j4B09
-        CMP #$02
-        BEQ b4B10
-        JMP j4B49
+MaybeCurvedColorspace1Mode
+        CMP #CURVED_COLOURSPACE_1_MODE
+        BEQ CurvedColorspace1Mode
+        JMP MaybeCurvedColorspace2Mode
 
-b4B10   LDA #$01
+CurvedColorspace1Mode   
+        LDA #$01
         STA a403F
         LDA #$00
         STA bottomMostYPos
 b4B19   LDX #$04
 b4B1B   LDA a403F
         STA a4B48
-b4B21   JSR s4AF8
+b4B21   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
         BNE b4B21
-        LDA aC3
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$28
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         INC bottomMostYPos
         DEX 
         BNE b4B1B
@@ -1994,40 +2050,40 @@ b4B21   JSR s4AF8
         LDA a403F
         CMP #$0A
         BNE b4B19
-        JMP j40AA
+        JMP WriteDisplayListFooter
 
 a4B48   .BYTE $01
-;-------------------------------------------------------------------------
-; j4B49
-;-------------------------------------------------------------------------
-j4B49
+
+MaybeCurvedColorspace2Mode
         LDX #$00
         STX a4BD3
-        LDX #<p0102
-        STX a4BFE
-        LDX #>p0102
-        STX a4BFF
-        CMP #$03
-        BEQ b4B5F
-        JMP j4BE2
+        LDX #$02
+        STX CurvedInnerLoopCounter
+        LDX #$01
+        STX CurvedOuterLoopCounter
 
-b4B5F   LDA #$01
+        CMP #CURVED_COLOURSPACE_2_MODE
+        BEQ CurvedColorspace2Mode
+        JMP MaybeCurveHardReflectMode
+
+CurvedColorspace2Mode   
+        LDA #$01
         STA a403F
         LDA #$00
         STA bottomMostYPos
-b4B68   LDX a4BFE
+b4B68   LDX CurvedInnerLoopCounter
 b4B6B   LDA a403F
         STA a4B48
-b4B71   JSR s4AF8
+b4B71   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
         BNE b4B71
-        LDA aC3
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$28
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         INC bottomMostYPos
         DEX 
         BNE b4B6B
@@ -2036,119 +2092,123 @@ b4B71   JSR s4AF8
         CMP #$0A
         BNE b4B68
         DEC a403F
-b4B98   LDX a4BFE
+b4B98   LDX CurvedInnerLoopCounter
 b4B9B   LDA a403F
         STA a4B48
-b4BA1   JSR s4AF8
+b4BA1   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
         BNE b4BA1
         LDA a4BD3
-        BEQ b4BB4
-        JSR s4BD4
-        JMP j4BC3
+        BEQ IncrementLowPointers
+        JSR IncrementScreenMemoryPointers
+        JMP UpdateStuffAndMaybeReturn
+        ;Returns
 
-b4BB4   LDA aC3
+IncrementLowPointers   
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$28
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         INC bottomMostYPos
-;-------------------------------------------------------------------------
-; j4BC3
-;-------------------------------------------------------------------------
-j4BC3
+
+UpdateStuffAndMaybeReturn
         DEX 
         BNE b4B9B
         DEC a403F
         BNE b4B98
-        DEC a4BFF
-        BNE b4B5F
-        JMP j40AA
+        DEC CurvedOuterLoopCounter
+        BNE CurvedColorspace2Mode
+        JMP WriteDisplayListFooter
 
 a4BD3   .BYTE $01
 ;-------------------------------------------------------------------------
-; s4BD4
+; IncrementScreenMemoryPointers
 ;-------------------------------------------------------------------------
-s4BD4
-        LDA aC3
+IncrementScreenMemoryPointers
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$D8
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$FF
-        STA aC4
+        STA screenMemoryHiPtr2
         RTS 
 
 ;-------------------------------------------------------------------------
-; j4BE2
+; MaybeCurveHardReflectMode
 ;-------------------------------------------------------------------------
-j4BE2
-        CMP #$04
-        BEQ b4BE9
-        JMP j4C00
+MaybeCurveHardReflectMode
+        CMP #CURVE_HARD_REFLECT_MODE
+        BEQ CurveHardReflectMode
+        JMP MaybeHoopyCurvyMode
 
-b4BE9   LDA #$01
+CurveHardReflectMode   
+        LDA #$01
         STA a4BD3
-        LDA #<p0102
-        STA a4BFE
-        LDA #>p0102
-        STA a4BFF
-        JSR b4B5F
+        LDA #$02
+        STA CurvedInnerLoopCounter
+        LDA #$01
+        STA CurvedOuterLoopCounter
+        JSR CurvedColorspace2Mode
         INC bottomMostYPos
         RTS 
 
-a4BFE   .BYTE $02
-a4BFF   .BYTE $01
+CurvedInnerLoopCounter   .BYTE $02
+CurvedOuterLoopCounter   .BYTE $01
 ;-------------------------------------------------------------------------
-; j4C00
+; MaybeHoopyCurvyMode
 ;-------------------------------------------------------------------------
-j4C00
-        CMP #$05
-        BEQ b4C07
-        JMP j4C1C
+MaybeHoopyCurvyMode
+        CMP #HOOPY_4X_CURVYREFLEX_MODE
+        BEQ HoopyCurvyMode
+        JMP MaybeZarjazInterlaceMode
 
-b4C07   LDA #$01
+HoopyCurvyMode   
+        LDA #$01
         STA a4BD3
-        LDA #<a0201
-        STA a4BFE
-        LDA #>a0201
-        STA a4BFF
-        JSR b4B5F
+        LDA #$01
+        STA CurvedInnerLoopCounter
+        LDA #$02
+        STA CurvedOuterLoopCounter
+        JSR CurvedColorspace2Mode
         INC bottomMostYPos
         RTS 
 
 ;-------------------------------------------------------------------------
-; j4C1C
+; MaybeZarjazInterlaceMode
 ;-------------------------------------------------------------------------
-j4C1C
-        CMP #$06
-        BEQ b4C21
+MaybeZarjazInterlaceMode
+        CMP #ZARJAZ_INTERLACE_RES_MODE
+        BEQ ZarjazInterlaceMode
         RTS 
 
-b4C21   LDA aC3
+ZarjazInterlaceMode   
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$E8
         STA aEB
-        LDA aC4
+        LDA screenMemoryHiPtr2
         ADC #$0D
         STA FPCOC
+
         LDX #$5A
-b4C30   JSR s4AF8
+b4C30   JSR WriteValuesFromMemoryToDisplayList
         LDA #$4F
         JSR WriteValueToDisplayList
         LDA aEB
         JSR WriteValueToDisplayList
         LDA FPCOC
         JSR WriteValueToDisplayList
-        LDA aC3
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$28
-        STA aC3
-        LDA aC4
+        STA screenMemoryLoPtr2
+        LDA screenMemoryHiPtr2
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA aEB
         CLC 
         ADC #$D8
@@ -2158,75 +2218,76 @@ b4C30   JSR s4AF8
         STA FPCOC
         DEX 
         BNE b4C30
+
         LDA #$59
         STA bottomMostYPos
-        JMP j40AA
+        JMP WriteDisplayListFooter
+        ; Returns
 
-a4C66   .BYTE $01
-a4C67   .BYTE $01
-colorValuesOfSomeSort   .BYTE $00,$18,$38,$58,$78,$98,$B8,$D8
-f4C70   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-f4C78   .BYTE $01,$01,$01,$01,$01,$01,$01,$01
-f4C80   .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
-f4C88   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-f4C90   .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
-f4C98   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+randomKeyInputCounter      .BYTE $01
+randomJoystickInputCounter .BYTE $01
+colorValuesOfSomeSort      .BYTE $00,$18,$38,$58,$78,$98,$B8,$D8
+oozeRates                  .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+oozeSteps                  .BYTE $01,$01,$01,$01,$01,$01,$01,$01
+oozeCycles                 .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
+oozeRates2                 .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+oozeCycles2                .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
+oozeRateTracker            .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 ;-------------------------------------------------------------------------
-; s4CA0
+; CheckStrobesAndColorFlow
 ;-------------------------------------------------------------------------
-s4CA0
+CheckStrobesAndColorFlow
         LDA stroboscopicsEnabled
-        BEQ b4CA8
-        JMP j4CF4
+        BEQ UpdateOoze
+        JMP UpdateStrobo
 
-b4CA8   LDX #$00
-b4CAA   LDA f4C70,X
+UpdateOoze   
+        LDX #$00
+b4CAA   LDA oozeRates,X
         BEQ b4CB7
-        DEC f4C88,X
+        DEC oozeRates2,X
         BNE b4CB7
-        JSR s4CBD
+        JSR UpdateOozeRatesAndSteps
 b4CB7   INX 
         CPX #$08
         BNE b4CAA
         RTS 
 
 ;-------------------------------------------------------------------------
-; s4CBD
+; UpdateOozeRatesAndSteps
 ;-------------------------------------------------------------------------
-s4CBD
-        LDA f4C70,X
-        STA f4C88,X
-        LDA f4C78,X
+UpdateOozeRatesAndSteps
+        LDA oozeRates,X
+        STA oozeRates2,X
+        LDA oozeSteps,X
         BEQ b4CE7
-        LDY f4C98,X
+        LDY oozeRateTracker,X
         BNE b4CE8
         CLC 
         ADC PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
-;-------------------------------------------------------------------------
-; j4CD1
-;-------------------------------------------------------------------------
-j4CD1
+
+OozeUpdateLoop
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
-        DEC f4C90,X
+        DEC oozeCycles2,X
         BNE b4CE7
-        LDA f4C80,X
-        STA f4C90,X
-        LDA f4C98,X
+        LDA oozeCycles,X
+        STA oozeCycles2,X
+        LDA oozeRateTracker,X
         EOR #$FF
-        STA f4C98,X
+        STA oozeRateTracker,X
 b4CE7   RTS 
 
 b4CE8   LDA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         SEC 
-        SBC f4C78,X
-        JMP j4CD1
+        SBC oozeSteps,X
+        JMP OozeUpdateLoop
 
-somethingToDoWithStrobo   =*+$01
-stroboscopicsEnabled   BRK #$00
+stroboscopicsEnabled    .BYTE $00
+somethingToDoWithStrobo .BYTE $00
 ;-------------------------------------------------------------------------
-; j4CF4
+; UpdateStrobo
 ;-------------------------------------------------------------------------
-j4CF4
+UpdateStrobo
         LDA stroboscopicsEnabled
         BNE b4CFA
         RTS 
@@ -2235,6 +2296,7 @@ b4CFA   DEC somethingToDoWithStrobo
         LDA somethingToDoWithStrobo
         CMP #$FE
         BNE b4D1B
+
         LDX #$08
 b4D06   LDA BOTSCR,X ;BOTSCR  number of text rows in text window
         STA f4D2A,X
@@ -2242,23 +2304,26 @@ b4D06   LDA BOTSCR,X ;BOTSCR  number of text rows in text window
         STA BOTSCR,X ;BOTSCR  number of text rows in text window
         DEX 
         BNE b4D06
+
         LDA stroboscopicsEnabled
         STA somethingToDoWithStrobo
 b4D1A   RTS 
 
 b4D1B   CMP #$00
         BNE b4D1A
+
 ;-------------------------------------------------------------------------
-; j4D1F
+; RestoreStrobo
 ;-------------------------------------------------------------------------
-j4D1F
+RestoreStrobo
         LDX #$08
 b4D21   LDA f4D2A,X
         STA BOTSCR,X ;BOTSCR  number of text rows in text window
         DEX 
         BNE b4D21
-f4D2A   RTS 
+        RTS 
 
+f4D2A   =*-$01
         .BYTE $54,$09,$6B,$5C,$C0,$B1,$13,$4E
 ;-------------------------------------------------------------------------
 ; LookForKeyboardInput
@@ -2284,9 +2349,11 @@ b4D3B   LDA slothModeRelated
 b4D57   LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
         CMP #$FF
         BNE b4D93
+
         LDA beginDrawingForeground
         BEQ b4D66
-        JMP j5924
+
+        JMP ComposeForeground
 
 b4D66   LDA a4ECC
         BEQ b4D6E
@@ -2299,23 +2366,23 @@ b4D6E   LDA a4F4C
         BEQ b4D88
 
 RepointTextMaybe
-        LDA #<f4ED1
-        STA a8003
-        LDA #>f4ED1
-        STA p8004
+        LDA #<statusTextLineOne
+        STA screenMemoryLoPtr
+        LDA #>statusTextLineOne
+        STA screenMemoryHiPtr
 b4D87   RTS 
 
-b4D88   LDA #<f4EE5
-        STA a8003
-        LDA #>f4EE5
-        STA p8004
+b4D88   LDA #<statusTextLineTwo
+        STA screenMemoryLoPtr
+        LDA #>statusTextLineTwo
+        STA screenMemoryHiPtr
         RTS 
 
 b4D93   LDY #$FF
         STY inputCharacter       ;inputCharacter      keyboard FIFO byte
         LDY beginDrawingForeground
         BEQ MaybeSKeyPressed
-        JMP j5924
+        JMP ComposeForeground
 
 MaybeSKeyPressed   
         CMP #KEY_S
@@ -2334,7 +2401,7 @@ b4DAF   STA currentSymmetry
         TAX 
         CPX #$09
         BNE b4DBB
-        LDX #$3E
+        LDX #Y_AXIS_SYMMETRY
 b4DBB   JSR UpdateStatusLine
         RTS 
 
@@ -2354,11 +2421,13 @@ b4DCF   STA screenMode
         ADC #$0D
         TAX 
         JSR UpdateStatusLine
+
         LDA #$01
-        STA a4DDF
+        STA selectedModePreventsForegroundDrawing
+
         RTS 
 
-a4DDF   .BYTE $00
+selectedModePreventsForegroundDrawing   .BYTE $00
 MaybeZKeyPressed   
         CMP #KEY_Z
         BNE MaybeShiftZPressed
@@ -2370,7 +2439,7 @@ MaybeZKeyPressed
         BNE b4DEE
         DEC verticalResolutionSPAC
 b4DEE   LDA #$01
-        STA a4DDF
+        STA selectedModePreventsForegroundDrawing
         RTS 
 
 MaybeShiftZPressed   
@@ -2402,8 +2471,8 @@ b4E15   AND #$18
         SEC 
         SBC #$08
         STA lastKeyPressed
-        LDX #$35
-        JMP UpdateStatusLineAndReturn
+        LDX #USER_LIGHTFORM_000
+        JMP UpdateStatusLineAndDisplaySelectedValue
 
 b4E26   LDX currentPatternIndex
         JMP UpdateStatusLine
@@ -2467,13 +2536,17 @@ MaybeFullStopPressed
         LDA stroboFlashRate
         CMP #$08
         BNE b4E86
+
         LDA #$01
         STA stroboFlashRate
+
 b4E86   LDA stroboFlashRate
         STA lastKeyPressed
-        LDX #$16
+
+        LDX #STROBO_ZAP_RATE_000
         JSR UpdateStatusLine
         JSR WriteStatusLine
+
         LDA stroboscopicsEnabled
         BEQ b4E9F
         LDA stroboFlashRate
@@ -2494,23 +2567,25 @@ MaybeSlashPressed
         STA stroboscopicsEnabled
         LDA #$00
         STA somethingToDoWithStrobo
-        LDX #$14
+        LDX #STROBOSCOPICS_ON
         JMP UpdateStatusLine
 
 b4EBC   LDA #$00
         STA stroboscopicsEnabled
         STA somethingToDoWithStrobo
-        LDX #$15
+        LDX #STROBOSCOPICS_OFF
         JSR UpdateStatusLine
-        JMP j4D1F
+        JMP RestoreStrobo
 
 a4ECC   BRK #$00
 b4ECE   JMP MaybeAsteriskPressed
 
-f4ED1   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+statusTextLineOne   
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00
-f4EE5   .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+statusTextLineTwo   
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00
 DisplayListInterrupt   
@@ -2549,9 +2624,9 @@ b4F24   LDA statusLineTextLoByte
         DEX 
         BNE b4F24
 b4F38   LDA statusLineTextLoByte
-        STA a8003
+        STA screenMemoryLoPtr
         LDA statusLineTextHiByte
-        STA p8004
+        STA screenMemoryHiPtr
         LDA #$30
         STA a4F4C
         RTS 
@@ -2629,7 +2704,6 @@ statusLineText
         .TEXT 'NORMAL PATTERN MODE '
         .TEXT 'EXPLOSION MODE ON   '
         .TEXT 'Y-AXIS SYMMETRY.    '
-        .TEXT ''
 .enc "none" 
 ;-------------------------------------------------------------------------
 ; IncrementColorValue
@@ -2637,7 +2711,7 @@ statusLineText
 IncrementColorValue
         TXA
         TAY 
-        LDA #$17
+        LDA #BASE_COLOUR_0__000
         CLC 
         ADC currentColourControlEffect
         TAX 
@@ -2688,10 +2762,11 @@ lastKeyPressed   .BYTE $00
 WriteStatusLine
         LDA disableStatusLine
         BNE b5492
-        LDA a8003
+        LDA screenMemoryLoPtr
         STA presetLoPtr
-        LDA p8004
-j548D
+        LDA screenMemoryHiPtr
+
+WriteStatusReturn
         STA presetHiPtr
         LDY #$00
         RTS 
@@ -2699,27 +2774,30 @@ j548D
 b5492   LDA #$A2
         STA presetLoPtr
         LDA #$2E
-        JMP j548D
+        JMP WriteStatusReturn
 
 ;-------------------------------------------------------------------------
 ; UpdateColorControlValues
 ;-------------------------------------------------------------------------
 UpdateColorControlValues
         LDY currentColourControlEffect
-        BNE b54A3
+        BNE MaybeUpdateOozeRates
         JMP UpdateColorsInSomeWay
 
-b54A3   CPY #$01
-        BNE b54C6
+MaybeUpdateOozeRates   
+        CPY #CCKEYS__OOZE_RATES
+        BNE MaybeUpdateOozeSteps
+
+        ; Update Ooze Rates
         AND #$80
         BNE b54B1
-        DEC f4C70,X
-        DEC f4C70,X
-b54B1   INC f4C70,X
-        LDA f4C70,X
-        STA f4C88,X
+        DEC oozeRates,X
+        DEC oozeRates,X
+b54B1   INC oozeRates,X
+        LDA oozeRates,X
+        STA oozeRates2,X
 
-j54BA
+WriteColorValueAndReturn
         STA lastKeyPressed
         LDA #$30
         STA a4ECC
@@ -2728,24 +2806,26 @@ j54BA
 
 currentColourControlEffect   .BYTE $00
 
-b54C6   CPY #$02
-        BNE b54DD
+MaybeUpdateOozeSteps   
+        CPY #CCKEYS__OOZE_STEPS
+        BNE UpdateOozeCycles
         AND #$80
         BNE b54D4
-        DEC f4C78,X
-        DEC f4C78,X
-b54D4   INC f4C78,X
-        LDA f4C78,X
-        JMP j54BA
+        DEC oozeSteps,X
+        DEC oozeSteps,X
+b54D4   INC oozeSteps,X
+        LDA oozeSteps,X
+        JMP WriteColorValueAndReturn
 
-b54DD   AND #$80
+UpdateOozeCycles   
+        AND #$80
         BNE b54E7
-        DEC f4C80,X
-        DEC f4C80,X
-b54E7   INC f4C80,X
-        LDA f4C80,X
-        STA f4C90,X
-        JMP j54BA
+        DEC oozeCycles,X
+        DEC oozeCycles,X
+b54E7   INC oozeCycles,X
+        LDA oozeCycles,X
+        STA oozeCycles2,X
+        JMP WriteColorValueAndReturn
 
 ;-------------------------------------------------------------------------
 ; MaybeAsteriskPressed
@@ -2753,12 +2833,14 @@ b54E7   INC f4C80,X
 MaybeAsteriskPressed
         CMP #KEY_ASTERISK
         BNE MaybeShiftAsteriskPressed
+
         INC currentColourControlEffect
         LDA currentColourControlEffect
         AND #$03
         STA currentColourControlEffect
+
         CLC 
-        ADC #$1B
+        ADC #CKEYS___COLOURS
         TAX 
         JMP UpdateStatusLine
 
@@ -2774,16 +2856,16 @@ ColourFlowResync
         LDX #$00
 b550F   LDA colorValuesOfSomeSort,X
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
-        LDA f4C80,X
-        STA f4C90,X
-        LDA f4C70,X
-        STA f4C88,X
+        LDA oozeCycles,X
+        STA oozeCycles2,X
+        LDA oozeRates,X
+        STA oozeRates2,X
         LDA #$00
-        STA f4C98,X
+        STA oozeRateTracker,X
         INX 
         CPX #$08
         BNE b550F
-        LDX #$1F
+        LDX #COLOURFLOW_RESYNCHED
         JMP UpdateStatusLine
 
 MaybePPressed
@@ -2816,9 +2898,9 @@ b554E   LDA pulseSpeed   ;pulseSpeed
         STA lastKeyPressed
         LDX #$20
 ;-------------------------------------------------------------------------
-; UpdateStatusLineAndReturn
+; UpdateStatusLineAndDisplaySelectedValue
 ;-------------------------------------------------------------------------
-UpdateStatusLineAndReturn
+UpdateStatusLineAndDisplaySelectedValue
         JSR UpdateStatusLine
         JSR WriteStatusLine
         JMP IncrementDisplayedValue
@@ -2841,8 +2923,8 @@ MaybeXPressed
         LDA #$01
 b5573   STA speedBoostAdjust
         STA lastKeyPressed
-        LDX #$21
-        JMP UpdateStatusLineAndReturn
+        LDX #SPEED_BOOST___000
+        JMP UpdateStatusLineAndDisplaySelectedValue
 
 MaybeCKeyPressed   
         CMP #KEY_C
@@ -2856,10 +2938,12 @@ MaybeCKeyPressed
         BNE b5591
         INC cursorSpeed
 b5591   LDA cursorSpeed
-        STA a4A1F
+        STA newCursorSpeed
         STA lastKeyPressed
-        LDX #$22
-        JMP UpdateStatusLineAndReturn
+
+        LDX #CURSOR_SPEED__000
+        JMP UpdateStatusLineAndDisplaySelectedValue
+        ; Returns
 
 MaybeVKeyPressed   
         CMP #KEY_V
@@ -2885,7 +2969,7 @@ MaybeTKeyPressed
         STA vectorMode
         AND #$01
         CLC 
-        ADC #$25
+        ADC #LOGIC_TRACKING_OFF
         TAX 
         JMP UpdateStatusLine
 
@@ -2909,8 +2993,8 @@ DKeyPressed
 b55DE   INC smoothingDelay
         LDA smoothingDelay
         STA lastKeyPressed
-        LDX #$27
-        JMP UpdateStatusLineAndReturn
+        LDX #SMOOTHING_DELAY_000
+        JMP UpdateStatusLineAndDisplaySelectedValue
 
 b55EA   RTS 
 
@@ -2931,7 +3015,7 @@ MaybeBPressed
 b55FA   STA bufferLength
         STA lastKeyPressed
         JSR PropagateNewBufferLength
-        JMP CheckPresetKeys
+        JMP UpdateBufferStatusAndReturn
 
 ;-------------------------------------------------------------------------
 ; PropagateNewBufferLength
@@ -2951,11 +3035,11 @@ b560F   LDA #$01
 b561C   RTS 
 
 ;-------------------------------------------------------------------------
-; CheckPresetKeys
+; UpdateBufferStatusAndReturn
 ;-------------------------------------------------------------------------
-CheckPresetKeys
-        LDX #$28
-        JMP UpdateStatusLineAndReturn
+UpdateBufferStatusAndReturn
+        LDX #BUFFER_LENGTH__000
+        JMP UpdateStatusLineAndDisplaySelectedValue
 
 MaybePresetKeysPressed   
         PHA 
@@ -2976,7 +3060,7 @@ PresetKeyPressed
         PLA 
         AND #$C0
         CMP #$40
-        BEQ b564F
+        BEQ SaveNewPreset
         CMP #$80
         BNE b5641
         RTS 
@@ -2984,13 +3068,15 @@ PresetKeyPressed
 b5641   STX lastKeyPressed
         STX selectedPreset
         JSR LoadPreset
-        LDX #$29
-        JMP UpdateStatusLineAndReturn
+        LDX #RUNNING_PRESET_000
+        JMP UpdateStatusLineAndDisplaySelectedValue
+        ; Rertuns
 
-b564F   STX lastKeyPressed
+SaveNewPreset   
+        STX lastKeyPressed
         JSR StorePresetValues
-        LDX #$2A
-        JMP UpdateStatusLineAndReturn
+        LDX #STASHING_PRESET_000
+        JMP UpdateStatusLineAndDisplaySelectedValue
 
 presetKeys   .BYTE $1C,$1F,$1E,$1A,$18,$1D,$1B,$33
              .BYTE $35,$30,$32,$36,$37,$34,$0E,$0F
@@ -3124,20 +3210,20 @@ b5748   JSR GetByteFromPreset
         LDX #$00
 b575D   LDA colorValuesOfSomeSort,X
         STA PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
-        LDA f4C70,X
-        STA f4C88,X
-        LDA f4C80,X
-        STA f4C90,X
+        LDA oozeRates,X
+        STA oozeRates2,X
+        LDA oozeCycles,X
+        STA oozeCycles2,X
         LDA #$00
-        STA f4C98,X
+        STA oozeRateTracker,X
         INX 
         CPX #$08
         BNE b575D
 
-        LDA f4C70
+        LDA oozeRates
         STA COLOR4   ;COLOR4  shadow for COLBK ($D01A)
         LDA #$01
-        STA a4DDF
+        STA selectedModePreventsForegroundDrawing
         JMP PropagateNewBufferLength
         ;Returns
 
@@ -3175,8 +3261,9 @@ b57A4   INC currentPulseWidth
         STA currentPulseWidth2
         STA lastKeyPressed
 
-        LDX #$2B
-        JMP UpdateStatusLineAndReturn
+        LDX #PULSE_WIDTH___000
+        JMP UpdateStatusLineAndDisplaySelectedValue
+        ; Returns
 
 ;-------------------------------------------------------------------------
 ; MaybeCapsKeyPressed
@@ -3184,6 +3271,7 @@ b57A4   INC currentPulseWidth
 MaybeCapsKeyPressed
         CMP #KEY_CAPSTOGGLE
         BNE MaybeRKeyPressed
+
         ; CAPS=Preset Bank Select 
         INC selectedPresetBank
         LDA selectedPresetBank
@@ -3193,38 +3281,39 @@ MaybeCapsKeyPressed
         STA selectedPresetBank
 b57C5   LDA selectedPresetBank
         STA lastKeyPressed
-        LDX #$2C
-        JMP UpdateStatusLineAndReturn
+        LDX #RUN_PRESET_BANK_000
+        JMP UpdateStatusLineAndDisplaySelectedValue
+        ; Returns
 
 MaybeRKeyPressed   
         PHA 
         AND #$3F
         CMP #KEY_R
-        BEQ b57DB
+        BEQ RKeyPressed
         PLA 
         JMP MaybeQKeyPressed
 
         ; R=Stop Record Mode/Begin Playback/Stop Playback CTRL
-b57DB   PLA 
-        AND #$C0
-        BEQ b583F
-        CMP #$40
-        BEQ b582C
+RKeyPressed   
+        PLA 
+        AND #KEY_SHIFT | KEY_CTRL
+        BEQ MixedModeOnOff
+        CMP #KEY_SHIFT
+        BEQ BeginRecordMode
         LDA autoDemoEnabled
         CMP #$01
-        BNE b57EC
+        BNE StopRecordPlayback
         RTS 
 
-b57EC   LDA dualJoystickMode
-        BEQ b581F
-;-------------------------------------------------------------------------
-; j57F1
-;-------------------------------------------------------------------------
-j57F1
+StopRecordPlayback   
+        LDA dualJoystickMode
+        BEQ MixRecordAndLivePlay
+
+DisableDualJoystics
         LDA #$00
         STA dualJoystickMode
         JSR DuplicatePixelPosition
-        JMP j581A
+        JMP UpdateStatusLineForPlayback
 
 ;-------------------------------------------------------------------------
 ; DuplicatePixelPosition
@@ -3240,7 +3329,7 @@ DuplicatePixelPosition
         STA pixelYPosition
         LDA #$00
         STA aDF
-        JSR RecordPixelPaint
+        JSR FetchValuesForPlayback
         PLA 
         STA pixelYPosition
         PLA 
@@ -3248,49 +3337,60 @@ DuplicatePixelPosition
         RTS 
 
 ;-------------------------------------------------------------------------
-; j581A
+; UpdateStatusLineForPlayback
 ;-------------------------------------------------------------------------
-j581A
-        LDX #$33
+UpdateStatusLineForPlayback
+        ;Mixed Mode off
+        LDX #MIXED_MODE_OFF
         JMP UpdateStatusLine
+        ;Returns
 
-b581F   LDX #$32
+MixRecordAndLivePlay   
+        LDX #MIX_RECLIVE_PLAY
         LDA #$01
         STA dualJoystickMode
-        JSR s5C79
+        JSR StorePixelPositions
         JMP UpdateStatusLine
+        ;Returns
 
-b582C   LDA autoDemoEnabled
-        BNE b585A
+BeginRecordMode   
+        LDA autoDemoEnabled
+        BNE ClearAndDisableDemoMode
         LDA dualJoystickMode
-        BEQ b5837
+        BEQ InitiateRecording
         RTS 
 
-b5837   JSR s5B30
-        LDX #$2D
+InitiateRecording   
+        JSR StartRecording
+        LDX #RECORDING_INITIATED
         JMP UpdateStatusLine
+        ; Returns
 
-b583F   LDA autoDemoEnabled
+MixedModeOnOff   
+        LDA autoDemoEnabled
         CMP #$01
-        BEQ b585A
+        BEQ ClearAndDisableDemoMode
         CMP #$00
         BNE DisableDemoMode
         LDA fA000
         CMP #$CC
-        BNE b5852
+        BNE InitiatePlayback
         RTS 
 
-b5852   JSR s5BD8
-        LDX #$2E
+InitiatePlayback   
+        JSR StartPlayback
+        LDX #PLAYBACK_INITIATED
         JMP UpdateStatusLine
+        ; Returns
 
-b585A   LDY #$00
+ClearAndDisableDemoMode   
+        LDY #$00
         LDA #$CC
         STA (generalLoPtr),Y
         STA (keyboardInputArray),Y
 
 DisableDemoMode   
-        LDX #$2F
+        LDX #T_E_R_M_I_N_A_T_E_D
         LDA #$00
         STA autoDemoEnabled
         JMP UpdateStatusLine
@@ -3322,7 +3422,7 @@ MaybeQKeyPressed
         STA slothMode
         LDA #$00
         STA slothModeRelated
-        LDX #$30
+        LDX #ZARJAZ_SLOTH_DISABLE
         JMP UpdateStatusLine
 
 b588F   LDA #$03
@@ -3331,7 +3431,7 @@ b588F   LDA #$03
         AND #$07
         ORA #$01
         STA slothModeRelated
-        LDX #$31
+        LDX #ZARJAZ_SLOTH_ENABLE
         JMP UpdateStatusLine
 
 dualJoystickMode   .BYTE $00
@@ -3343,13 +3443,14 @@ MaybeJPressed
 
         ; J=Dual Joystick mode off/on 
         LDA dualJoystickMode
-        BEQ b58B1
-        JMP j57F1
+        BEQ EnableDualJoystics
+        JMP DisableDualJoystics
 
-b58B1   JSR s5C79
+EnableDualJoystics   
+        JSR StorePixelPositions
         LDA #$02
         STA dualJoystickMode
-        LDX #$34
+        LDX #DUAL_INPUT_MODE_ON
         JMP UpdateStatusLine
 
 MaybeSemiColonPressed   
@@ -3364,16 +3465,21 @@ MaybeSemiColonPressed
         LDA #$00
 b58CE   STA secondUserLightform
         AND #$18
-        BEQ b58E3
+        BEQ UpdateStatusForSecondUserLightForm
+
         LDA secondUserLightform
         SEC 
         SBC #$08
         STA lastKeyPressed
-        LDX #$35
-        JMP UpdateStatusLineAndReturn
 
-b58E3   LDX secondUserLightform
+        LDX #USER_LIGHTFORM_000
+        JMP UpdateStatusLineAndDisplaySelectedValue
+        ;Returns
+
+UpdateStatusForSecondUserLightForm   
+        LDX secondUserLightform
         JMP UpdateStatusLine
+        ;Returns
 
 secondUserLightform   .BYTE $00
 
@@ -3397,7 +3503,7 @@ beginDrawingForeground   .BYTE $00
 ; ClearDownCurrentPattern   
 ;-------------------------------------------------------------------------
 ClearDownCurrentPattern   
-        LDA #$03
+        LDA #CLEAR_FOREGROUND
         STA beginDrawingForeground
         LDX currentPatternIndex
         LDA pixelXPositionLoPtrArray,X
@@ -3411,6 +3517,7 @@ b5913   STA (generalLoPtr),Y
         INY 
         CPY #$40
         BNE b5913
+
         LDA #$06
         STA aD6
         LDA #$00
@@ -3418,13 +3525,13 @@ b5913   STA (generalLoPtr),Y
         RTS 
 
 ;-------------------------------------------------------------------------
-; j5924
+; ComposeForeground
 ;-------------------------------------------------------------------------
-j5924
+ComposeForeground
         LDY beginDrawingForeground
-        CPY #$02
+        CPY #DRAW_FOREGROUND
         BNE b592E
-        JMP j5980
+        JMP ProcessKeyStrokesDuringForegroundDrawing
 
 b592E   CMP #$0C
         BNE b5946
@@ -3441,9 +3548,11 @@ b5946   LDA #$3A
         SEC 
         SBC a5966
         STA lastKeyPressed
-        LDX #$36
+
+        LDX #LEVEL_0__FREE_000
         JSR UpdateStatusLine
         JSR WriteStatusLine
+
         LDA #$08
         SEC 
         SBC aD6
@@ -3467,48 +3576,55 @@ MaybeAPressed
         LDA #$03
         STA autoDemoEnabled
         JSR EnableDemoMode
-        LDX #$37
+        LDX #AUTO_DEMO_MODE_ON
         JMP UpdateStatusLine
         ;Returns
 
 b597D   JMP DisableDemoMode
 
 ;-------------------------------------------------------------------------
-; j5980
+; ProcessKeyStrokesDuringForegroundDrawing
 ;-------------------------------------------------------------------------
-j5980
+ProcessKeyStrokesDuringForegroundDrawing
         CMP #KEY_SPACE
         BNE b5996
-        INC a5ED4
-        LDA a5ED4
+
+        ; Change the plot color
+        INC foregroundDrawPlotColor
+        LDA foregroundDrawPlotColor
         CMP #$09
         BNE b5990
         LDA #$00
-b5990   STA a5ED4
-        JMP j59A0
+b5990   STA foregroundDrawPlotColor
+        JMP UpdateColorStatusForDrawingForeground
 
 b5996   CMP #KEY_RETURN
-        BNE b59B1
-        LDA #$03
-        STA a5F45
+        BNE MaybeBackspacePressed
+
+        ; Forground point selected
+        LDA #FOREGROUND_POINT_SELECTED
+        STA foregroundDrawState
         RTS 
 
 ;-------------------------------------------------------------------------
-; j59A0
+; UpdateColorStatusForDrawingForeground
 ;-------------------------------------------------------------------------
-j59A0
-        LDX #$38
-        LDA a5ED4
+UpdateColorStatusForDrawingForeground
+        LDX #PIXEL_COLOUR__000
+        LDA foregroundDrawPlotColor
         STA lastKeyPressed
-        LDA aC4
+        LDA screenMemoryHiPtr2
         CMP #$13
         BEQ b59D3
-        JMP UpdateStatusLineAndReturn
+        JMP UpdateStatusLineAndDisplaySelectedValue
+        ;Returns
 
-b59B1   CMP #$34
-        BNE j59A0
-        LDA #$02
-        STA a5F45
+MaybeBackspacePressed   
+        CMP #KEY_BACKSPACE
+        BNE UpdateColorStatusForDrawingForeground
+
+        LDA #DELETE_FOREGROUND_POINT
+        STA foregroundDrawState
         RTS 
 
 MaybeShiftFPressed   
@@ -3516,31 +3632,33 @@ MaybeShiftFPressed
         BNE MaybeShiftGPressed
 
         ; SHIFT-F=Begin drawing on foreground screen 
-        LDY a4DDF
+        LDY selectedModePreventsForegroundDrawing
         BNE MaybeShiftGPressed
         LDY autoDemoEnabled
         BNE MaybeShiftGPressed
-        LDA #$02
-        STA beginDrawingForeground
-        LDX #$38
-        JMP UpdateStatusLine
 
-b59D3   LDA aC3
+        LDA #DRAW_FOREGROUND
+        STA beginDrawingForeground
+        LDX #PIXEL_COLOUR__000
+        JMP UpdateStatusLine
+        ;Returns
+
+b59D3   LDA screenMemoryLoPtr2
         AND #$80
         BNE b59DC
-        JMP UpdateStatusLineAndReturn
+        JMP UpdateStatusLineAndDisplaySelectedValue
 
-b59DC   LDX #$39
+b59DC   LDX #COLOUR_0__FREE_000
         JSR UpdateStatusLine
         JSR WriteStatusLine
         LDY #$07
         LDA #$10
         CLC 
-        ADC a5ED4
+        ADC foregroundDrawPlotColor
         STA (presetLoPtr),Y
         LDA #$00
         SEC 
-        SBC aC3
+        SBC screenMemoryLoPtr2
         STA lastKeyPressed
         JMP IncrementDisplayedValue
 
@@ -3558,11 +3676,11 @@ b5A09   STA symmetryForeground
         CLC 
         ADC #$08
         TAX 
-        CPX #$09
+        CPX #BUGGER_OFF_NOSEY
         BEQ b5A17
         JMP UpdateStatusLine
 
-b5A17   LDX #$3E
+b5A17   LDX #Y_AXIS_SYMMETRY
         JMP UpdateStatusLine
 
 MaybeGPressed   
@@ -3641,7 +3759,7 @@ b5A85   LDY #$07
         INX 
 b5A88   LDA colorValuesOfSomeSort,X
         CLC 
-        ADC a5AC0
+        ADC simlAdder
         STA colorValuesOfSomeSort,X
         INX 
         DEY 
@@ -3657,39 +3775,38 @@ MaybeYPressed
         BNE b5AB2
         LDA #$01
         STA disableStatusLine
-        LDA #<f4EE5
-        STA a8003
-        LDA #>f4EE5
-        STA p8004
+        LDA #<statusTextLineTwo
+        STA screenMemoryLoPtr
+        LDA #>statusTextLineTwo
+        STA screenMemoryHiPtr
         RTS 
 
 b5AB2   LDA #$00
         STA disableStatusLine
         JSR RepointTextMaybe
-        LDX #$3A
+        LDX #STATUS_DISPLAYS_ON
         JMP UpdateStatusLine
 
-disableStatusLine   .BYTE $00
-a5AC0   .BYTE $10
+disableStatusLine .BYTE $00
+simlAdder         .BYTE $10
 
 MaybeCtrlJPressed   
         CMP #KEY_CTRL | KEY_J
         BNE MaybeShiftJPressed
         .BYTE $EE,$C0,$5A
-;-------------------------------------------------------------------------
-; j5AC8
-;-------------------------------------------------------------------------
-j5AC8
-        LDA a5AC0
+
+UpdateSimlAdderStatus
+        LDA simlAdder
         STA lastKeyPressed
-        LDX #$3B
-        JMP UpdateStatusLineAndReturn
+        LDX #SIML_ADDER_VALUE000
+        JMP UpdateStatusLineAndDisplaySelectedValue
+        ; Returns
 
 MaybeShiftJPressed
         CMP #KEY_SHIFT | KEY_J
         BNE MaybeEKeyPressed
-        DEC a5AC0
-        JMP j5AC8
+        DEC simlAdder
+        JMP UpdateSimlAdderStatus
 
 MaybeEKeyPressed   
         CMP #KEY_E
@@ -3700,11 +3817,12 @@ MaybeEKeyPressed
         EOR #$80
         STA explosionMode
         AND #$80
-        BNE b5AF2
-        LDX #$3C
+        BNE UpdateExplosionModeStatus
+        LDX #NORMAL_PATTERN_MODE
         JMP UpdateStatusLine
 
-b5AF2   LDX #$3D
+UpdateExplosionModeStatus   
+        LDX #EXPLOSION_MODE_ON
         JMP UpdateStatusLine
 
 MaybeCtrlQPressed   
@@ -3755,16 +3873,16 @@ MaybeShiftCtrlCapsLockPressed
         JMP WriteCreditsText
 
 ;-------------------------------------------------------------------------
-; s5B30
+; StartRecording
 ;-------------------------------------------------------------------------
-s5B30
+StartRecording
         LDA #<fA000
         STA generalLoPtr
         LDA #>fA000
         STA generalHiPtr
         LDA #$01
-        STA a4C66
-        STA a4C67
+        STA randomKeyInputCounter
+        STA randomJoystickInputCounter
         LDA #<fB000
         STA keyboardInputArray
         LDA #>fB000
@@ -3798,12 +3916,12 @@ b5B73   LDY #$00
         LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
         CMP (generalLoPtr),Y
         BNE b5B81
-        INC a4C67
+        INC randomJoystickInputCounter
         JMP GetKeyboardInput
 
 b5B81   TAX 
         INY 
-        LDA a4C67
+        LDA randomJoystickInputCounter
         STA (generalLoPtr),Y
         LDA generalLoPtr
         CLC 
@@ -3820,7 +3938,7 @@ b5B9C   TXA
         LDY #$00
         STA (generalLoPtr),Y
         LDA #$01
-        STA a4C67
+        STA randomJoystickInputCounter
 
 ;-------------------------------------------------------------------------
 ; GetKeyboardInput
@@ -3830,10 +3948,10 @@ GetKeyboardInput
         LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
         CMP (keyboardInputArray),Y
         BNE b5BB4
-        INC a4C66
+        INC randomKeyInputCounter
         BNE b5BD7
 b5BB4   INY 
-        LDA a4C66
+        LDA randomKeyInputCounter
         STA (keyboardInputArray),Y
         LDA keyboardInputArray
         CLC 
@@ -3848,13 +3966,13 @@ b5BB4   INY
         LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
         STA (keyboardInputArray),Y
         LDA #$01
-        STA a4C66
+        STA randomKeyInputCounter
 b5BD7   RTS 
 
 ;-------------------------------------------------------------------------
-; s5BD8
+; StartPlayback
 ;-------------------------------------------------------------------------
-s5BD8
+StartPlayback
         LDA #<fA000
         STA generalLoPtr
         LDA #>fA000
@@ -3864,11 +3982,11 @@ s5BD8
         LDA #>fB000
         STA aC6
         LDA #$01
-        STA a4C66
-        STA a4C67
+        STA randomKeyInputCounter
+        STA randomJoystickInputCounter
         LDA #$00
         STA aDF
-        JSR RecordPixelPaint
+        JSR FetchValuesForPlayback
         LDA a5C75
         STA pixelXPosition
         LDA a5C76
@@ -3887,7 +4005,7 @@ GetRandomKeyboardInput
         BNE b5C14
         JMP GetRandomJoytstickMovement
 
-b5C14   DEC a4C66
+b5C14   DEC randomKeyInputCounter
         BNE b5C39
         LDA keyboardInputArray
         CLC 
@@ -3905,8 +4023,8 @@ b5C2D   LDY #$00
         STA DEGFLG
         INY 
         LDA (keyboardInputArray),Y
-        STA a4C66
-b5C39   DEC a4C67
+        STA randomKeyInputCounter
+b5C39   DEC randomJoystickInputCounter
         BNE b5C5E
         LDA generalLoPtr
         CLC 
@@ -3917,14 +4035,14 @@ b5C39   DEC a4C67
         STA generalHiPtr
         CMP #$B0
         BNE b5C52
-        JMP s5BD8
+        JMP StartPlayback
 
 b5C52   LDY #$00
         LDA (generalLoPtr),Y
         STA FLPTR
         INY 
         LDA (generalLoPtr),Y
-        STA a4C67
+        STA randomJoystickInputCounter
 b5C5E   LDA DEGFLG
         CMP #$CC
         BEQ b5C72
@@ -3936,16 +4054,16 @@ b5C6B   LDA FLPTR
         BEQ b5C72
         RTS 
 
-b5C72   JMP s5BD8
+b5C72   JMP StartPlayback
 
 a5C75   .BYTE $00
 a5C76   .BYTE $00
 selectedPreset   .BYTE $00
 a5C78   .BYTE $00
 ;-------------------------------------------------------------------------
-; s5C79
+; StorePixelPositions
 ;-------------------------------------------------------------------------
-s5C79
+StorePixelPositions
         LDA pixelXPosition
         STA a5CF6
         LDA pixelYPosition
@@ -3957,7 +4075,7 @@ b5C88   LDA #<fA000
         LDA #>fA000
         STA generalHiPtr
         LDA #$01
-        STA a4C67
+        STA randomJoystickInputCounter
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -3982,11 +4100,11 @@ SomethingToDoWithSecondJoystick
         STA pixelYPosition
         LDA #$00
         STA aDF
-        JSR RecordPixelPaint
+        JSR FetchValuesForPlayback
         LDA dualJoystickMode
         CMP #$02
-        BEQ b5CF8
-        DEC a4C67
+        BEQ GetInputFromSecondJoystick
+        DEC randomJoystickInputCounter
         BNE b5CEE
         LDA generalLoPtr
         CLC 
@@ -4003,7 +4121,7 @@ SomethingToDoWithSecondJoystick
         STA FLPTR
         INY 
         LDA (generalLoPtr),Y
-        STA a4C67
+        STA randomJoystickInputCounter
         RTS 
 
 b5CEE   LDA FLPTR
@@ -4015,31 +4133,40 @@ a5CF4   .BYTE $00
 secondJoystickMadeAMovememnt   .BYTE $00
 a5CF6   .BYTE $00
 a5CF7   .BYTE $00
-b5CF8   LDA STICK1   ;STICK1  shadow for PORTA hi ($D300)
+
+;-------------------------------------------------------------------------
+; GetInputFromSecondJoystick   
+;-------------------------------------------------------------------------
+GetInputFromSecondJoystick   
+        LDA STICK1   ;STICK1  shadow for PORTA hi ($D300)
         LDY STRIG1   ;STRIG1  shadow for TRIG1 ($D002)
         BNE b5D02
         ORA #$80
 b5D02   STA lastJoystickInput      ;lastJoystickInput     floating point register 1
         RTS 
 
-b5D05   LDA #$55
+;-------------------------------------------------------------------------
+; LooksUnusedRoutine   
+;-------------------------------------------------------------------------
+LooksUnusedRoutine   
+        LDA #$55
 a5D08   =*+$01
 a5D09   =*+$02
         STA a2000
         INC a5D08
-        BNE b5D05
+        BNE LooksUnusedRoutine
         INC a5D09
         LDA a5D09
         CMP #$30
-        BNE b5D05
+        BNE LooksUnusedRoutine
         LDA #$20
         STA a5D09
         RTS 
 
 ;-------------------------------------------------------------------------
-; j5D1F
+; ForegroundPixelsMaybe
 ;-------------------------------------------------------------------------
-j5D1F
+ForegroundPixelsMaybe
         JSR CreateLinePtrArray2
         JSR ClearExplosionModeArray
         LDA #$28
@@ -4049,18 +4176,20 @@ j5D1F
         ROR 
         STA currentPixelYPosition
         LDA beginDrawingForeground
-        CMP #$02
+        CMP #DRAW_FOREGROUND
         BNE b5D39
-        JMP j5F08
+        JMP ProcessForegroundPointPaint
 
 b5D39   LDA #$00
         STA currentSymmetrySetting
         LDA currentPatternIndex
         STA patternIndex
+
         LDA cursorSpeed
         PHA 
         LDA #$03
         STA cursorSpeed
+
 b5D4A   LDA aD6
         STA currentPaintState
         JSR LoopThroughPixelsAndPaint
@@ -4081,13 +4210,13 @@ b5D65   LDA a5D64
         RTS 
 
 ;-------------------------------------------------------------------------
-; j5D70
+; UpdatePixelsForeground
 ;-------------------------------------------------------------------------
-j5D70
+UpdatePixelsForeground
         LDA beginDrawingForeground
-        CMP #$02
+        CMP #DRAW_FOREGROUND
         BNE b5D7A
-        JMP j5EB8
+        JMP ShowCurrentForegroundPixelMaybe
 
 b5D7A   LDA STRIG0   ;STRIG0  shadow for TRIG0 ($D001)
         BEQ b5D65
@@ -4136,7 +4265,7 @@ GetRandomJoytstickMovement
         DEC a5E1C
         LDA a5E1D
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
-        JMP j5E2A
+        JMP GetRandomJoystickMovement
 
 b5DCD   LDA a5E1E
         BEQ EnableDemoMode
@@ -4146,12 +4275,12 @@ b5DCD   LDA a5E1E
         LDA f5E22,X
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
         DEC a5E20
-        BNE j5E2A
+        BNE GetRandomJoystickMovement
         INC a5E1F
         LDA a5E21
         STA a5E20
         DEC a5E1E
-        BNE j5E2A
+        BNE GetRandomJoystickMovement
 
 ;-------------------------------------------------------------------------
 ; EnableDemoMode
@@ -4173,7 +4302,7 @@ EnableDemoMode
         TAX 
         LDA f5E22,X
         STA a5E1D
-        JMP j5E2A
+        JMP GetRandomJoystickMovement
 
 a5E1C   .BYTE $00
 a5E1D   .BYTE $00
@@ -4183,9 +4312,9 @@ a5E20   .BYTE $00
 a5E21   .BYTE $00
 f5E22   .BYTE $0E,$06,$07,$05,$0D,$09,$0B,$0A
 ;-------------------------------------------------------------------------
-; j5E2A
+; GetRandomJoystickMovement
 ;-------------------------------------------------------------------------
-j5E2A
+GetRandomJoystickMovement
         LDA a5E5B
         BEQ b5E39
         LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
@@ -4208,14 +4337,12 @@ b5E48   JSR GetProceduralValue
         JSR GetProceduralValue
         AND #$1F
         STA a5E5C
-        JMP j5E5D
+        JMP SelectRandomPreset
 
 a5E5B   .BYTE $0A
-a5E5C   .BYTE $02    ;JAM 
-;-------------------------------------------------------------------------
-; j5E5D
-;-------------------------------------------------------------------------
-j5E5D
+a5E5C   .BYTE $02   
+
+SelectRandomPreset
         DEC a5EB6
         BEQ b5E63
         RTS 
@@ -4261,69 +4388,73 @@ b5EB0   LDA #FOREGROUND_GRAPHICS_OFF
 a5EB6   .BYTE $0A
 a5EB7   .BYTE $00
 ;-------------------------------------------------------------------------
-; j5EB8
+; ShowCurrentForegroundPixelMaybe
 ;-------------------------------------------------------------------------
-j5EB8
+ShowCurrentForegroundPixelMaybe
         LDA STRIG0   ;STRIG0  shadow for TRIG0 ($D001)
         BEQ b5EBE
         RTS 
 
 b5EBE   LDA pixelXPosition
-        STA a5ED5
+        STA foregroundRecordPixelXPos
         LDA pixelYPosition
-        STA a5ED6
-        LDA #$01
-        STA a5F45
-        LDA a5ED4
+        STA foregroundRecordPixelYPos
+        LDA #FOREGROUND_POINT_RECORDED
+        STA foregroundDrawState
+        LDA foregroundDrawPlotColor
         STA a5ED7
         RTS 
 
-a5ED4   .BYTE $03
-a5ED5   .BYTE $00
-a5ED6   .BYTE $00
+foregroundDrawPlotColor   .BYTE $03
+foregroundRecordPixelXPos   .BYTE $00
+foregroundRecordPixelYPos   .BYTE $00
 a5ED7   .BYTE $00
 ;-------------------------------------------------------------------------
 ; j5ED8
 ;-------------------------------------------------------------------------
 j5ED8
-        LDA a5ED5
+        LDA foregroundRecordPixelXPos
         STA previousPixelXPosition
-        LDA a5ED6
+        LDA foregroundRecordPixelYPos
         STA previousPixelYPosition
         LDA a5ED7
         ORA #$40
         STA currentPaintState
         JSR PaintPixelForCurrentSymmetry
-;-------------------------------------------------------------------------
-; j5EEC
-;-------------------------------------------------------------------------
-j5EEC
-        LDA a5F45
-        BEQ j5EEC
-        CMP #$01
-        BEQ b5F46
-        CMP #$03
-        BEQ b5F39
-        CMP #$02
-        BNE b5F00
-        JMP j2C00
 
-b5F00   LDA #$00
-        STA a5F45
+;-------------------------------------------------------------------------
+; ProcessForegroundDrawState
+;-------------------------------------------------------------------------
+ProcessForegroundDrawState
+        LDA foregroundDrawState
+        BEQ ProcessForegroundDrawState
+        CMP #FOREGROUND_POINT_RECORDED
+        BEQ ForegroundPointRecorded
+        CMP #FOREGROUND_POINT_SELECTED
+        BEQ SelectForegroundPoint
+        CMP #DELETE_FOREGROUND_POINT
+        BNE ForegroundStateCleared
+
+        JMP DeleteForegroundPoint
+
+ForegroundStateCleared   
+        LDA #$00
+        STA foregroundDrawState
         JMP j5ED8
 
 ;-------------------------------------------------------------------------
-; j5F08
+; ProcessForegroundPointPaint
 ;-------------------------------------------------------------------------
-j5F08
+ProcessForegroundPointPaint
         LDA #>p0FFF
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA #<p0FFF
-        STA aC3
+        STA screenMemoryLoPtr2
         LDA #$00
-        STA a5F45
+        STA foregroundDrawState
         LDA cursorSpeed
         PHA 
+
         LDX #$00
 b5F1B   LDA #$FF
         STA p1000,X
@@ -4332,38 +4463,42 @@ b5F1B   LDA #$FF
         STA f1300,X
         DEX 
         BNE b5F1B
+
         LDA #$03
         STA cursorSpeed
         LDA symmetryForeground
         STA currentSymmetrySetting
-        JMP j5EEC
+        JMP ProcessForegroundDrawState
 
-b5F39   PLA 
+SelectForegroundPoint   
+        PLA 
         STA cursorSpeed
         LDA #$00
         STA beginDrawingForeground
         JMP MainGameLoop
 
-a5F45   .BYTE $00
-b5F46   LDY #$00
-        LDA aC4
+foregroundDrawState   .BYTE $00
+
+ForegroundPointRecorded   
+        LDY #$00
+        LDA screenMemoryHiPtr2
         PHA 
-        LDA (aC3),Y
-        CMP a5ED5
+        LDA (screenMemoryLoPtr2),Y
+        CMP foregroundRecordPixelXPos
         BNE b5F6B
         PLA 
         PHA 
         CLC 
         ADC #$04
-        STA aC4
-        LDA (aC3),Y
-        CMP a5ED6
+        STA screenMemoryHiPtr2
+        LDA (screenMemoryLoPtr2),Y
+        CMP foregroundRecordPixelYPos
         BNE b5F6B
         PLA 
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA #$00
-        STA a5F45
-        JMP j5EEC
+        STA foregroundDrawState
+        JMP ProcessForegroundDrawState
 
 b5F6B   JMP j5F95
 
@@ -4373,46 +4508,46 @@ b5F6B   JMP j5F95
 j5F6E
         PLA 
         PHA 
-        STA aC4
-        LDA a5ED5
-        STA (aC3),Y
-        LDA aC4
+        STA screenMemoryHiPtr2
+        LDA foregroundRecordPixelXPos
+        STA (screenMemoryLoPtr2),Y
+        LDA screenMemoryHiPtr2
         CLC 
         ADC #$04
-        STA aC4
-        LDA a5ED6
-        STA (aC3),Y
-        LDA aC4
+        STA screenMemoryHiPtr2
+        LDA foregroundRecordPixelYPos
+        STA (screenMemoryLoPtr2),Y
+        LDA screenMemoryHiPtr2
         CLC 
         ADC #$04
-        STA aC4
+        STA screenMemoryHiPtr2
         LDA a5ED7
-        STA (aC3),Y
+        STA (screenMemoryLoPtr2),Y
         PLA 
-        STA aC4
-        JMP b5F00
+        STA screenMemoryHiPtr2
+        JMP ForegroundStateCleared
 
 ;-------------------------------------------------------------------------
 ; j5F95
 ;-------------------------------------------------------------------------
 j5F95
-        LDA aC3
+        LDA screenMemoryLoPtr2
         CLC 
         ADC #$01
-        STA aC3
+        STA screenMemoryLoPtr2
         PLA 
         ADC #$00
-        STA aC4
+        STA screenMemoryHiPtr2
         PHA 
         CMP #$20
         BEQ b5FA9
         JMP j5F6E
 
-b5FA9   LDA #$03
-        STA a5F45
+b5FA9   LDA #FOREGROUND_POINT_SELECTED
+        STA foregroundDrawState
         PLA 
-        STA aC4
-        JMP j5EEC
+        STA screenMemoryHiPtr2
+        JMP ProcessForegroundDrawState
 
         ; zero-byte padding
         .TEXT x'00' x 4172

@@ -41,25 +41,25 @@ aB5 = $B5
 displayListInstructionsLoPtr = $C0
 displayListInstructionsHiPtr = $C1
 verticalResolutionSPAC = $C2
-screenMemoryLoPtr2 = $C3
-screenMemoryHiPtr2 = $C4
+foregroundPixelsLoPtr2 = $C3
+foregroundPixelsHiPtr2 = $C4
 aC6 = $C6
-aC7 = $C7
-aC8 = $C8
-aC9 = $C9
-aCA = $CA
-aCB = $CB
-aCC = $CC
+someKindOfLinePtrLo = $C7
+someKindOfLinePtrHi = $C8
+linePtrLo = $C9
+linePtrHi = $CA
+screenLoPtr = $CB
+screenHiPtr = $CC
 previousPixelXPosition = $CD
 previousPixelYPosition = $CE
-aCF = $CF
+currentPaintPixelYPosition = $CF
 currentSymmetrySetting = $D0
 bottomMostYPos = $D1
 xPosLoPtr = $D2
 xPosHiPtr = $D3
 yPosLoPtr = $D4
 yPosHiPtr = $D5
-aD6 = $D6
+pixelsToPaint = $D6
 currentPixelXPosition = $D7
 currentPixelYPosition = $D8
 currentPaintState = $D9
@@ -103,15 +103,14 @@ generalHiPtr = $FE
 ; **** ZP POINTERS **** 
 ;
 keyboardInputArray = $C5
-pCB = $CB
 ;
 ; **** FIELDS **** 
 ;
 f1100 = $1100
 f1200 = $1200
 f1300 = $1300
-f9EA0 = $9EA0
-f9F54 = $9F54
+someKindOfLinePtrLoArray = $9EA0
+someKindOfLineHiPtrArray = $9F54
 fA000 = $A000
 fB000 = $B000
 ;
@@ -126,7 +125,7 @@ ICBLH = $0369
 ICAX1 = $036A
 ICAX2 = $036B
 a1400 = $1400
-screenMemoryLoPtr = $8003
+foregroundPixelsLoPtr = $8003
 displayListInstructions = $8000
 ;
 ; **** POINTERS **** 
@@ -136,8 +135,8 @@ p0F = $000F
 p0102 = $0102
 p0428 = $0428
 p0FFF = $0FFF
-p1000 = $1000
-screenMemoryHiPtr = $8004
+foregroundPixelData = $1000
+foregroundPixelsHiPtr = $8004
 p8008 = $8008
 p8280 = $8280
 
@@ -212,6 +211,7 @@ SomeKindOfSetupRoutine
         LDA a1FC6
         ASL 
         BCS b1F68
+
         LDY #$1E
 b1F5B   LDA ALoadRoutine,Y
         STA PRNBUF,Y
@@ -219,6 +219,7 @@ b1F5B   LDA ALoadRoutine,Y
         BPL b1F5B
         LDY #$1F
         BCC b1F75
+
 b1F68   LDY #$1D
 b1F6A   LDA AnotherLoadRoutine,Y
         STA PRNBUF,Y
@@ -232,6 +233,7 @@ b1F77   LDA f1FC8,X
         INX 
         CPX a1FC7
         BCC b1F77
+
         LDA #$FF
         STA COLDST   ;COLDST  cold start flag
         LDA #$00
@@ -266,6 +268,7 @@ a1FC7   .BYTE $09
 a1FC9   =*+$01
 a1FCA   =*+$02
 f1FC8   JSR DoSomethingWithTheCasette
+
 a1FCC   =*+$01
 a1FCD   =*+$02
         JSR LaunchColourspace
@@ -276,7 +279,9 @@ a1FD2   .BYTE $7C
 a1FD3   .BYTE $60
 a1FD4   .BYTE $7C
 a1FD5   .BYTE $80
-a1FD6   .BYTE $5C,$00,$B9,$E1,$1F,$00,$40,$A9
+a1FD6   .BYTE $5C
+        .BYTE $00
+        .BYTE $B9,$E1,$1F,$00,$40,$A9
         .BYTE $3C,$8D,$02,$00,$B9,$E1,$1F,$00
         .BYTE $40
 ;-------------------------------------------------------------------------
@@ -297,36 +302,36 @@ DoSomethingWithTheCasette
 
 .include "patterns.asm"
 ;-------------------------------------------------------------------------
-; DeleteForegroundPoint
+; PaintForegroundPoint
 ;-------------------------------------------------------------------------
-DeleteForegroundPoint
-        LDA screenMemoryHiPtr2
+PaintForegroundPoint
+        LDA foregroundPixelsHiPtr2
         CMP #$0F
         BNE b2C09
         JMP ClearAndProcessForeground
 
 b2C09   LDY #$00
-        LDA (screenMemoryLoPtr2),Y
+        LDA (foregroundPixelsLoPtr2),Y
         STA previousPixelXPosition
-        LDA screenMemoryHiPtr2
+        LDA foregroundPixelsHiPtr2
         PHA 
         CLC 
         ADC #$04
-        STA screenMemoryHiPtr2
-        LDA (screenMemoryLoPtr2),Y
+        STA foregroundPixelsHiPtr2
+        LDA (foregroundPixelsLoPtr2),Y
         STA previousPixelYPosition
         LDA #$00
         STA currentPaintState
         JSR PaintPixelForCurrentSymmetry
         PLA 
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         LDA #$FF
-        STA (screenMemoryLoPtr2),Y
-        DEC screenMemoryLoPtr2
-        LDA screenMemoryLoPtr2
+        STA (foregroundPixelsLoPtr2),Y
+        DEC foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr2
         CMP #$FF
         BNE ClearAndProcessForeground
-        DEC screenMemoryHiPtr2
+        DEC foregroundPixelsHiPtr2
 
 ClearAndProcessForeground
         LDA #$00
@@ -335,6 +340,8 @@ ClearAndProcessForeground
 
 ;-------------------------------------------------------------------------
 ; PaintForeground
+; Initially the foreground data contains the 'Colorspace by
+; Jeff Minter' banner. See foreground.asm
 ;-------------------------------------------------------------------------
 PaintForeground
         LDA textOutputControl
@@ -346,58 +353,72 @@ PaintForeground
 
 ForegroundIsOff   
         JSR ClearExplosionModeArray
-        JSR CreateLinePtrArray2
+        JSR ClearLinePtrArrays
         LDA #$00
         STA textOutputControl
         JMP MainGameLoop
 
 ForegroundIsOn   
-        LDA #>p1000
+        LDA #>foregroundPixelData
         SEI 
-        STA screenMemoryHiPtr2
-        LDA #<p1000
-        STA screenMemoryLoPtr2
+        STA foregroundPixelsHiPtr2
+        LDA #<foregroundPixelData
+        STA foregroundPixelsLoPtr2
         LDA symmetryForeground
         STA currentSymmetrySetting
+
 ForegroundPaintLoop   
         LDY #$00
-        LDA (screenMemoryLoPtr2),Y
+        LDA (foregroundPixelsLoPtr2),Y
         CMP #$FF
-        BNE b2C76
-b2C6D   LDA #$00
+        BNE HasAForegroundPixelToPaint
+
+ExitForegroundPaintLoop   
+        LDA #$00
         STA textOutputControl
         CLI 
         JMP MainGameLoop
 
-b2C76   CLC 
+HasAForegroundPixelToPaint   
+        CLC 
         ADC drawForegroundAtXPos
         STA previousPixelXPosition
-        LDA screenMemoryHiPtr2
+        
+        ; Get the Y position for this pixel.
+        LDA foregroundPixelsHiPtr2
         PHA 
         CLC 
         ADC #$04
-        STA screenMemoryHiPtr2
-        LDA (screenMemoryLoPtr2),Y
+        STA foregroundPixelsHiPtr2
+        LDA (foregroundPixelsLoPtr2),Y
         CLC 
         ADC drawForegroundAtYPos
         STA previousPixelYPosition
-        LDA screenMemoryHiPtr2
+
+        ; Get the color value for this pixel.
+        LDA foregroundPixelsHiPtr2
         CLC 
         ADC #$04
-        STA screenMemoryHiPtr2
-        LDA (screenMemoryLoPtr2),Y
+        STA foregroundPixelsHiPtr2
+        LDA (foregroundPixelsLoPtr2),Y
         ORA #$40
         STA currentPaintState
+        
+        ; Now paint the pixel.
         JSR PaintPixelForCurrentSymmetry
+
+        ; Reset the hi ptr back to the X position
+        ; array.
         PLA 
-        STA screenMemoryHiPtr2
-        INC screenMemoryLoPtr2
+        STA foregroundPixelsHiPtr2
+        INC foregroundPixelsLoPtr2
         BNE ForegroundPaintLoop
 
-        INC screenMemoryHiPtr2
-        LDA screenMemoryHiPtr2
+        ; Check if we've read all the pixels.
+        INC foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr2
         CMP #$14
-        BEQ b2C6D
+        BEQ ExitForegroundPaintLoop
         JMP ForegroundPaintLoop
 
 a2CAE   .BYTE $00
@@ -411,7 +432,7 @@ PaintExplosionMode
         STA currentPaintState
         LDA #$0A
         SEC 
-        SBC aD6
+        SBC pixelsToPaint
         STA paintOffset
         JSR PaintSomePixels
         DEC paintOffset
@@ -536,9 +557,9 @@ WriteScreenStateToDevice
         STA ICBAL
         LDA #>p2D58
         STA ICBAH
-        LDA #<screenMemoryHiPtr
+        LDA #<foregroundPixelsHiPtr
         STA ICAX1
-        LDA #>screenMemoryHiPtr
+        LDA #>foregroundPixelsHiPtr
         STA ICAX2
         LDX #$20
         JMP CIOV     ;$E456 (jmp) CIOV
@@ -559,9 +580,9 @@ LoadOrProcessParameters
         STA ICCOM
 
 ProcessParameters
-        LDA #<p1000
+        LDA #<foregroundPixelData
         STA ICBAL
-        LDA #>p1000
+        LDA #>foregroundPixelData
         STA ICBAH
         LDA #<presets
         STA ICBLL
@@ -728,10 +749,10 @@ b400A   LDA #$CC
         LDX #$00
 a4015   =*+$01
 a4016   =*+$02
-        LDA a7000
+        LDA foregroundPixelsOriginalLocation
 a4018   =*+$01
 a4019   =*+$02
-        STA p1000
+        STA foregroundPixelData
         INC a4015
         BNE b4022
         INC a4016
@@ -743,8 +764,8 @@ b402A   LDA a4019
         CMP #$1C
         BNE b400A
 
-b4032   JSR CreateLinePtrArray1
-        JSR CreateLinePtrArray2
+b4032   JSR CreateLinePtrArrays
+        JSR ClearLinePtrArrays
         JSR UpdateDefaultColors
         JMP InitializeColourSpace
 
@@ -758,10 +779,10 @@ GenerateDisplayList
         STA displayListInstructionsHiPtr
         LDA #<displayListInstructions
         STA displayListInstructionsLoPtr
-        LDA #>a7000
-        STA screenMemoryHiPtr2
-        LDA #<a7000
-        STA screenMemoryLoPtr2
+        LDA #>foregroundPixelsOriginalLocation
+        STA foregroundPixelsHiPtr2
+        LDA #<foregroundPixelsOriginalLocation
+        STA foregroundPixelsLoPtr2
 
         LDX verticalResolutionSPAC
         LDA verticalResolutionArray,X
@@ -774,13 +795,13 @@ GenerateDisplayList
         JSR WriteValueToDisplayList
         JSR WriteValueToDisplayList
 
-        ; Mode 6 setting screen memory to screenMemoryLoPtr
-        ; and screenMemoryHiPtr
+        ; Mode 6 setting screen memory to foregroundPixelsLoPtr
+        ; and foregroundPixelsHiPtr
         LDA #$46
         JSR WriteValueToDisplayList
-        LDA screenMemoryLoPtr
+        LDA foregroundPixelsLoPtr
         JSR WriteValueToDisplayList
-        LDA screenMemoryHiPtr
+        LDA foregroundPixelsHiPtr
         JSR WriteValueToDisplayList
 
         ; Not sure what this is, more blank lines.
@@ -792,26 +813,26 @@ GenerateDisplayList
         JMP MaybeHIResHardReflectMode
 
 
-        ; Mode 15 setting screen memory to screenMemoryLoPtr
-        ; and screenMemoryHiPtr
+        ; Mode 15 setting screen memory to foregroundPixelsLoPtr
+        ; and foregroundPixelsHiPtr
 NoScreenModeSelected   
         LDX verticalResolutionSPAC
 b4084   LDA #$4F
         JSR WriteValueToDisplayList
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         JSR WriteValueToDisplayList
-        LDA screenMemoryHiPtr2
+        LDA foregroundPixelsHiPtr2
         JSR WriteValueToDisplayList
         DEX 
         BNE b4084
 
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$28
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$00
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         INC bottomMostYPos
         DEC a403F
         BNE NoScreenModeSelected
@@ -917,41 +938,50 @@ InitializeColourSpace
         JSR GenerateDisplayList
         JMP MainGameLoop
 
+foregroundPixelsLoPtrArray = $7E10
+foregroundPixelsHiPtrArray = $7EC4
 ;-------------------------------------------------------------------------
-; CreateLinePtrArray1
+; CreateLinePtrArrays
 ;-------------------------------------------------------------------------
-CreateLinePtrArray1
-        LDA #<a7000
-        STA screenMemoryLoPtr2
-        LDA #>a7000
-        STA screenMemoryHiPtr2
+CreateLinePtrArrays
+        LDA #<foregroundPixelsOriginalLocation
+        STA foregroundPixelsLoPtr2
+        LDA #>foregroundPixelsOriginalLocation
+        STA foregroundPixelsHiPtr2
         LDA #<p8280
-        STA aC7
+        STA someKindOfLinePtrLo
         LDA #>p8280
-        STA aC8
+        STA someKindOfLinePtrHi
+
         LDX #$00
-b4170   LDA screenMemoryLoPtr2
-        STA $7E10,X
-        LDA screenMemoryHiPtr2
-        STA $7EC4,X
-        LDA aC7
-        STA f9EA0,X
-        LDA aC8
-        STA f9F54,X
-        LDA screenMemoryLoPtr2
+b4170   LDA foregroundPixelsLoPtr2
+        STA foregroundPixelsLoPtrArray,X
+        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtrArray,X
+
+        LDA someKindOfLinePtrLo
+        STA someKindOfLinePtrLoArray,X
+        LDA someKindOfLinePtrHi
+        STA someKindOfLineHiPtrArray,X
+
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$28
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+
+        LDA foregroundPixelsHiPtr2
         ADC #$00
-        STA screenMemoryHiPtr2
-        LDA aC7
+        STA foregroundPixelsHiPtr2
+
+        LDA someKindOfLinePtrLo
         CLC 
         ADC #$50
-        STA aC7
-        LDA aC8
+        STA someKindOfLinePtrLo
+
+        LDA someKindOfLinePtrHi
         ADC #$00
-        STA aC8
+        STA someKindOfLinePtrHi
+
         INX 
         CPX #$5A
         BNE b4170
@@ -977,29 +1007,29 @@ PaintRestOfCurrentSymmetry
         BNE b41A4
         CPY #$50
         BPL b41A4
-        LDA f9EA0,X
-        STA aC9
-        LDA f9F54,X
-        STA aCA
-        LDA $7E10,X
-        STA aCB
-        LDA $7EC4,X
-        STA aCC
+        LDA someKindOfLinePtrLoArray,X
+        STA linePtrLo
+        LDA someKindOfLineHiPtrArray,X
+        STA linePtrHi
+        LDA foregroundPixelsLoPtrArray,X
+        STA screenLoPtr
+        LDA foregroundPixelsHiPtrArray,X
+        STA screenHiPtr
         PLA 
-        STA aCF
+        STA currentPaintPixelYPosition
         LDA beginDrawingForeground
         BNE b41E7
-        LDA (aC9),Y
+        LDA (linePtrLo),Y
         AND #$EF
         SEC 
-        SBC aCF
+        SBC currentPaintPixelYPosition
         BMI b41E7
         CMP #$01
         BEQ b41E7
         RTS 
 
-b41E7   LDA aCF
-        STA (aC9),Y
+b41E7   LDA currentPaintPixelYPosition
+        STA (linePtrLo),Y
         AND #$0F
         PHA 
         TYA 
@@ -1008,11 +1038,11 @@ b41E7   LDA aCF
         BCC b4200
         TAY 
         PLA 
-        STA aCF
-        LDA (pCB),Y
+        STA currentPaintPixelYPosition
+        LDA (screenLoPtr),Y
         AND #$F0
-        ORA aCF
-        STA (pCB),Y
+        ORA currentPaintPixelYPosition
+        STA (screenLoPtr),Y
         RTS 
 
 b4200   TAY 
@@ -1022,42 +1052,49 @@ b4200   TAY
         ROL 
         ROL 
         ROL 
-        STA aCF
-        LDA (pCB),Y
+        STA currentPaintPixelYPosition
+        LDA (screenLoPtr),Y
         AND #$0F
-        ORA aCF
-        STA (pCB),Y
+        ORA currentPaintPixelYPosition
+        STA (screenLoPtr),Y
         RTS 
 
 verticalResolutionArray   
         .BYTE $00,$B4,$5A,$3C,$2D,$24,$1E,$19
         .BYTE $16,$14,$12,$10,$0F,$0E,$0D,$0C
         .BYTE $0B,$0B,$0A
+
+tempLoPtr = displayListInstructionsLoPtr
+tempHiPtr = displayListInstructionsHiPtr
 ;-------------------------------------------------------------------------
-; CreateLinePtrArray2
+; ClearLinePtrArrays
 ;-------------------------------------------------------------------------
-CreateLinePtrArray2
+ClearLinePtrArrays
         LDX #$00
-b4227   LDA $7E10,X
-        STA displayListInstructionsLoPtr
-        LDA $7EC4,X
-        STA displayListInstructionsHiPtr
+b4227   LDA foregroundPixelsLoPtrArray,X
+        STA tempLoPtr
+        LDA foregroundPixelsHiPtrArray,X
+        STA tempHiPtr
+
         LDY #$00
 b4233   LDA #$00
-        STA (displayListInstructionsLoPtr),Y
+        STA (tempLoPtr),Y
         INY 
         CPY #$28
         BNE b4233
-        LDA f9EA0,X
-        STA displayListInstructionsLoPtr
-        LDA f9F54,X
-        STA displayListInstructionsHiPtr
+
+        LDA someKindOfLinePtrLoArray,X
+        STA tempLoPtr
+        LDA someKindOfLineHiPtrArray,X
+        STA tempHiPtr
+
         LDY #$00
         LDA #$00
-b424A   STA (displayListInstructionsLoPtr),Y
+b424A   STA (tempLoPtr),Y
         INY 
         CPY #$50
         BNE b424A
+
         INX 
         CPX #$5A
         BNE b4227
@@ -1154,7 +1191,7 @@ LoopThroughPixelsAndPaint
         JMP PaintExplosionMode
 
 b42D9   JSR PaintPixelForCurrentSymmetry
-        LDA aD6
+        LDA pixelsToPaint
         CMP #$07
         BNE b42E3
         RTS 
@@ -1196,7 +1233,7 @@ PixelPaintLoop
 
 b431C   DEC FR3
         INY 
-        LDA aD6
+        LDA pixelsToPaint
         CMP FR3
         BNE PixelPaintLoop
         STA ATRACT   ;ATRACT  screen attract counter
@@ -1332,7 +1369,6 @@ start2YPosArray
         .BYTE $02,$55
         .BYTE $55
 
-; Vertical Blank interrupt?
 ;-------------------------------------------------------------------------
 ; VerticalBlankInterruptHandler
 ;-------------------------------------------------------------------------
@@ -1342,19 +1378,26 @@ VerticalBlankInterruptHandler
         PHA 
         TYA 
         PHA 
+
         LDA $D01B    ;PRIOR
         AND #$3F
         STA $D01B    ;PRIOR
         LDA PCOLR0   ;PCOLR0  shadow for COLPM0 ($D012)
         STA $D01A    ;COLBK
+
         JSR LookForKeyboardInput
+
         DEC newCursorSpeed
         BNE b44B4
+
         LDA cursorSpeed
         STA newCursorSpeed
+
         JSR GetJoystickInput
+
 b44B4   INC COLOR4   ;COLOR4  shadow for COLBK ($D01A)
         JSR CheckStrobesAndColorFlow
+
         PLA 
         TAY 
         PLA 
@@ -1369,17 +1412,18 @@ b44C2   RTS
 ;-------------------------------------------------------------------------
 FetchValuesForPlayback
         LDA autoDemoEnabled
-        CMP #$02
+        CMP #PLAYBACK_ENABLED
         BEQ b44C2
+
         TYA 
         PHA 
         TXA 
         PHA 
         LDX pixelYPosition
         LDY pixelXPosition
-        LDA f9EA0,X
+        LDA someKindOfLinePtrLoArray,X
         STA aDD
-        LDA f9F54,X
+        LDA someKindOfLineHiPtrArray,X
         STA aDE
         LDA (aDD),Y
         AND #$40
@@ -1395,9 +1439,9 @@ b44E7   LDX pixelYPosition
         CLC 
         ROR 
         TAY 
-        LDA $7E10,X
+        LDA foregroundPixelsLoPtrArray,X
         STA aDD
-        LDA $7EC4,X
+        LDA foregroundPixelsHiPtrArray,X
         STA aDE
         LDA aDF
         BEQ b4526
@@ -1471,11 +1515,12 @@ b455F   STA lastJoystickInput      ;lastJoystickInput     floating point registe
         LDA autoDemoEnabled
         BEQ b456E
 
-        CMP #$01
+        CMP #RECORDING_ENABLED
         BEQ b456E
 
         LDA FLPTR
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
+
 b456E   LDA dualJoystickMode
         BEQ b4580
 
@@ -1709,7 +1754,7 @@ b484E   LDX currentPosInBuffer
 b4862   LDA explosionModeArray,X
         STA currentPaintState
         AND #$07
-        STA aD6
+        STA pixelsToPaint
         LDA pixelXPositionArray,X
         STA currentPixelXPosition
         LDA pixelYPositionArray,X
@@ -1979,25 +2024,25 @@ MaybeHIResHardReflectMode
 
 b4AC7   LDX #$59
 b4AC9   JSR WriteValuesFromMemoryToDisplayList
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$28
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$00
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         DEX 
         BNE b4AC9
 
         LDX #$59
 b4ADE   JSR WriteValuesFromMemoryToDisplayList
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$D8
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$FF
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         DEX 
         BNE b4ADE
         LDA #$5A
@@ -2010,9 +2055,9 @@ b4ADE   JSR WriteValuesFromMemoryToDisplayList
 WriteValuesFromMemoryToDisplayList
         LDA #$4F
         JSR WriteValueToDisplayList
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         JSR WriteValueToDisplayList
-        LDA screenMemoryHiPtr2
+        LDA foregroundPixelsHiPtr2
         JSR WriteValueToDisplayList
         RTS 
 
@@ -2036,13 +2081,13 @@ b4B1B   LDA a403F
 b4B21   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
         BNE b4B21
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$28
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$00
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         INC bottomMostYPos
         DEX 
         BNE b4B1B
@@ -2077,13 +2122,13 @@ b4B6B   LDA a403F
 b4B71   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
         BNE b4B71
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$28
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$00
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         INC bottomMostYPos
         DEX 
         BNE b4B6B
@@ -2105,13 +2150,13 @@ b4BA1   JSR WriteValuesFromMemoryToDisplayList
         ;Returns
 
 IncrementLowPointers   
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$28
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$00
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         INC bottomMostYPos
 
 UpdateStuffAndMaybeReturn
@@ -2128,13 +2173,13 @@ a4BD3   .BYTE $01
 ; IncrementScreenMemoryPointers
 ;-------------------------------------------------------------------------
 IncrementScreenMemoryPointers
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$D8
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$FF
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -2186,11 +2231,11 @@ MaybeZarjazInterlaceMode
         RTS 
 
 ZarjazInterlaceMode   
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$E8
         STA aEB
-        LDA screenMemoryHiPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$0D
         STA FPCOC
 
@@ -2202,13 +2247,13 @@ b4C30   JSR WriteValuesFromMemoryToDisplayList
         JSR WriteValueToDisplayList
         LDA FPCOC
         JSR WriteValueToDisplayList
-        LDA screenMemoryLoPtr2
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$28
-        STA screenMemoryLoPtr2
-        LDA screenMemoryHiPtr2
+        STA foregroundPixelsLoPtr2
+        LDA foregroundPixelsHiPtr2
         ADC #$00
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         LDA aEB
         CLC 
         ADC #$D8
@@ -2348,7 +2393,7 @@ b4D3B   LDA slothModeRelated
 
 b4D57   LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
         CMP #$FF
-        BNE b4D93
+        BNE MaybeCheckKeyboardInput
 
         LDA beginDrawingForeground
         BEQ b4D66
@@ -2367,22 +2412,26 @@ b4D6E   LDA a4F4C
 
 RepointTextMaybe
         LDA #<statusTextLineOne
-        STA screenMemoryLoPtr
+        STA foregroundPixelsLoPtr
         LDA #>statusTextLineOne
-        STA screenMemoryHiPtr
+        STA foregroundPixelsHiPtr
 b4D87   RTS 
 
 b4D88   LDA #<statusTextLineTwo
-        STA screenMemoryLoPtr
+        STA foregroundPixelsLoPtr
         LDA #>statusTextLineTwo
-        STA screenMemoryHiPtr
+        STA foregroundPixelsHiPtr
         RTS 
 
-b4D93   LDY #$FF
+MaybeCheckKeyboardInput   
+        LDY #$FF
         STY inputCharacter       ;inputCharacter      keyboard FIFO byte
+
         LDY beginDrawingForeground
         BEQ MaybeSKeyPressed
+
         JMP ComposeForeground
+        ; Returns;
 
 MaybeSKeyPressed   
         CMP #KEY_S
@@ -2624,9 +2673,9 @@ b4F24   LDA statusLineTextLoByte
         DEX 
         BNE b4F24
 b4F38   LDA statusLineTextLoByte
-        STA screenMemoryLoPtr
+        STA foregroundPixelsLoPtr
         LDA statusLineTextHiByte
-        STA screenMemoryHiPtr
+        STA foregroundPixelsHiPtr
         LDA #$30
         STA a4F4C
         RTS 
@@ -2762,9 +2811,9 @@ lastKeyPressed   .BYTE $00
 WriteStatusLine
         LDA disableStatusLine
         BNE b5492
-        LDA screenMemoryLoPtr
+        LDA foregroundPixelsLoPtr
         STA presetLoPtr
-        LDA screenMemoryHiPtr
+        LDA foregroundPixelsHiPtr
 
 WriteStatusReturn
         STA presetHiPtr
@@ -3301,7 +3350,7 @@ RKeyPressed
         CMP #KEY_SHIFT
         BEQ BeginRecordMode
         LDA autoDemoEnabled
-        CMP #$01
+        CMP #RECORDING_ENABLED
         BNE StopRecordPlayback
         RTS 
 
@@ -3368,10 +3417,12 @@ InitiateRecording
 
 MixedModeOnOff   
         LDA autoDemoEnabled
-        CMP #$01
+        CMP #RECORDING_ENABLED
         BEQ ClearAndDisableDemoMode
-        CMP #$00
+
+        CMP #DEMO_DISABLED
         BNE DisableDemoMode
+
         LDA fA000
         CMP #$CC
         BNE InitiatePlayback
@@ -3391,7 +3442,7 @@ ClearAndDisableDemoMode
 
 DisableDemoMode   
         LDX #T_E_R_M_I_N_A_T_E_D
-        LDA #$00
+        LDA #DEMO_DISABLED
         STA autoDemoEnabled
         JMP UpdateStatusLine
         ; Returns
@@ -3519,7 +3570,7 @@ b5913   STA (generalLoPtr),Y
         BNE b5913
 
         LDA #$06
-        STA aD6
+        STA pixelsToPaint
         LDA #$00
         STA a5966
         RTS 
@@ -3532,18 +3583,24 @@ ComposeForeground
         CPY #DRAW_FOREGROUND
         BNE b592E
         JMP ProcessKeyStrokesDuringForegroundDrawing
+        ; Returns
 
-b592E   CMP #$0C
+b592E   CMP #KEY_RETURN
         BNE b5946
-        DEC aD6
-        LDA aD6
+
+        DEC pixelsToPaint
+        LDA pixelsToPaint
         BEQ b5946
+
         INC a5966
         LDA a5966
+
         CMP #$3A
         BNE b5946
+
         LDA #$00
-        STA aD6
+        STA pixelsToPaint
+
 b5946   LDA #$3A
         SEC 
         SBC a5966
@@ -3555,12 +3612,13 @@ b5946   LDA #$3A
 
         LDA #$08
         SEC 
-        SBC aD6
+        SBC pixelsToPaint
         CLC 
         ADC #$10
         LDY #$07
         STA (presetLoPtr),Y
         JMP IncrementDisplayedValue
+        ; Returns
 
 a5966   .BYTE $00
 ;-------------------------------------------------------------------------
@@ -3573,9 +3631,12 @@ MaybeAPressed
         ; A=Auto Demo on/off 
         LDA autoDemoEnabled
         BNE b597D
-        LDA #$03
+
+        LDA #DEMO_ENABLED
         STA autoDemoEnabled
+
         JSR EnableDemoMode
+
         LDX #AUTO_DEMO_MODE_ON
         JMP UpdateStatusLine
         ;Returns
@@ -3587,7 +3648,7 @@ b597D   JMP DisableDemoMode
 ;-------------------------------------------------------------------------
 ProcessKeyStrokesDuringForegroundDrawing
         CMP #KEY_SPACE
-        BNE b5996
+        BNE MaybeReturnKeyPressed
 
         ; Change the plot color
         INC foregroundDrawPlotColor
@@ -3598,7 +3659,8 @@ ProcessKeyStrokesDuringForegroundDrawing
 b5990   STA foregroundDrawPlotColor
         JMP UpdateColorStatusForDrawingForeground
 
-b5996   CMP #KEY_RETURN
+MaybeReturnKeyPressed   
+        CMP #KEY_RETURN
         BNE MaybeBackspacePressed
 
         ; Forground point selected
@@ -3606,14 +3668,11 @@ b5996   CMP #KEY_RETURN
         STA foregroundDrawState
         RTS 
 
-;-------------------------------------------------------------------------
-; UpdateColorStatusForDrawingForeground
-;-------------------------------------------------------------------------
 UpdateColorStatusForDrawingForeground
         LDX #PIXEL_COLOUR__000
         LDA foregroundDrawPlotColor
         STA lastKeyPressed
-        LDA screenMemoryHiPtr2
+        LDA foregroundPixelsHiPtr2
         CMP #$13
         BEQ b59D3
         JMP UpdateStatusLineAndDisplaySelectedValue
@@ -3643,7 +3702,7 @@ MaybeShiftFPressed
         JMP UpdateStatusLine
         ;Returns
 
-b59D3   LDA screenMemoryLoPtr2
+b59D3   LDA foregroundPixelsLoPtr2
         AND #$80
         BNE b59DC
         JMP UpdateStatusLineAndDisplaySelectedValue
@@ -3658,7 +3717,7 @@ b59DC   LDX #COLOUR_0__FREE_000
         STA (presetLoPtr),Y
         LDA #$00
         SEC 
-        SBC screenMemoryLoPtr2
+        SBC foregroundPixelsLoPtr2
         STA lastKeyPressed
         JMP IncrementDisplayedValue
 
@@ -3690,7 +3749,7 @@ MaybeGPressed
         ; G=Draw foreground graphics at current cursor position 
         LDA pixelXPosition
         SEC 
-        SBC p1000
+        SBC foregroundPixelData
         STA drawForegroundAtXPos
         LDA pixelYPosition
         SEC 
@@ -3776,9 +3835,9 @@ MaybeYPressed
         LDA #$01
         STA disableStatusLine
         LDA #<statusTextLineTwo
-        STA screenMemoryLoPtr
+        STA foregroundPixelsLoPtr
         LDA #>statusTextLineTwo
-        STA screenMemoryHiPtr
+        STA foregroundPixelsHiPtr
         RTS 
 
 b5AB2   LDA #$00
@@ -3891,14 +3950,14 @@ StartRecording
         TYA 
         STA (generalLoPtr),Y
         STA fB000
-        LDA #$01
+        LDA #RECORDING_ENABLED
         STA autoDemoEnabled
         LDA pixelXPosition
-        STA a5C75
+        STA pixelXPositionForPlayback
         LDA pixelYPosition
-        STA a5C76
+        STA pixelYPositionForPlayback
         LDA selectedPreset
-        STA a5C78
+        STA selectedPresetForPlayback
 b5B65   RTS 
 
 autoDemoEnabled   .BYTE $03
@@ -3908,7 +3967,7 @@ autoDemoEnabled   .BYTE $03
 GetInputForDemo
         LDA autoDemoEnabled
         BEQ b5B65
-        CMP #$01
+        CMP #RECORDING_ENABLED
         BEQ b5B73
         JMP GetRandomKeyboardInput
 
@@ -3987,13 +4046,15 @@ StartPlayback
         LDA #$00
         STA aDF
         JSR FetchValuesForPlayback
-        LDA a5C75
+        LDA pixelXPositionForPlayback
         STA pixelXPosition
-        LDA a5C76
+        LDA pixelYPositionForPlayback
         STA pixelYPosition
-        LDA #$02
+
+        LDA #PLAYBACK_ENABLED
         STA autoDemoEnabled
-        LDX a5C78
+
+        LDX selectedPresetForPlayback
         JSR LoadPreset
         RTS 
 
@@ -4001,9 +4062,11 @@ StartPlayback
 ; GetRandomKeyboardInput
 ;-------------------------------------------------------------------------
 GetRandomKeyboardInput
-        CMP #$03
+        CMP #DEMO_ENABLED
         BNE b5C14
+
         JMP GetRandomJoytstickMovement
+        ; Returns?
 
 b5C14   DEC randomKeyInputCounter
         BNE b5C39
@@ -4056,10 +4119,10 @@ b5C6B   LDA FLPTR
 
 b5C72   JMP StartPlayback
 
-a5C75   .BYTE $00
-a5C76   .BYTE $00
+pixelXPositionForPlayback   .BYTE $00
+pixelYPositionForPlayback   .BYTE $00
 selectedPreset   .BYTE $00
-a5C78   .BYTE $00
+selectedPresetForPlayback   .BYTE $00
 ;-------------------------------------------------------------------------
 ; StorePixelPositions
 ;-------------------------------------------------------------------------
@@ -4167,18 +4230,23 @@ a5D09   =*+$02
 ; ForegroundPixelsMaybe
 ;-------------------------------------------------------------------------
 ForegroundPixelsMaybe
-        JSR CreateLinePtrArray2
+        JSR ClearLinePtrArrays
         JSR ClearExplosionModeArray
+
         LDA #$28
         STA currentPixelXPosition
+
         LDA bottomMostYPos
         CLC 
         ROR 
         STA currentPixelYPosition
+
         LDA beginDrawingForeground
         CMP #DRAW_FOREGROUND
         BNE b5D39
+
         JMP ProcessForegroundPointPaint
+        ; Returns?
 
 b5D39   LDA #$00
         STA currentSymmetrySetting
@@ -4190,16 +4258,16 @@ b5D39   LDA #$00
         LDA #$03
         STA cursorSpeed
 
-b5D4A   LDA aD6
+b5D4A   LDA pixelsToPaint
         STA currentPaintState
         JSR LoopThroughPixelsAndPaint
-        LDA aD6
+        LDA pixelsToPaint
         BNE b5D4A
         LDA #$00
         STA beginDrawingForeground
         PLA 
         STA cursorSpeed
-        JSR CreateLinePtrArray2
+        JSR ClearLinePtrArrays
         JMP MainGameLoop
 
 a5D64   .BYTE $00
@@ -4224,7 +4292,7 @@ b5D7A   LDA STRIG0   ;STRIG0  shadow for TRIG0 ($D001)
         STA a5D64
         RTS 
 
-b5D85   LDA aD6
+b5D85   LDA pixelsToPaint
         BEQ a5D64
         LDA #$30
         STA a5D64
@@ -4252,7 +4320,7 @@ b5D85   LDA aD6
         RTS 
 
 b5DB7   LDA #$00
-        STA aD6
+        STA pixelsToPaint
         RTS 
 
 a5DBC   .BYTE $00
@@ -4265,22 +4333,22 @@ GetRandomJoytstickMovement
         DEC a5E1C
         LDA a5E1D
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
-        JMP GetRandomJoystickMovement
+        JMP GetRandomJoystickMovement2
 
 b5DCD   LDA a5E1E
         BEQ EnableDemoMode
-        LDA a5E1F
+        LDA indexToRandomJoystickMovements
         AND #$07
         TAX 
-        LDA f5E22,X
+        LDA randomJoystickMovememtArray,X
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
         DEC a5E20
-        BNE GetRandomJoystickMovement
-        INC a5E1F
+        BNE GetRandomJoystickMovement2
+        INC indexToRandomJoystickMovements
         LDA a5E21
         STA a5E20
         DEC a5E1E
-        BNE GetRandomJoystickMovement
+        BNE GetRandomJoystickMovement2
 
 ;-------------------------------------------------------------------------
 ; EnableDemoMode
@@ -4300,21 +4368,21 @@ EnableDemoMode
         JSR GetProceduralValue
         AND #$07
         TAX 
-        LDA f5E22,X
+        LDA randomJoystickMovememtArray,X
         STA a5E1D
-        JMP GetRandomJoystickMovement
+        JMP GetRandomJoystickMovement2
 
 a5E1C   .BYTE $00
 a5E1D   .BYTE $00
 a5E1E   .BYTE $00
-a5E1F   .BYTE $00
+indexToRandomJoystickMovements   .BYTE $00
 a5E20   .BYTE $00
 a5E21   .BYTE $00
-f5E22   .BYTE $0E,$06,$07,$05,$0D,$09,$0B,$0A
+randomJoystickMovememtArray   .BYTE $0E,$06,$07,$05,$0D,$09,$0B,$0A
 ;-------------------------------------------------------------------------
-; GetRandomJoystickMovement
+; GetRandomJoystickMovement2
 ;-------------------------------------------------------------------------
-GetRandomJoystickMovement
+GetRandomJoystickMovement2
         LDA a5E5B
         BEQ b5E39
         LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
@@ -4402,22 +4470,22 @@ b5EBE   LDA pixelXPosition
         LDA #FOREGROUND_POINT_RECORDED
         STA foregroundDrawState
         LDA foregroundDrawPlotColor
-        STA a5ED7
+        STA foregroundPixelPaintState
         RTS 
 
 foregroundDrawPlotColor   .BYTE $03
 foregroundRecordPixelXPos   .BYTE $00
 foregroundRecordPixelYPos   .BYTE $00
-a5ED7   .BYTE $00
+foregroundPixelPaintState   .BYTE $00
 ;-------------------------------------------------------------------------
-; j5ED8
+; UpdateStateAfterClearingForegound
 ;-------------------------------------------------------------------------
-j5ED8
+UpdateStateAfterClearingForegound
         LDA foregroundRecordPixelXPos
         STA previousPixelXPosition
         LDA foregroundRecordPixelYPos
         STA previousPixelYPosition
-        LDA a5ED7
+        LDA foregroundPixelPaintState
         ORA #$40
         STA currentPaintState
         JSR PaintPixelForCurrentSymmetry
@@ -4435,32 +4503,33 @@ ProcessForegroundDrawState
         CMP #DELETE_FOREGROUND_POINT
         BNE ForegroundStateCleared
 
-        JMP DeleteForegroundPoint
+        JMP PaintForegroundPoint
 
 ForegroundStateCleared   
         LDA #$00
         STA foregroundDrawState
-        JMP j5ED8
+        JMP UpdateStateAfterClearingForegound
 
 ;-------------------------------------------------------------------------
 ; ProcessForegroundPointPaint
 ;-------------------------------------------------------------------------
 ProcessForegroundPointPaint
-        LDA #>p0FFF
-        STA screenMemoryHiPtr2
-        LDA #<p0FFF
-        STA screenMemoryLoPtr2
+        LDA #>foregroundPixelData - $01
+        STA foregroundPixelsHiPtr2
+        LDA #<foregroundPixelData - $01
+        STA foregroundPixelsLoPtr2
         LDA #$00
         STA foregroundDrawState
         LDA cursorSpeed
         PHA 
 
+        ; Clear the pixel data.
         LDX #$00
 b5F1B   LDA #$FF
-        STA p1000,X
-        STA f1100,X
-        STA f1200,X
-        STA f1300,X
+        STA foregroundPixelData,X
+        STA foregroundPixelData + $100,X
+        STA foregroundPixelData + $200,X
+        STA foregroundPixelData + $300,X
         DEX 
         BNE b5F1B
 
@@ -4481,462 +4550,86 @@ foregroundDrawState   .BYTE $00
 
 ForegroundPointRecorded   
         LDY #$00
-        LDA screenMemoryHiPtr2
+        LDA foregroundPixelsHiPtr2
         PHA 
-        LDA (screenMemoryLoPtr2),Y
+        LDA (foregroundPixelsLoPtr2),Y
         CMP foregroundRecordPixelXPos
         BNE b5F6B
         PLA 
         PHA 
         CLC 
         ADC #$04
-        STA screenMemoryHiPtr2
-        LDA (screenMemoryLoPtr2),Y
+        STA foregroundPixelsHiPtr2
+        LDA (foregroundPixelsLoPtr2),Y
         CMP foregroundRecordPixelYPos
         BNE b5F6B
         PLA 
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         LDA #$00
         STA foregroundDrawState
         JMP ProcessForegroundDrawState
 
-b5F6B   JMP j5F95
+b5F6B   JMP PrepareAndStoreSelectedForegroundPoint
 
 ;-------------------------------------------------------------------------
-; j5F6E
+; StoreSelectedForegroundPoint
 ;-------------------------------------------------------------------------
-j5F6E
+StoreSelectedForegroundPoint
         PLA 
         PHA 
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
+
         LDA foregroundRecordPixelXPos
-        STA (screenMemoryLoPtr2),Y
-        LDA screenMemoryHiPtr2
+        STA (foregroundPixelsLoPtr2),Y
+
+        LDA foregroundPixelsHiPtr2
         CLC 
         ADC #$04
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
+
         LDA foregroundRecordPixelYPos
-        STA (screenMemoryLoPtr2),Y
-        LDA screenMemoryHiPtr2
+        STA (foregroundPixelsLoPtr2),Y
+
+        LDA foregroundPixelsHiPtr2
         CLC 
         ADC #$04
-        STA screenMemoryHiPtr2
-        LDA a5ED7
-        STA (screenMemoryLoPtr2),Y
+        STA foregroundPixelsHiPtr2
+
+        LDA foregroundPixelPaintState
+        STA (foregroundPixelsLoPtr2),Y
+
         PLA 
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         JMP ForegroundStateCleared
 
 ;-------------------------------------------------------------------------
-; j5F95
+; PrepareAndStoreSelectedForegroundPoint
 ;-------------------------------------------------------------------------
-j5F95
-        LDA screenMemoryLoPtr2
+PrepareAndStoreSelectedForegroundPoint
+        LDA foregroundPixelsLoPtr2
         CLC 
         ADC #$01
-        STA screenMemoryLoPtr2
+        STA foregroundPixelsLoPtr2
         PLA 
         ADC #$00
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         PHA 
         CMP #$20
         BEQ b5FA9
-        JMP j5F6E
+        JMP StoreSelectedForegroundPoint
 
 b5FA9   LDA #FOREGROUND_POINT_SELECTED
         STA foregroundDrawState
         PLA 
-        STA screenMemoryHiPtr2
+        STA foregroundPixelsHiPtr2
         JMP ProcessForegroundDrawState
 
         ; zero-byte padding
         .TEXT x'00' x 4172
 
-a7000   .BYTE $00,$00,$00,$00,$00,$01,$02,$03
-        .BYTE $01,$02,$03,$04,$04,$06,$06,$06
-        .BYTE $06,$06,$07,$08,$09,$07,$08,$09
-        .BYTE $0A,$0A,$0A,$0A,$0A,$0C,$0C,$0C
-        .BYTE $0C,$0C,$0C,$0C,$0D,$0E,$0F,$11
-        .BYTE $11,$11,$11,$11,$12,$13,$14,$15
-        .BYTE $15,$15,$15,$15,$12,$13,$14,$17
-        .BYTE $17,$17,$17,$17,$17,$18,$19,$1A
-        .BYTE $1B,$1B,$1B,$1B,$1B,$1B,$1D,$1D
-        .BYTE $1D,$1D,$1D,$1D,$1D,$1E,$1F,$20
-        .BYTE $21,$21,$1E,$1F,$20,$21,$21,$21
-        .BYTE $23,$23,$24,$25,$26,$27,$28,$24
-        .BYTE $25,$26,$27,$28,$28,$27,$26,$25
-        .BYTE $24,$23,$2A,$2A,$2A,$2A,$2A,$2A
-        .BYTE $2A,$2B,$2C,$2D,$2B,$2C,$2D,$2E
-        .BYTE $2E,$2D,$2E,$2F,$30,$31,$32,$33
-        .BYTE $34,$35,$36,$37,$38,$39,$2E,$2F
-        .BYTE $30,$31,$32,$33,$34,$35,$36,$37
-        .BYTE $38,$2F,$30,$31,$32,$33,$34,$35
-        .BYTE $36,$37,$30,$31,$32,$33,$34,$35
-        .BYTE $36,$31,$32,$33,$34,$35,$32,$33
-        .BYTE $34,$33,$3B,$3B,$3B,$3B,$3B,$3C
-        .BYTE $3D,$3E,$3F,$3C,$3D,$3E,$3F,$41
-        .BYTE $41,$41,$41,$41,$41,$41,$44,$43
-        .BYTE $42,$41,$42,$43,$42,$43,$44,$48
-        .BYTE $48,$01,$01,$02,$01,$01,$03,$03
-        .BYTE $03,$03,$02,$08,$08,$08,$08,$08
-        .BYTE $09,$0A,$0C,$0C,$0C,$0C,$0C,$10
-        .BYTE $0F,$0E,$0E,$0E,$0F,$10,$11,$13
-        .BYTE $13,$13,$13,$13,$14,$15,$15,$15
-        .BYTE $15,$15,$15,$17,$18,$19,$18,$18
-        .BYTE $18,$18,$1F,$20,$21,$20,$1F,$1E
-        .BYTE $1F,$20,$21,$1E,$23,$23,$24,$24
-        .BYTE $24,$25,$25,$27,$27,$27,$27,$27
-        .BYTE $28,$29,$2A,$2A,$2A,$2A,$2A,$2C
-        .BYTE $2D,$2E,$2D,$2D,$2D,$2D,$30,$30
-        .BYTE $30,$30,$30,$31,$32,$32,$32,$32
-        .BYTE $32,$34,$34,$34,$34,$34,$35,$35
-        .BYTE $35,$37,$38,$39,$38,$37,$38,$39
-        .BYTE $3B,$3B,$3B,$3B,$3B,$3F,$3E,$3D
-        .BYTE $3E,$3F,$3D,$3E,$41,$41,$41,$41
-        .BYTE $41,$42,$42,$42,$44,$44,$44,$44
-        .BYTE $44,$45,$46,$45,$46,$46,$01,$01
-        .BYTE $01,$01,$02,$03,$03,$02,$03,$05
-        .BYTE $05,$05,$06,$07,$07,$07,$07,$07
-        .BYTE $0F,$10,$11,$12,$12,$12,$12,$12
-        .BYTE $12,$12,$11,$10,$0E,$0F,$0D,$16
-        .BYTE $17,$18,$19,$18,$17,$16,$15,$15
-        .BYTE $15,$15,$16,$17,$18,$19,$1D,$1C
-        .BYTE $1C,$1C,$1C,$1C,$1C,$1C,$1C,$1C
-        .BYTE $1C,$1C,$1B,$1A,$20,$1F,$1F,$1F
-        .BYTE $1F,$1F,$1F,$1F,$1F,$1F,$1F,$1F
-        .BYTE $1E,$1A,$1B,$1C,$1D,$1E,$1F,$20
-        .BYTE $21,$25,$25,$25,$26,$26,$26,$26
-        .BYTE $26,$26,$27,$28,$29,$2A,$2B,$2C
-        .BYTE $2C,$2C,$2C,$2C,$2C,$2C,$2C,$2D
-        .BYTE $2F,$2F,$2F,$30,$2F,$32,$32,$32
-        .BYTE $32,$32,$33,$34,$35,$36,$36,$36
-        .BYTE $36,$36,$39,$39,$39,$39,$39,$39
-        .BYTE $39,$39,$3A,$3A,$3B,$3C,$38,$39
-        .BYTE $3A,$3F,$40,$41,$42,$41,$40,$3F
-        .BYTE $3E,$3E,$3E,$3F,$40,$41,$44,$44
-        .BYTE $44,$44,$44,$44,$44,$44,$45,$46
-        .BYTE $47,$48,$49,$06,$05,$04,$03,$02
-        .BYTE $01,$2C,$01,$02,$03,$04,$05,$06
-        .BYTE $07,$08,$09,$0A,$0B,$0C,$0D,$0E
-        .BYTE $0F,$10,$11,$12,$13,$14,$15,$16
-        .BYTE $17,$18,$19,$1A,$1B,$1C,$1D,$1E
-        .BYTE $1F,$20,$21,$22,$23,$24,$25,$26
-        .BYTE $27,$28,$29,$2A,$2B,$2C,$2D,$2E
-        .BYTE $2F,$30,$31,$32,$33,$34,$35,$36
-        .BYTE $37,$38,$39,$3A,$3B,$3C,$3D,$3E
-        .BYTE $3F,$40,$41,$42,$43,$44,$45,$46
-        .BYTE $47,$48,$00,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .BYTE $07,$08,$09,$0A,$0B,$0C,$0C,$0C
-        .BYTE $06,$06,$06,$07,$0B,$07,$08,$09
-        .BYTE $0A,$0B,$0C,$0C,$0C,$06,$06,$06
-        .BYTE $07,$08,$09,$0A,$0B,$06,$07,$08
-        .BYTE $09,$0A,$0B,$0C,$0C,$0C,$0C,$0B
-        .BYTE $0A,$09,$08,$07,$06,$06,$06,$07
-        .BYTE $08,$09,$0A,$0B,$0C,$0C,$0C,$06
-        .BYTE $07,$08,$09,$0A,$0B,$0C,$0C,$0C
-        .BYTE $0B,$0A,$09,$08,$07,$06,$06,$07
-        .BYTE $08,$09,$0A,$0B,$0C,$06,$06,$06
-        .BYTE $07,$08,$09,$09,$09,$0A,$0B,$0C
-        .BYTE $07,$08,$06,$06,$06,$06,$07,$09
-        .BYTE $09,$09,$09,$0A,$0B,$0C,$0C,$0C
-        .BYTE $0C,$0B,$0C,$0B,$0A,$09,$08,$07
-        .BYTE $06,$06,$06,$06,$09,$09,$09,$07
-        .BYTE $08,$0C,$0B,$0A,$09,$08,$07,$06
-        .BYTE $07,$08,$09,$0A,$0B,$0C,$0C,$0B
-        .BYTE $0A,$09,$08,$07,$08,$09,$0A,$0B
-        .BYTE $0C,$0C,$0B,$0A,$09,$08,$09,$0A
-        .BYTE $0B,$0C,$0C,$0B,$0A,$09,$0A,$0B
-        .BYTE $0C,$0C,$0B,$0A,$0B,$0C,$0C,$0B
-        .BYTE $0C,$0C,$0B,$0A,$09,$08,$07,$06
-        .BYTE $06,$06,$07,$0C,$0C,$0C,$0B,$06
-        .BYTE $07,$08,$09,$0A,$0B,$0C,$0C,$0C
-        .BYTE $0C,$0C,$09,$09,$06,$06,$06,$08
-        .BYTE $0A,$12,$11,$10,$13,$14,$11,$12
-        .BYTE $13,$14,$12,$10,$11,$12,$13,$14
-        .BYTE $14,$14,$10,$11,$12,$13,$14,$10
-        .BYTE $10,$11,$12,$13,$14,$14,$13,$10
-        .BYTE $11,$12,$13,$14,$12,$12,$10,$11
-        .BYTE $12,$13,$14,$10,$10,$10,$11,$12
-        .BYTE $13,$14,$14,$14,$13,$12,$12,$11
-        .BYTE $10,$10,$10,$14,$10,$11,$12,$13
-        .BYTE $14,$10,$11,$10,$11,$12,$13,$14
-        .BYTE $11,$12,$10,$11,$12,$13,$14,$10
-        .BYTE $10,$10,$11,$12,$13,$14,$10,$11
-        .BYTE $12,$13,$14,$12,$10,$11,$12,$13
-        .BYTE $14,$10,$11,$12,$13,$14,$14,$12
-        .BYTE $10,$14,$14,$13,$12,$11,$10,$10
-        .BYTE $10,$11,$12,$13,$14,$10,$10,$11
-        .BYTE $12,$13,$14,$14,$10,$11,$12,$13
-        .BYTE $14,$14,$12,$10,$10,$11,$12,$13
-        .BYTE $14,$10,$11,$12,$13,$14,$17,$18
-        .BYTE $19,$1A,$1A,$1A,$19,$18,$18,$18
-        .BYTE $19,$1A,$1A,$1A,$19,$18,$1B,$1C
-        .BYTE $1B,$1A,$19,$18,$19,$1A,$1B,$1C
-        .BYTE $1D,$1E,$1F,$20,$20,$20,$1F,$1D
-        .BYTE $1D,$1D,$1C,$1B,$1B,$1B,$1C,$1D
-        .BYTE $1E,$1F,$20,$20,$20,$1F,$18,$18
-        .BYTE $19,$1A,$1B,$1C,$1D,$1E,$1F,$20
-        .BYTE $21,$22,$22,$23,$19,$19,$1A,$1B
-        .BYTE $1C,$1D,$1E,$1F,$20,$21,$22,$23
-        .BYTE $23,$1E,$1E,$1E,$1E,$1E,$1E,$1E
-        .BYTE $1D,$21,$20,$1F,$1E,$1D,$1C,$1B
-        .BYTE $1A,$19,$1A,$1B,$1C,$1B,$1A,$1A
-        .BYTE $1B,$1C,$1D,$1E,$1F,$20,$21,$22
-        .BYTE $1E,$1F,$20,$21,$1C,$1D,$1E,$1F
-        .BYTE $20,$1C,$1D,$1C,$1C,$1D,$1E,$1F
-        .BYTE $20,$21,$19,$1A,$1B,$1C,$1D,$1E
-        .BYTE $1F,$20,$20,$21,$21,$21,$1B,$1B
-        .BYTE $1B,$1E,$1E,$1E,$1D,$1C,$1C,$1C
-        .BYTE $1D,$1E,$1F,$20,$20,$20,$1B,$1C
-        .BYTE $1D,$1E,$1F,$20,$21,$22,$1C,$1B
-        .BYTE $1B,$1B,$1C,$1C,$1C,$1C,$1C,$1C
-        .BYTE $1C,$19,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$0E,$0E,$0E,$0E,$0E
-        .BYTE $0E,$0E,$0E,$4D,$53,$47,$4C,$4F
-        .BYTE $BA,$09,$0D,$51,$3E,$35,$86,$4D
-        .BYTE $45,$53,$47,$45,$53,$C4,$09,$0A
-        .BYTE $50,$85,$4D,$53,$47,$48,$49,$CE
-        .BYTE $09,$07,$28,$3E,$06,$00,$D8,$09
-        .BYTE $09,$46,$84,$4D,$45,$53,$31,$E2
-        .BYTE $09,$0F,$84,$4D,$45,$53,$30,$51
-        .BYTE $85,$4D,$53,$47,$4C,$4F,$EC,$09
-        .BYTE $04,$2C,$F6,$09,$07,$4F,$3E,$08
-        .BYTE $14,$00,$0A,$0A,$50,$85,$4D,$53
-        .BYTE $47,$4C,$4F,$0A,$0A,$0A,$51,$85
-        .BYTE $4D,$53,$47,$48,$49,$14,$0A,$07
-        .BYTE $4F,$3E,$06,$00,$1E,$0A,$0A,$50
-        .BYTE $85,$4D,$53,$47,$48,$49,$28,$0A
-        .BYTE $04,$30,$32,$0A,$09,$48,$84,$4D
-        .BYTE $45,$53,$30,$3C,$0A,$0F,$84,$4D
-        .BYTE $45,$53,$31,$51,$85,$4D,$53,$47
-        .BYTE $4C,$4F,$46,$0A,$0C,$50,$84,$4C
-        .BYTE $49,$53,$54,$12,$08,$03,$50,$0A
-        .BYTE $0A,$51,$85,$4D,$53,$47,$48,$49
-        .BYTE $5A,$0A,$0C,$50,$84,$4C,$49,$53
-        .BYTE $54,$12,$08,$04,$64,$0A,$07,$51
-        .BYTE $3E,$06,$30,$6E,$0A,$0A,$50,$85
-        .BYTE $4D,$54,$49,$4D,$52,$78,$0A,$04
-        .BYTE $3A,$82,$0A,$0C,$85,$4D,$53,$47
-        .BYTE $4C,$4F,$0B,$08,$01,$8C,$0A,$0C
-        .BYTE $85,$4D,$53,$47,$48,$49,$0B,$08
-        .BYTE $01,$96,$0A,$0C,$85,$4D,$54,$49
-        .BYTE $4D,$52,$0B,$08,$14,$A0,$0A,$22
-        .BYTE $86,$4D,$45,$53,$47,$45,$53,$0C
-        .BYTE $41,$94,$54,$48,$45,$20,$54,$57
-        .BYTE $49,$53,$54,$20,$20,$20,$20,$20
-        .BYTE $20,$20,$20,$20,$20,$20,$41,$AA
-        .BYTE $0A,$1B,$0C,$41,$94,$54,$48,$45
-        .BYTE $20,$53,$4D,$4F,$4F,$54,$48,$20
-        .BYTE $43,$52,$4F,$53,$53,$46,$4C,$4F
-        .BYTE $57,$41,$B4,$0A,$1B,$0C,$41,$94
-        .BYTE $53,$45,$54,$20,$4F,$46,$20,$46
-        .BYTE $41,$4C,$53,$45,$20,$54,$45,$45
-        .BYTE $54,$48,$20,$20,$41,$BE,$0A,$1B
-        .BYTE $0C,$41,$94,$44,$45,$4C,$54,$4F
-        .BYTE $49,$44,$53,$20,$20,$20,$20,$20
-        .BYTE $20,$20,$20,$20,$20,$20,$20,$41
-        .BYTE $C8,$0A,$1B,$0C,$41,$94,$50,$55
-        .BYTE $4C,$53,$41,$52,$20,$43,$52,$4F
-        .BYTE $53,$53,$45,$53,$20,$20,$20,$20
-        .BYTE $20,$20,$41,$D2,$0A,$1B,$0C,$41
-        .BYTE $94,$53,$4C,$4F,$54,$48,$46,$55
-        .BYTE $4C,$20,$4D,$55,$4C,$54,$49,$43
-        .BYTE $52,$4F,$53,$53,$20,$41,$DC,$0A
-        .BYTE $1B,$0C,$41,$94,$43,$52,$4F,$53
-        .BYTE $53,$2D,$41,$4E,$44,$2D,$41,$2D
-        .BYTE $42,$49,$54,$20,$20,$20,$20,$20
-        .BYTE $41,$E6,$0A,$1B,$0C,$41,$94,$53
-        .BYTE $54,$41,$52,$32,$2D,$53,$4D,$41
-        .BYTE $01,$01,$01,$01,$01,$01,$01,$01
-        .BYTE $01,$01,$01,$01,$01,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$03,$03,$03
-        .BYTE $03,$03,$03,$03,$03,$03,$03,$04
-        .BYTE $04,$04,$04,$04,$04,$04,$04,$04
-        .BYTE $04,$04,$04,$04,$04,$04,$04,$05
-        .BYTE $05,$05,$05,$05,$05,$05,$05,$05
-        .BYTE $05,$05,$05,$05,$05,$05,$06,$06
-        .BYTE $06,$06,$06,$06,$06,$06,$06,$06
-        .BYTE $06,$06,$06,$06,$06,$06,$06,$06
-        .BYTE $07,$07,$07,$07,$07,$07,$07,$07
-        .BYTE $07,$07,$07,$07,$07,$07,$07,$07
-        .BYTE $07,$07,$01,$01,$01,$01,$01,$01
-        .BYTE $01,$01,$01,$01,$01,$01,$01,$01
-        .BYTE $01,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$03,$03
-        .BYTE $03,$03,$03,$03,$03,$03,$03,$03
-        .BYTE $03,$04,$04,$04,$04,$04,$04,$04
-        .BYTE $04,$04,$05,$05,$05,$05,$05,$05
-        .BYTE $05,$06,$06,$06,$06,$06,$07,$07
-        .BYTE $07,$01,$03,$03,$03,$03,$03,$03
-        .BYTE $03,$03,$03,$03,$03,$03,$03,$04
-        .BYTE $04,$04,$04,$04,$04,$04,$04,$04
-        .BYTE $04,$04,$04,$04,$04,$04,$04,$04
-        .BYTE $04,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
-        .BYTE $08,$08,$08,$08,$08,$08,$01,$01
-        .BYTE $01,$01,$01,$01,$01,$01,$01,$01
-        .BYTE $01,$01,$01,$01,$01,$01,$01,$01
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
-        .BYTE $02,$02,$02,$02,$03,$04,$05,$06
-        .BYTE $07,$02,$02,$03,$04,$05,$06,$07
-        .BYTE $01,$02,$03,$04,$05,$06,$07,$01
-        .BYTE $02,$03,$04,$05,$06,$07,$01,$02
-        .BYTE $03,$04,$05,$06,$07,$01,$02,$03
-        .BYTE $04,$05,$06,$07,$01,$02,$03,$04
-        .BYTE $05,$06,$07,$01,$02,$03,$04,$05
-        .BYTE $06,$07,$01,$02,$03,$04,$05,$06
-        .BYTE $07,$01,$02,$03,$04,$05,$06,$07
-        .BYTE $01,$02,$03,$04,$05,$06,$07,$01
-; THere's text in here
-        .BYTE $02,$03,$01,$41,$94,$43,$2E,$4B
-        .BYTE $45,$59,$53,$3A,$20,$20,$20,$4F
-        .BYTE $4F,$5A,$45,$20,$53,$54,$45,$50
-        .BYTE $53,$41,$CC,$0B,$1B,$0C,$41,$94
-        .BYTE $43,$2E,$4B,$45,$59,$53,$3A,$20
-        .BYTE $20,$4F,$4F,$5A,$45,$20,$43,$59
-        .BYTE $43,$4C,$45,$53,$41,$D6,$0B,$1B
-        .BYTE $0C,$41,$94,$43,$4F,$4C,$4F,$55
-        .BYTE $52,$46,$4C,$4F,$57,$20,$52,$45
-        .BYTE $53,$59,$4E,$43,$48,$45,$44,$41
-        .BYTE $E0,$0B,$1B,$0C,$41,$94,$50,$55
-        .BYTE $4C,$53,$45,$20,$46,$4C,$4F,$57
-        .BYTE $20,$52,$41,$54,$45,$3A,$20,$30
-        .BYTE $30,$30,$41,$EA,$0B,$1B,$0C,$41
-        .BYTE $94,$53,$50,$45,$45,$44,$20,$42
-        .BYTE $4F,$4F,$53,$54,$3A,$20,$20,$20
-        .BYTE $20,$20,$30,$30,$30,$41,$F4,$0B
-        .BYTE $1B,$0C,$41,$94,$43,$55,$52,$53
-        .BYTE $4F,$52,$20,$53,$50,$45,$45,$44
-        .BYTE $3A,$20,$20,$20,$20,$30,$30,$30
-        .BYTE $41,$FE,$0B,$1B,$0C,$41,$94,$38
-        .BYTE $2D,$57,$41,$59,$20,$4D,$4F,$44
-        .BYTE $45,$20,$45,$4E,$47,$41,$47,$45
-        .BYTE $44,$20,$20,$41,$08,$0C,$1B,$0C
-        .BYTE $41,$94,$56,$45,$43,$54,$4F,$52
-        .BYTE $20,$4D,$4F,$44,$45,$20,$45,$4E
-        .BYTE $47,$41,$47,$45,$44,$20,$41,$12
-        .BYTE $0C,$1B,$0C,$41,$94,$4C,$4F,$47
-        .BYTE $49,$43,$20,$54,$52,$41,$43,$4B
-        .BYTE $49,$4E,$47,$20,$4F,$46,$46,$20
-        .BYTE $20,$41,$1C,$0C,$1B,$0C,$41,$94
-        .BYTE $4C,$4F,$47,$49,$43,$20,$54,$52
-        .BYTE $41,$43,$4B,$49,$4E,$47,$20,$4F
-        .BYTE $4E,$20,$20,$20,$41,$26,$0C,$1B
-        .BYTE $0C,$41,$94,$53,$4D,$4F,$4F,$54
-        .BYTE $48,$49,$4E,$47,$20,$44,$45,$4C
-        .BYTE $41,$59,$3A,$20,$30,$30,$30,$41
-        .BYTE $30,$0C,$1B,$0C,$41,$94,$42,$55
-        .BYTE $46,$46,$45,$52,$20,$4C,$45,$4E
-        .BYTE $47,$54,$48,$3A,$20,$20,$20,$30
-        .BYTE $30,$30,$41,$3A,$0C,$1B,$0C,$41
-        .BYTE $94,$52,$55,$4E,$4E,$49,$4E,$47
-        .BYTE $20,$50,$52,$45,$53,$45,$54,$20
-        .BYTE $23,$20,$30,$30,$30,$41,$44,$0C
-        .BYTE $1B,$0C,$41,$94,$53,$54,$41,$53
-        .BYTE $48,$49,$4E,$47,$20,$50,$52,$45
-        .BYTE $53,$45,$54,$23,$20,$30,$30,$30
-        .BYTE $41,$4E,$0C,$1B,$0C,$41,$94,$50
-        .BYTE $55,$4C,$53,$45,$20,$57,$49,$44
-        .BYTE $54,$48,$3A,$20,$20,$20,$20,$20
-        .BYTE $30,$30,$30,$41,$58,$0C,$1B,$0C
-        .BYTE $41,$94,$52,$55,$4E,$20,$50,$52
-        .BYTE $45,$53,$45,$54,$20,$42,$41,$4E
-        .BYTE $4B,$3A,$20,$30,$30,$30,$41,$62
-        .BYTE $0C,$1B,$0C,$41,$94,$52,$45,$43
+.include "foreground.asm"
+
+; Other data
         .BYTE $4F,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00

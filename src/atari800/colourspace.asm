@@ -52,7 +52,7 @@ screenLoPtr = $CB
 screenHiPtr = $CC
 previousPixelXPosition = $CD
 previousPixelYPosition = $CE
-currentPaintPixelYPosition = $CF
+pixelValueToPaint = $CF
 currentSymmetrySetting = $D0
 bottomMostYPos = $D1
 xPosLoPtr = $D2
@@ -743,6 +743,8 @@ LaunchColourspace
         BNE b4032
         INC a2FCA
 
+        ; Copy the banner data into the RAM
+        ; used for foreground data.
 b400A   LDA #$CC
         STA fA000,X
         STA fB000,X
@@ -1016,19 +1018,19 @@ PaintRestOfCurrentSymmetry
         LDA foregroundPixelsHiPtrArray,X
         STA screenHiPtr
         PLA 
-        STA currentPaintPixelYPosition
+        STA pixelValueToPaint
         LDA beginDrawingForeground
         BNE b41E7
         LDA (linePtrLo),Y
         AND #$EF
         SEC 
-        SBC currentPaintPixelYPosition
+        SBC pixelValueToPaint
         BMI b41E7
         CMP #$01
         BEQ b41E7
         RTS 
 
-b41E7   LDA currentPaintPixelYPosition
+b41E7   LDA pixelValueToPaint
         STA (linePtrLo),Y
         AND #$0F
         PHA 
@@ -1038,10 +1040,10 @@ b41E7   LDA currentPaintPixelYPosition
         BCC b4200
         TAY 
         PLA 
-        STA currentPaintPixelYPosition
+        STA pixelValueToPaint
         LDA (screenLoPtr),Y
         AND #$F0
-        ORA currentPaintPixelYPosition
+        ORA pixelValueToPaint
         STA (screenLoPtr),Y
         RTS 
 
@@ -1052,10 +1054,10 @@ b4200   TAY
         ROL 
         ROL 
         ROL 
-        STA currentPaintPixelYPosition
+        STA pixelValueToPaint
         LDA (screenLoPtr),Y
         AND #$0F
-        ORA currentPaintPixelYPosition
+        ORA pixelValueToPaint
         STA (screenLoPtr),Y
         RTS 
 
@@ -1445,6 +1447,7 @@ b44E7   LDX pixelYPosition
         STA aDE
         LDA aDF
         BEQ b4526
+
         LDA #$08
 b44FE   STA aE1
         LDA pixelXPosition

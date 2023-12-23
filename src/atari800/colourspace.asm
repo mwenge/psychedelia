@@ -3963,7 +3963,7 @@ StartRecording
         STA selectedPresetForPlayback
 b5B65   RTS 
 
-autoDemoEnabled   .BYTE $03
+autoDemoEnabled   .BYTE $00
 ;-------------------------------------------------------------------------
 ; GetInputForDemo
 ;-------------------------------------------------------------------------

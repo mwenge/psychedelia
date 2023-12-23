@@ -22,7 +22,7 @@ burstGeneratorF1 = $C200
         ; 'X-Y SYMMETRY    '
         ; 'X-AXIS SYMMETRY '
         ; 'QUAD SYMMETRY   '
-        .BYTE $01
+        .BYTE  Y_AXIS_SYMMETRY
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
         ; increase/decrease is not linear. You can adjust the ‘compensating delay’
         ; which often smooths out jerky patterns. Can be used just for special FX)
@@ -32,61 +32,61 @@ burstGeneratorF1 = $C200
         ; Burst Position 1
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $07,$06
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $07
+        ; Index to pattern in patternIndexArray
+        .BYTE PULSAR
 
         ; Burst Position 2
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $11,$0D
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $07
+        ; Index to pattern in patternIndexArray
+        .BYTE PULSAR
 
         ; Burst Position 3
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $06,$11
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $07
+        ; Index to pattern in patternIndexArray
+        .BYTE PULSAR
 
         ; Burst Position 4
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $FF,$0B
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $07
+        ; Index to pattern in patternIndexArray
+        .BYTE PULSAR
 
         ; Burst Position 5
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $FF,$00
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $FF
 
         ; Burst Position 6
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $21,$06
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         ; Burst Position 7
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $06,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $06
 
         ; Burst Position 8
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $41,$FF
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         ; Burst Position 9
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $06,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $06
 
         ; Burst Position 10
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $01,$06
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
 burstGeneratorF2 = $C220
@@ -97,7 +97,7 @@ burstGeneratorF2 = $C220
         ; 'X-Y SYMMETRY    '
         ; 'X-AXIS SYMMETRY '
         ; 'QUAD SYMMETRY   '
-        .BYTE $01
+        .BYTE Y_AXIS_SYMMETRY
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
         ; increase/decrease is not linear. You can adjust the ‘compensating delay’
         ; which often smooths out jerky patterns. Can be used just for special FX)
@@ -107,61 +107,61 @@ burstGeneratorF2 = $C220
         ; Burst Position 1
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $13,$08
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $00
+        ; Index to pattern in patternIndexArray
+        .BYTE STARONE
 
         ; Burst Position 2
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $07,$0F
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $00
+        ; Index to pattern in patternIndexArray
+        .BYTE STARONE
 
         ; Burst Position 3
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $FF,$00
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $06
+        ; Index to pattern in patternIndexArray
+        .BYTE MULTICROSS
 
         ; Burst Position 4
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $01,$2A
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $41
 
         ; Burst Position 5
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $02,$00
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $04
 
         ; Burst Position 6
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $62,$FF
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $41
 
         ; Burst Position 7
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $06,$40
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         ; Burst Position 8
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $6B,$04
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $41
 
         ; Burst Position 9
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $FF,$00
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $FF
 
         ; Burst Position 10
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $00,$FF
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
 burstGeneratorF3 = $C240
@@ -172,7 +172,7 @@ burstGeneratorF3 = $C240
         ; 'X-Y SYMMETRY    '
         ; 'X-AXIS SYMMETRY '
         ; 'QUAD SYMMETRY   '
-        .BYTE $04
+        .BYTE QUAD_SYMMETRY
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
         ; increase/decrease is not linear. You can adjust the ‘compensating delay’
         ; which often smooths out jerky patterns. Can be used just for special FX)
@@ -182,61 +182,61 @@ burstGeneratorF3 = $C240
         ; Burst Position 1  
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $02
+        ; Index to pattern in patternIndexArray
+        .BYTE LALLAMITA
 
         ; Burst Position 2
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $FF,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $02
+        ; Index to pattern in patternIndexArray
+        .BYTE LALLAMITA
 
         ; Burst Position 3
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
         ; Burst Position 4
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
         ; Burst Position 5
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
         ; Burst Position 6
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
         ; Burst Position 7
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
         ; Burst Position 8
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $FF,$03
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
         ; Burst Position 9
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$03
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
         ; Burst Position 10
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $08,$03
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $02
 
 burstGeneratorF4 = $C260
@@ -247,7 +247,7 @@ burstGeneratorF4 = $C260
         ; 'X-Y SYMMETRY    '
         ; 'X-AXIS SYMMETRY '
         ; 'QUAD SYMMETRY   '
-        .BYTE $00
+        .BYTE NO_SYMMETRY
         ; smoothingDelay: 'Because of the time taken to draw larger patterns speed
         ; increase/decrease is not linear. You can adjust the ‘compensating delay’
         ; which often smooths out jerky patterns. Can be used just for special FX)
@@ -257,61 +257,61 @@ burstGeneratorF4 = $C260
         ; Burst Position 1
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $12,$09
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $08
+        ; Index to pattern in patternIndexArray
+        .BYTE CUSTOMPATTERN0
 
         ; Burst Position 2
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $12,$09
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $08
+        ; Index to pattern in patternIndexArray
+        .BYTE CUSTOMPATTERN0
 
         ; Burst Position 3
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $FF,$08
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
-        .BYTE $03
+        ; Index to pattern in patternIndexArray
+        .BYTE STARTWO
 
         ; Burst Position 4
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $02,$08
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $03
 
         ; Burst Position 5
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $02,$08
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $03
 
         ; Burst Position 6
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $02,$FF
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         ; Burst Position 7
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $00,$00
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         ; Burst Position 8
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $01,$24
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         ; Burst Position 9
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $05,$01
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         ; Burst Position 10
         ; X/Y Co-ordinates: X/Y Position relative to cursor to place the burst.
         .BYTE $00,$00
-        ; Index to pattern in pixelXPositionLoPtrArray/pixelXPositionHiPtrArray
+        ; Index to pattern in patternIndexArray
         .BYTE $00
 
         .BYTE $00,$BD,$00,$B9,$00,$BD,$00,$BD

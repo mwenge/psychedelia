@@ -459,7 +459,7 @@ pixelYPositionArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-baseLevelArray
+currentColorIndexArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -514,7 +514,7 @@ ReinitializeSequences
 _Loop   STA pixelXPositionArray,X
         STA pixelYPositionArray,X
         LDA #$FF
-        STA baseLevelArray,X
+        STA currentColorIndexArray,X
         LDA #$00
         STA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
@@ -613,7 +613,7 @@ DoANormalPaint
         STA currentIndexToPixelBuffers
 CheckCurrentBuffer   
         LDX currentIndexToPixelBuffers
-        LDA baseLevelArray,X
+        LDA currentColorIndexArray,X
         CMP #$FF
         BNE ShouldDoAPaint
 
@@ -658,7 +658,7 @@ ShouldDoAPaint
         PLA 
         TAX 
 
-        DEC baseLevelArray,X
+        DEC currentColorIndexArray,X
 GoBackToStartOfLoop   
         JMP MainPaintLoop
 
@@ -863,14 +863,14 @@ UpdatePixelBuffersForPattern
 
 UpdateBaseLevelArray   
         TAX 
-        LDA baseLevelArray,X
+        LDA currentColorIndexArray,X
         CMP #$FF
         BEQ UpdatePositionArrays
         LDA shouldDrawCursor
         AND trackingActivated
         BEQ DrawCursorAndReturnFromInterrupt
         TAX 
-        LDA baseLevelArray,X
+        LDA currentColorIndexArray,X
         CMP #$FF
         BNE DrawCursorAndReturnFromInterrupt
 
@@ -890,12 +890,12 @@ UpdatePositionArrays
         SEC 
         SBC cursorYPosition
         ORA #$80
-        STA baseLevelArray,X
+        STA currentColorIndexArray,X
         JMP ApplySmoothingDelay
 
 LineModeNotActive   
         LDA baseLevel
-        STA baseLevelArray,X
+        STA currentColorIndexArray,X
         LDA currentPatternElement
         STA patternIndexArray,X
 
@@ -1404,7 +1404,7 @@ FnKeyLoop
         ; Continue checking
         JMP MaybeQPressed
 
-        ; A Function key was pressed, only valid if the sequencer is active.
+        ; A Function key was pressed, ignore if the sequencer is active.
 FunctionKeyWasPressed   
         STX functionKeyIndex
         LDA sequencerActive
@@ -1652,15 +1652,15 @@ ResetLineModeColorValue
 
 CleanUpAndExitLineModePaint    
         LDX currentIndexToPixelBuffers
-        DEC baseLevelArray,X
-        LDA baseLevelArray,X
+        DEC currentColorIndexArray,X
+        LDA currentColorIndexArray,X
         CMP #$80
         BEQ ResetIndexAndExitLineModePaint
         JMP MainPaintLoop
 
 ResetIndexAndExitLineModePaint   
         LDA #$FF
-        STA baseLevelArray,X
+        STA currentColorIndexArray,X
         STX shouldDrawCursor
         JMP MainPaintLoop
 
@@ -1769,7 +1769,7 @@ b1406   LDA #$04
         ; The active mode is 'Color Change'.
 UpdateColorChange   
         LDX #$00
-b1417   LDA baseLevelArray,X
+b1417   LDA currentColorIndexArray,X
         CMP #$FF
         BNE ResetSelectedVariableAndReturn
 
@@ -2164,7 +2164,7 @@ ReinitializeScreen
 
         LDX #$00
         LDA #$FF
-b172a   STA baseLevelArray,X
+b172a   STA currentColorIndexArray,X
         INX
         CPX #$40
         BNE b172A
@@ -2222,7 +2222,7 @@ PointToBurstData
 
 b177B   LDA #$FF
         STA sequencerActive
-        JMP InitializeSequencer
+        JMP LoadBurstData
 
 functionKeyToSequenceArray   .BYTE <burstGeneratorF1,<burstGeneratorF2
                              .BYTE <burstGeneratorF3,<burstGeneratorF4
@@ -2378,9 +2378,9 @@ UpdateDataFreeDisplay
         RTS 
 
 ;-------------------------------------------------------
-; InitializeSequencer
+; LoadBurstData
 ;-------------------------------------------------------
-InitializeSequencer    
+LoadBurstData    
         LDA #$00
         STA currentVariableMode
         TAY 
@@ -2390,35 +2390,38 @@ InitializeSequencer
         LDA (currentSequencePtrLo),Y
         STA burstSmoothingDelay
 
-j18A9    
+LoadNextBurstPosition    
         LDY #$02
         INC currentStepCount
         LDA currentStepCount
         CMP bufferLength
-        BNE b18BB
+        BNE DontResetStepCountToZero
 
         LDA #$00
         STA currentStepCount
-b18BB   LDX currentStepCount
-        LDA baseLevelArray,X
+
+DontResetStepCountToZero
+        LDX currentStepCount
+        LDA currentColorIndexArray,X
         CMP #$FF
-        BEQ b18D7
+        BEQ LoadBurstToBuffers
 
         LDA shouldDrawCursor
         AND trackingActivated
-        BEQ b1901
+        BEQ MoveToNextBurstPosition
 
         STA currentStepCount
         TAX 
-        LDA baseLevelArray,X
+        LDA currentColorIndexArray,X
         CMP #$FF
-        BNE b1901
+        BNE MoveToNextBurstPosition
 
-b18D7   LDA baseLevel
-        STA baseLevelArray,X
+LoadBurstToBuffers
+        LDA baseLevel
+        STA currentColorIndexArray,X
         LDA (currentSequencePtrLo),Y
         CMP #$C0
-        BEQ b1901
+        BEQ MoveToNextBurstPosition
 
         STA pixelXPositionArray,X
         INY 
@@ -2433,7 +2436,8 @@ b18D7   LDA baseLevel
         LDA prevSymmetrySetting
         STA symmetrySettingForStepCount,X
 
-b1901   LDA currentSequencePtrLo
+MoveToNextBurstPosition
+        LDA currentSequencePtrLo
         CLC 
         ADC #$03
         STA currentSequencePtrLo
@@ -2443,10 +2447,11 @@ b1901   LDA currentSequencePtrLo
         LDY #$02
         LDA (currentSequencePtrLo),Y
         CMP #$FF
-        BEQ b1919
-        JMP j18A9
+        BEQ FinishedLoadingBurstData
+        JMP LoadNextBurstPosition
 
-b1919   LDA #$00
+FinishedLoadingBurstData
+        LDA #$00
         STA sequencerActive
         RTS 
 
@@ -2523,7 +2528,7 @@ LoadDataForSequencer
         LDA #$00
         STA currentStepCount
 b1992   TAX 
-        LDA baseLevelArray,X
+        LDA currentColorIndexArray,X
         CMP #$FF
         BEQ LoadValuesFromSequencerData
 
@@ -2531,7 +2536,7 @@ b1992   TAX
         AND trackingActivated
         BEQ MoveToNextPositionInSequencer
         TAX 
-        LDA baseLevelArray,X
+        LDA currentColorIndexArray,X
         CMP #$FF
         BNE MoveToNextPositionInSequencer
 
@@ -2542,7 +2547,7 @@ LoadValuesFromSequencerData
         BEQ MoveToNextPositionInSequencer
 
         LDA baseLevel
-        STA baseLevelArray,X
+        STA currentColorIndexArray,X
 
         LDA startOfSequencerData + $01
         STA initialFramesRemainingToNextPaintForStep,X

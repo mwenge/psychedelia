@@ -32,7 +32,7 @@ currentPatternElement            = $0F
 yPosLoPtr                        = $10
 yPosHiPtr                        = $11
 timerBetweenKeyStrokes           = $12
-shouldDrawCursor                 = $13
+previousIndexToPixelBuffers                 = $13
 currentSymmetrySettingForStep    = $14
 currentSymmetrySetting           = $15
 offsetForYPos                    = $16
@@ -84,7 +84,7 @@ InitializeProgram
 
         JSR MovePresetDataIntoPosition
 
-        STA shouldDrawCursor
+        STA previousIndexToPixelBuffers
 
         ; Create a Hi/Lo pointer to $D800
         LDA #>COLOR_RAM
@@ -526,7 +526,7 @@ _Loop   STA pixelXPositionArray,X
 
         STA timerBetweenKeyStrokes
         STA currentPatternElement
-        STA shouldDrawCursor
+        STA previousIndexToPixelBuffers
         STA skipPixel
         LDA #$01
         STA currentSymmetrySetting
@@ -618,7 +618,7 @@ CheckCurrentBuffer
         BNE ShouldDoAPaint
 
         ; 
-        STX shouldDrawCursor
+        STX previousIndexToPixelBuffers
         JMP MainPaintLoop
 
 ShouldDoAPaint   
@@ -813,16 +813,16 @@ CheckIfCursorAtExtremeRight
 CheckIfPlayerPressedFire   
         LDA lastJoystickInput
         AND #$10
-        BEQ PlayerHasntPressedFire
+        BEQ PlayerHasPressedFire
 
-        ; Player has pressed fire.
+        ; Player has not pressed fire.
         LDA #$00
         STA stepsSincePressedFire
         JMP DrawCursorAndReturnFromInterrupt
         ; Returns
 
-        ; Player hasn't pressed fire.
-PlayerHasntPressedFire   
+        ; Player has pressed fire.
+PlayerHasPressedFire   
         LDA stepsExceeded255
         BEQ DecrementPulseWidthCounter
         LDA stepsSincePressedFire
@@ -866,7 +866,7 @@ UpdateBaseLevelArray
         LDA currentColorIndexArray,X
         CMP #$FF
         BEQ UpdatePositionArrays
-        LDA shouldDrawCursor
+        LDA previousIndexToPixelBuffers
         AND trackingActivated
         BEQ DrawCursorAndReturnFromInterrupt
         TAX 
@@ -1661,7 +1661,7 @@ CleanUpAndExitLineModePaint
 ResetIndexAndExitLineModePaint   
         LDA #$FF
         STA currentColorIndexArray,X
-        STX shouldDrawCursor
+        STX previousIndexToPixelBuffers
         JMP MainPaintLoop
 
 .enc "petscii" 
@@ -2160,7 +2160,7 @@ currentModeActive  .BYTE $00
 ReinitializeScreen
         LDA #$00
         STA currentIndexToPixelBuffers
-        STA shouldDrawCursor
+        STA previousIndexToPixelBuffers
 
         LDX #$00
         LDA #$FF
@@ -2406,7 +2406,7 @@ DontResetStepCountToZero
         CMP #$FF
         BEQ LoadBurstToBuffers
 
-        LDA shouldDrawCursor
+        LDA previousIndexToPixelBuffers
         AND trackingActivated
         BEQ MoveToNextBurstPosition
 
@@ -2532,7 +2532,7 @@ b1992   TAX
         CMP #$FF
         BEQ LoadValuesFromSequencerData
 
-        LDA shouldDrawCursor
+        LDA previousIndexToPixelBuffers
         AND trackingActivated
         BEQ MoveToNextPositionInSequencer
         TAX 

@@ -1589,11 +1589,12 @@ _Loop
         .cdef "@@", $AC  ;characters
         .cdef "??", $BF  ;characters
         .cdef "  ", $A0  ;characters
+        .cdef "__", $A3  ;characters
         .cdef "--", $AD  ;characters
         .cdef ",,", $2c  ;characters
         .cdef "..", $ae  ;characters
         .cdef "::", $BA  ;characters
-        .cdef "00", $BA  ;characters
+        .cdef "00", $B0  ;characters
         .cdef "AZ", $c1
         .cdef "az", $41
         .cdef "11", $31
@@ -1969,7 +1970,7 @@ txtVariableLabels
         .TEXT 'CURSOR SPEED   :'
         .TEXT 'BUFFER LENGTH  :'
         .TEXT 'PULSE SPEED    :'
-        .TEXT 'COLOUR ',$B0,' SET   :'
+        .TEXT 'COLOUR 0 SET   :'
         .TEXT 'WIDTH OF LINE  :'
         .TEXT 'SEQUENCER SPEED:'
         .TEXT 'PULSE WIDTH    :'
@@ -2034,7 +2035,7 @@ WriteLastLineBufferAndReturn
 
 .enc "petscii" 
 txtPreset
-        .TEXT 'PRESET ',$B0,$B0,'      :'
+        .TEXT 'PRESET 00      :'
 txtPresetActivatedStored
         .TEXT ' ACTIVATED       '
         .TEXT 'DATA STORED    '
@@ -2253,7 +2254,7 @@ functionKeyToSequenceArray   .BYTE <burstGeneratorF1,<burstGeneratorF2
 
 .enc "petscii" 
 txtDataFree
-        .TEXT 'DATA: ',$B0,$B0,$B0,' FREE  '
+        .TEXT 'DATA: 000 FREE  '
 .enc "none" 
 functionKeys
         .BYTE $04,$05,$06,$03
@@ -2634,7 +2635,7 @@ ResetSequencerToStart
 stepsRemainingInSequencerSequence   .BYTE $00
 .enc "petscii" 
 txtSequFree
-        .TEXT 'SEQU: ',$B0,$B0,$B0,' FREE  '
+        .TEXT 'SEQU: 000 FREE  '
 .enc "none" 
 
 ;-------------------------------------------------------
@@ -3140,9 +3141,8 @@ txtPatternLoop
 
 .enc "petscii" 
 txtCustomPatterns
-        .TEXT 'USER SHAPE '
+        .TEXT 'USER SHAPE _0'
 .enc "none" 
-        .BYTE $A3,$B0
 pixelShapeIndex
         .BYTE $00
 pixelShapeArray

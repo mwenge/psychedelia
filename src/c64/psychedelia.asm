@@ -1593,6 +1593,7 @@ _Loop
         .cdef ",,", $2c  ;characters
         .cdef "..", $ae  ;characters
         .cdef "::", $BA  ;characters
+        .cdef "00", $BA  ;characters
         .cdef "AZ", $c1
         .cdef "az", $41
         .cdef "11", $31

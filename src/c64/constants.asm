@@ -159,3 +159,6 @@ COLON                            = $BA
 OFFSET_TO_NEXT_BURST             = $03
 BURST_AND_SEQUENCER_END_SENTINEL = $C0
 SHIFT_PRESSED                    = $01
+
+COLOR_MAX = $0F
+NUM_ARRAYS = $07

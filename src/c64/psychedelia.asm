@@ -201,7 +201,7 @@ PaintPixel
         BNE ActuallyPaintPixel
 
         LDA (currentLineInColorRamLoPtr2),Y
-        AND #$0F
+        AND #COLOR_MAX
 
         LDX #$00
 GetIndexInPresetsLoop   
@@ -229,18 +229,18 @@ ActuallyPaintPixel
         RTS 
 
 ;-------------------------------------------------------
-; LoopThroughPixelsAndPaint
+; PaintStructureAtCurrentPosition
 ;-------------------------------------------------------
-LoopThroughPixelsAndPaint   
+PaintStructureAtCurrentPosition   
         JSR PaintPixelForCurrentSymmetry
         LDY #$00
         LDA baseLevelForCurrentPixel
-        CMP #$07
+        CMP #NUM_ARRAYS
         BNE CanLoopAndPaint
         RTS 
 
 CanLoopAndPaint   
-        LDA #$07
+        LDA #NUM_ARRAYS
         STA countToMatchCurrentIndex
 
         LDA pixelXPosition
@@ -289,8 +289,10 @@ PixelPaintLoop
         LDA countToMatchCurrentIndex
         CMP baseLevelForCurrentPixel
         BEQ RestorePositionsAndReturn
+
         CMP #$01
         BEQ RestorePositionsAndReturn
+
         INY 
         JMP PixelPaintLoop
 
@@ -655,7 +657,7 @@ ShouldDoAPaint
 
         TXA 
         PHA 
-        JSR LoopThroughPixelsAndPaint
+        JSR PaintStructureAtCurrentPosition
         PLA 
         TAX 
 
@@ -3014,7 +3016,7 @@ b1C68   LDA customPatternIndex
         STA pixelXPosition
         LDA #$0C
         STA pixelYPosition
-        JSR LoopThroughPixelsAndPaint
+        JSR PaintStructureAtCurrentPosition
         LDA initialBaseLevelForCustomPresets
         BNE b1C68
 

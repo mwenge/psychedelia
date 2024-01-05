@@ -1592,6 +1592,7 @@ _Loop
         .cdef "--", $AD  ;characters
         .cdef ",,", $2c  ;characters
         .cdef "..", $ae  ;characters
+        .cdef "::", $BA  ;characters
         .cdef "AZ", $c1
         .cdef "az", $41
         .cdef "11", $31
@@ -1671,8 +1672,8 @@ ResetIndexAndExitLineModePaint
 
 .enc "petscii" 
 lineModeSettingDescriptions
-        .TEXT 'LINE MODE',$BA,' OFF  '
-        .TEXT 'LINE MODE',$BA,' ON   '
+        .TEXT 'LINE MODE: OFF  '
+        .TEXT 'LINE MODE: ON   '
 .enc "none"
 ;-------------------------------------------------------
 ; DrawColorValueBar
@@ -1963,15 +1964,15 @@ currentPulseSpeedCounter          .BYTE $01
 txtVariableLabels   
 .enc "petscii" 
         .TEXT '                '
-        .TEXT 'SMOOTHING DELAY',$BA
-        .TEXT 'CURSOR SPEED   ',$BA
-        .TEXT 'BUFFER LENGTH  ',$BA
-        .TEXT 'PULSE SPEED    ',$BA
-        .TEXT 'COLOUR ',$B0,' SET   ',$BA
-        .TEXT 'WIDTH OF LINE  ',$BA
-        .TEXT 'SEQUENCER SPEED',$BA
-        .TEXT 'PULSE WIDTH    ',$BA
-        .TEXT 'BASE LEVEL     ',$BA
+        .TEXT 'SMOOTHING DELAY:'
+        .TEXT 'CURSOR SPEED   :'
+        .TEXT 'BUFFER LENGTH  :'
+        .TEXT 'PULSE SPEED    :'
+        .TEXT 'COLOUR ',$B0,' SET   :'
+        .TEXT 'WIDTH OF LINE  :'
+        .TEXT 'SEQUENCER SPEED:'
+        .TEXT 'PULSE WIDTH    :'
+        .TEXT 'BASE LEVEL     :'
 .enc "none" 
 colorValuesPtr   
         .BYTE $00
@@ -1982,8 +1983,8 @@ colorBarValues  .BYTE BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE,ORANGE
 txtTrackingOnOff   
 
 .enc "petscii" 
-        .TEXT 'TRACKING',$BA,' OFF   '
-        .TEXT 'TRACKING',$BA,' ON    '
+        .TEXT 'TRACKING: OFF   '
+        .TEXT 'TRACKING: ON    '
 .enc "none" 
 
 
@@ -2032,7 +2033,7 @@ WriteLastLineBufferAndReturn
 
 .enc "petscii" 
 txtPreset
-        .TEXT 'PRESET ',$B0,$B0,'      ',$BA
+        .TEXT 'PRESET ',$B0,$B0,'      :'
 txtPresetActivatedStored
         .TEXT ' ACTIVATED       '
         .TEXT 'DATA STORED    '
@@ -2251,7 +2252,7 @@ functionKeyToSequenceArray   .BYTE <burstGeneratorF1,<burstGeneratorF2
 
 .enc "petscii" 
 txtDataFree
-        .TEXT 'DATA',$BA,' ',$B0,$B0,$B0,' FREE  '
+        .TEXT 'DATA: ',$B0,$B0,$B0,' FREE  '
 .enc "none" 
 functionKeys
         .BYTE $04,$05,$06,$03
@@ -2632,7 +2633,7 @@ ResetSequencerToStart
 stepsRemainingInSequencerSequence   .BYTE $00
 .enc "petscii" 
 txtSequFree
-        .TEXT 'SEQU',$BA,' ',$B0,$B0,$B0,' FREE  '
+        .TEXT 'SEQU: ',$B0,$B0,$B0,' FREE  '
 .enc "none" 
 
 ;-------------------------------------------------------

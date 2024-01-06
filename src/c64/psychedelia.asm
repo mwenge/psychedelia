@@ -77,12 +77,19 @@ copyToHiPtr                      = $FE
 ;-----------------------------------------------------------------------------------
 ; Start program at InitializeProgram (SYS 2064)
 ; SYS 2064 ($0810)
-; $9E = SYS
-; $32,$30,$36,$34 = 2064
+;
+; This is where execution starts.
+; It is a short BASIC program that executes whatever is at address
+; $0810 (2064 in decimal). In this case, that's InitializeProgram.
 ;-----------------------------------------------------------------------------------
-        .BYTE $0B,$08,$C1,$07,$9E,$32,$30,$36,$34
-
-        .BYTE $00,$00,$00,$F9,$02,$F9
+        .BYTE $0B,$08          ; Points to EndOfProgram address below
+        .BYTE $C1,$07          ; Arbitrary Line Number, in this case: 1985
+        .BYTE $9E              ; SYS
+        .BYTE $32,$30,$36,$34  ; 2064 ($810), which is InitializeProgram below.
+        .BYTE $00              ; Null byte to terminate the line above.
+        .BYTE $00,$00          ; EndOfProgram  (all zeroes)
+        .BYTE $F9,$02,$F9      ; Filler bytes so that InitializeProgram is
+                               ; located at $0810
 
 ;-------------------------------------------------------
 ; InitializeProgram
@@ -698,6 +705,7 @@ SetUpInterruptHandlers
         LDA #$01
         STA $D015    ;Sprite display Enable
         STA $D027    ;Sprite 0 Color
+
         LDA #<NMIInterruptHandler
         STA $0318    ;NMI
         LDA #>NMIInterruptHandler

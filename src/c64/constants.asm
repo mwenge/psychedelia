@@ -149,6 +149,8 @@ NUM_COLS                         = $28
 
 NOT_ACTIVE                       = $00
 ACTIVE                           = $01
+GENERIC_ACTIVE                   = $FF
+
 COLOR_VALUES_ARRAY_LEN           = $08
 PIXEL_BUFFER_LENGTH              = $40
 LINE_MODE_ACTIVE                 = $80
@@ -169,4 +171,21 @@ SAVE_MOTIONS                     = $02
 CONTINUE_SAVE                    = $03
 RECORDING                        = $03
 PLAYING_BACK                     = $02
+
+BLOCK                            = $CF
+CIRCLE                           = $51
+HEART                            = $53
+DIAMOND                          = $5A
+CROSS                            = $5B
+TOP_RIGHT_TRIANGLE               = $5F
+DONUT                            = $57
+CHECKER                          = $7F
+ANDREWS_CROSS                    = $56
+LEFT_HALF                        = $61
+TOP_LEFT_BRACKET                 = $4F
+FULL_CHECKER                     = $66
+BOTTOM_RIGHT_SQUARE              = $6C
+BOTTOM_RIGHT_SQUARE2             = $EC
+SPACE_MAYBE                      = $A0
+ASTERISK                         = $2A
 

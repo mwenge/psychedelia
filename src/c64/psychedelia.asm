@@ -1819,7 +1819,7 @@ _Loop   LDA currentColorIndexArray,X
         LDA demoModeActive
         BNE ResetSelectedVariableAndReturn
 
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA currentModeActive
         LDA #$00
         STA currentStepCount
@@ -2149,7 +2149,7 @@ _Loop   LDA (presetSequenceDataLoPtr),Y
 ; LoadSelectedPresetSequence
 ;-------------------------------------------------------------------------
 LoadSelectedPresetSequence    
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA currentModeActive
 
         ; Copy the value from the preset sequence into 
@@ -2199,7 +2199,7 @@ ReturnFromPresetPointers
 ; ResetCurrentActiveMode
 ;-------------------------------------------------------
 ResetCurrentActiveMode   
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA currentModeActive
         LDA #$00
         STA currentStepCount
@@ -2273,7 +2273,7 @@ PointToBurstData
         RTS 
 
 LoadBurstDataInstead
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA sequencerActive
         JMP LoadBurstData
 
@@ -2546,7 +2546,7 @@ ActivateSequencer
         STA currentSequencePtrHi
         LDA #<startOfSequencerData
         STA currentSequencePtrLo
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA sequencerActive
         LDA shiftPressed
         AND #SHIFT_PRESSED
@@ -2795,7 +2795,7 @@ ReseetStateAndReturn
         STA cursorXPosition
         LDA previousCursorYPosition
         STA cursorYPosition
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA displaySavePromptActive
         RTS 
 
@@ -3084,7 +3084,7 @@ CheckForKeyPressDuringCustomPrompt
         CMP #NO_KEY_PRESSED
         BEQ ReturnFromOtherPrompts
 
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA customPromptsActive
 
         LDA lastKeyPressed
@@ -3190,8 +3190,9 @@ txtCustomPatterns .TEXT 'USER SHAPE _0'
 .enc "none" 
 pixelShapeIndex .BYTE $00
 pixelShapeArray
-        .BYTE $CF,$51,$53,$5A,$5B,$5F,$57,$7F
-        .BYTE $56,$61,$4F,$66,$6C,$EC,$A0,$2A
+        .BYTE BLOCK,CIRCLE,HEART,DIAMOND,CROSS,TOP_RIGHT_TRIANGLE,DONUT
+        .BYTE CHECKER,ANDREWS_CROSS,LEFT_HALF,TOP_LEFT_BRACKET,FULL_CHECKER
+        .BYTE BOTTOM_RIGHT_SQUARE,BOTTOM_RIGHT_SQUARE2,SPACE_MAYBE,ASTERISK
         .BYTE $47,$4F,$41,$54,$53,$53,$48,$45
         .BYTE $45,$50
 
@@ -3201,7 +3202,7 @@ pixelShapeArray
 DisplaySavePromptScreen 
         LDA #$13
         JSR PRINT
-        LDA #$FF
+        LDA #GENERIC_ACTIVE
         STA displaySavePromptActive
         JSR InitializeScreenWithInitCharacter
 

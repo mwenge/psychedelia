@@ -21,8 +21,8 @@ pixelYPosition                   = $03
 currentValueInColorIndexArray    = $04
 currentLineInColorRamLoPtr2      = $05
 currentLineInColorRamHiPtr2      = $06
-previousCursorXPositionZP        = $08
-previousPixelYPositionZP         = $09
+previousPixelXPosition           = $08
+previousPixelYPosition           = $09
 currentLineInColorRamLoPtr       = $0A
 currentLineInColorRamHiPtr       = $0B
 currentColorToPaint              = $0C
@@ -37,8 +37,8 @@ currentSymmetrySettingForStep    = $14
 currentSymmetrySetting           = $15
 offsetForYPos                    = $16
 skipPixel                        = $17
-colorBarScreenRamLoPtr            = $18
-colorBarScreenRamHiPtr            = $19
+colorBarScreenRamLoPtr           = $18
+colorBarScreenRamHiPtr           = $19
 currentColorSet                  = $1A
 presetSequenceDataLoPtr          = $1B
 presetSequenceDataHiPtr          = $1C
@@ -261,9 +261,9 @@ CanLoopAndPaint
         STA countToMatchCurrentIndex
 
         LDA pixelXPosition
-        STA previousCursorXPositionZP
+        STA previousPixelXPosition
         LDA pixelYPosition
-        STA previousPixelYPositionZP
+        STA previousPixelYPosition
 
         LDX patternIndex
         LDA pixelXPositionLoPtrArray,X
@@ -278,11 +278,11 @@ CanLoopAndPaint
         ; Paint pixels in the sequence until hitting a break
         ; at $55
 PixelPaintLoop   
-        LDA previousCursorXPositionZP
+        LDA previousPixelXPosition
         CLC 
         ADC (xPosLoPtr),Y
         STA pixelXPosition
-        LDA previousPixelYPositionZP
+        LDA previousPixelYPosition
         CLC 
         ADC (yPosLoPtr),Y
         STA pixelYPosition
@@ -314,9 +314,9 @@ PixelPaintLoop
         JMP PixelPaintLoop
 
 RestorePositionsAndReturn   
-        LDA previousCursorXPositionZP
+        LDA previousPixelXPosition
         STA pixelXPosition
-        LDA previousPixelYPositionZP
+        LDA previousPixelYPosition
         STA pixelYPosition
         RTS 
 
@@ -1758,9 +1758,9 @@ offsetToColorBar              .BYTE $FF
 
 ; Different size of nodes for the color bar, graded from a full cell to an empty cell.
 colorBarCharacterArray
-  .BYTE SPACE,LEFT_BAR_ONE_FIFTH,LEFT_BAR_TWO_FIFTHS,LEFT_BAR_TWO_FIFTHS2
-  .BYTE LEFT_BAR_THREE_FIFTHS,RIGHT_BAR_ONE_FIFTHS,RIGHT_BAR_TWO_FIFTHS
-  .BYTE RIGHT_BAR_TWO_FIFTHS2,SPACE_MAYBE
+        .BYTE SPACE,LEFT_BAR_ONE_FIFTH,LEFT_BAR_TWO_FIFTHS,LEFT_BAR_TWO_FIFTHS2
+        .BYTE LEFT_BAR_THREE_FIFTHS,RIGHT_BAR_ONE_FIFTHS,RIGHT_BAR_TWO_FIFTHS
+        .BYTE RIGHT_BAR_TWO_FIFTHS2,SPACE_MAYBE
 
 ResetSelectedVariableAndReturn
         LDA #NOT_ACTIVE

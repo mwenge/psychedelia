@@ -37,8 +37,8 @@ currentSymmetrySettingForStep    = $14
 currentSymmetrySetting           = $15
 offsetForYPos                    = $16
 skipPixel                        = $17
-colorBarColorRamLoPtr            = $18
-colorBarColorRamHiPtr            = $19
+colorBarScreenRamLoPtr            = $18
+colorBarScreenRamHiPtr            = $19
 currentColorSet                  = $1A
 presetSequenceDataLoPtr          = $1B
 presetSequenceDataHiPtr          = $1C
@@ -1702,22 +1702,22 @@ lineModeSettingDescriptions
 ;-------------------------------------------------------
 DrawColorValueBar
         ; Shift the pointer from SCREEN_RAM ($0400) to COLOR_RAM ($D800)
-        LDA colorBarColorRamHiPtr
+        LDA colorBarScreenRamHiPtr
         PHA 
         CLC 
         ADC #$D4
-        STA colorBarColorRamHiPtr
+        STA colorBarScreenRamHiPtr
 
         ; Draw the colors from the bar to color ram.
         LDY #$00
 _Loop   LDA colorBarValues,Y
-        STA (colorBarColorRamLoPtr),Y
+        STA (colorBarScreenRamLoPtr),Y
         INY 
         CPY #$10
         BNE _Loop
 
         PLA 
-        STA colorBarColorRamHiPtr
+        STA colorBarScreenRamHiPtr
         LDA #$00
         STA currentNodeInColorBar
         STA currentCountInDrawingColorBar
@@ -1732,8 +1732,8 @@ ColorBarLoop
         STA offsetToColorBar
         LDX offsetToColorBar
         LDY currentNodeInColorBar
-        LDA nodeTypeArray,X
-        STA (colorBarColorRamLoPtr),Y
+        LDA colorBarCharacterArray,X
+        STA (colorBarScreenRamLoPtr),Y
         CPX #$08
         BNE GoToNextCell
 
@@ -1755,9 +1755,12 @@ currentNodeInColorBar         .BYTE $FF
 maxToDrawOnColorBar           .BYTE $FF
 currentCountInDrawingColorBar .BYTE $FF
 offsetToColorBar              .BYTE $FF
+
 ; Different size of nodes for the color bar, graded from a full cell to an empty cell.
-nodeTypeArray                 .BYTE $20,$65,$74,$75,$61,$F6,$EA,$E7
-                              .BYTE $A0
+colorBarCharacterArray
+  .BYTE SPACE,LEFT_BAR_ONE_FIFTH,LEFT_BAR_TWO_FIFTHS,LEFT_BAR_TWO_FIFTHS2
+  .BYTE LEFT_BAR_THREE_FIFTHS,RIGHT_BAR_ONE_FIFTHS,RIGHT_BAR_TWO_FIFTHS
+  .BYTE RIGHT_BAR_TWO_FIFTHS2,SPACE_MAYBE
 
 ResetSelectedVariableAndReturn
         LDA #NOT_ACTIVE
@@ -1834,9 +1837,9 @@ _Loop   LDA currentColorIndexArray,X
 
 UpdateVariableDisplay   
         LDA #>SCREEN_RAM + $03D0
-        STA colorBarColorRamHiPtr
+        STA colorBarScreenRamHiPtr
         LDA #<SCREEN_RAM + $03D0
-        STA colorBarColorRamLoPtr
+        STA colorBarScreenRamLoPtr
 
         LDX currentVariableMode
         LDA lastKeyPressed
@@ -1885,9 +1888,9 @@ MaybeEnterPressed
 DisplayVariableSelection    
         ; Set the pointers to the position on screen for the color bar.
         LDA #>SCREEN_RAM + $03D0
-        STA colorBarColorRamHiPtr
+        STA colorBarScreenRamHiPtr
         LDA #<SCREEN_RAM + $03D0
-        STA colorBarColorRamLoPtr
+        STA colorBarScreenRamLoPtr
 
         LDX currentVariableMode
         CPX #COLOR_CHANGE

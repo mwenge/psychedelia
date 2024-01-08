@@ -488,7 +488,7 @@ currentColorIndexArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-initialFramesRemainingToNextPaintForStep
+initialSmoothingDelayArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
@@ -497,7 +497,7 @@ initialFramesRemainingToNextPaintForStep
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-framesRemainingToNextPaintForStep
+smoothingDelayArray
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .BYTE $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -536,8 +536,8 @@ _Loop   STA pixelXPositionArray,X
         LDA #$FF
         STA currentColorIndexArray,X
         LDA #$00
-        STA initialFramesRemainingToNextPaintForStep,X
-        STA framesRemainingToNextPaintForStep,X
+        STA initialSmoothingDelayArray,X
+        STA smoothingDelayArray,X
         STA patternIndexArray,X
         STA symmetrySettingForStepCount,X
         INX 
@@ -644,15 +644,15 @@ CheckCurrentBuffer
 ShouldDoAPaint   
         STA currentValueInColorIndexArray
         ; X is currentIndexToPixelBuffers
-        DEC framesRemainingToNextPaintForStep,X
+        DEC smoothingDelayArray,X
         BNE GoBackToStartOfLoop
 
         ; Actually paint some pixels to the screen.
 
         ; Reset the delay for this step.
         ; X is currentIndexToPixelBuffers
-        LDA initialFramesRemainingToNextPaintForStep,X
-        STA framesRemainingToNextPaintForStep,X
+        LDA initialSmoothingDelayArray,X
+        STA smoothingDelayArray,X
 
         ; Get the x and y positions for this pixel.
         ; X is currentIndexToPixelBuffers
@@ -922,8 +922,8 @@ LineModeNotActive
 
 ApplySmoothingDelay    
         LDA smoothingDelay
-        STA initialFramesRemainingToNextPaintForStep,X
-        STA framesRemainingToNextPaintForStep,X
+        STA initialSmoothingDelayArray,X
+        STA smoothingDelayArray,X
         LDA currentSymmetrySetting
         STA symmetrySettingForStepCount,X
 
@@ -2522,8 +2522,8 @@ LoadBurstToBuffers
         LDA (currentSequencePtrLo),Y
         STA patternIndexArray,X
         LDA burstSmoothingDelay
-        STA initialFramesRemainingToNextPaintForStep,X
-        STA framesRemainingToNextPaintForStep,X
+        STA initialSmoothingDelayArray,X
+        STA smoothingDelayArray,X
         LDA prevSymmetrySetting
         STA symmetrySettingForStepCount,X
 
@@ -2643,8 +2643,8 @@ LoadValuesFromSequencerData
         STA currentColorIndexArray,X
 
         LDA startOfSequencerData + $01
-        STA initialFramesRemainingToNextPaintForStep,X
-        STA framesRemainingToNextPaintForStep,X
+        STA initialSmoothingDelayArray,X
+        STA smoothingDelayArray,X
 
         LDA startOfSequencerData
         STA symmetrySettingForStepCount,X

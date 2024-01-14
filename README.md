@@ -2,31 +2,6 @@
 
 <img src="https://user-images.githubusercontent.com/58846/114322625-29a37d00-9b19-11eb-988a-7869a3c54060.png" height=300><img src="https://user-images.githubusercontent.com/58846/114322575-e3e6b480-9b18-11eb-8371-2cbcb760330b.gif" height=300>
 
-
-<!-- vim-markdown-toc GFM -->
-
-* [Psychedelia: The Book](#psychedelia-the-book)
-    * [A Peek Inside](#a-peek-inside)
-* [Play in your Browser](#play-in-your-browser)
-* [Psychedelia Demo listing in Popular Computer Magazine](#psychedelia-demo-listing-in-popular-computer-magazine)
-  * [Try it online](#try-it-online)
-  * [Setup](#setup)
-  * [Build Instructions](#build-instructions)
-* [Psychedelia for the C64](#psychedelia-for-the-c64)
-  * [Requirements](#requirements)
-  * [Setup](#setup-1)
-  * [Build Instructions](#build-instructions-1)
-* [Psychedelia for the Vic20](#psychedelia-for-the-vic20)
-  * [Requirements](#requirements-1)
-  * [Build Instructions](#build-instructions-2)
-* [Psychedelia for the C16](#psychedelia-for-the-c16)
-  * [Requirements](#requirements-2)
-  * [Build Instructions](#build-instructions-3)
-* [Colourspace (1985) for the Atari 800](#colourspace-1985-for-the-atari-800)
-  * [Requirements](#requirements-3)
-  * [Build Instructions](#build-instructions-4)
-
-<!-- vim-markdown-toc -->
 This repository collects the reverse-engineered and [commented source code] for the early "light-synthesizer" projects by Jeff Minter. 
 
 This repository is part of the [llamasource project](https://mwenge.github.io/llamaSource/). For other light synthesizer projects see llamasource's [Virtual Light Machine](https://github.com/mwenge/vlm) repository, which contains the reconstructed source code for the second-generation of Minter's light synthesizer work on the Atari Jaguar.

@@ -43,13 +43,13 @@ displayListInstructionsHiPtr = $C1
 verticalResolutionSPAC = $C2
 foregroundPixelsLoPtr2 = $C3
 foregroundPixelsHiPtr2 = $C4
-aC6 = $C6
-someKindOfLinePtrLo = $C7
-someKindOfLinePtrHi = $C8
+keyboardInputArrayHiPtr = $C6
+backgroundLinePtrLo = $C7
+backgroundLinePtrHi = $C8
 linePtrLo = $C9
 linePtrHi = $CA
-screenLoPtr = $CB
-screenHiPtr = $CC
+foregroundLoPtr = $CB
+foregroundHiPtr = $CC
 previousPixelXPosition = $CD
 previousPixelYPosition = $CE
 pixelValueToPaint = $CF
@@ -63,14 +63,14 @@ pixelsToPaint = $D6
 currentPixelXPosition = $D7
 currentPixelYPosition = $D8
 currentPaintState = $D9
-FR3 = $DA
+countToMatchCurrentIndex = $DA
 pixelXPosition = $DB
 pixelYPosition = $DC
-aDD = $DD
-aDE = $DE
-aDF = $DF
+playbackBackgroundLinePtrLo = $DD
+playbackBackgroundLinePtrHi = $DE
+playbackControlBit = $DF
 lastJoystickInput = $E0
-aE1 = $E1
+twiddleBitForPlayback = $E1
 currentPosInBuffer = $E2
 aE3 = $E3
 currentBufferLength = $E4
@@ -96,21 +96,21 @@ aF8 = $F8
 currentPulseWidth = $F9
 currentPulseWidth2 = $FA
 DEGFLG = $FB
-FLPTR = $FC
+storedJoystickInput = $FC
 generalLoPtr = $FD
 generalHiPtr = $FE
 ;
 ; **** ZP POINTERS **** 
 ;
-keyboardInputArray = $C5
+keyboardInputArrayLoPtr = $C5
 ;
 ; **** FIELDS **** 
 ;
 f1100 = $1100
 f1200 = $1200
 f1300 = $1300
-someKindOfLinePtrLoArray = $9EA0
-someKindOfLineHiPtrArray = $9F54
+backgroundLinePtrLoArray = $9EA0
+backgroundLinePtrHiArray = $9F54
 fA000 = $A000
 fB000 = $B000
 ;
@@ -250,10 +250,10 @@ b1F77   LDA f1FC8,X
         STA aB4
         LDA a1FD6
         STA aB5
-        LDA a1FCC
+        LDA LaunchColorspaceHiPtr
         STA DOSINI   ;DOSINI  
         STA CASINI   ;CASINI  cassette initialization vector
-        LDA a1FCD
+        LDA LaunchColorspaceLoPtr
         STA a0D
         STA a03
         LDA a1FC9
@@ -269,17 +269,19 @@ a1FC9   =*+$01
 a1FCA   =*+$02
 f1FC8   JSR DoSomethingWithTheCasette
 
-a1FCC   =*+$01
-a1FCD   =*+$02
+LaunchColorspaceHiPtr   =*+$01
+LaunchColorspaceLoPtr   =*+$02
         JSR LaunchColourspace
         JMP (DOSVEC) ;DOSVEC  
 
-a1FD1   .BYTE $56
-a1FD2   .BYTE $7C
-a1FD3   .BYTE $60
-a1FD4   .BYTE $7C
+a1FD1   .BYTE <f7C56
+a1FD2   .BYTE >f7C56
+a1FD3   .BYTE <f7C60
+a1FD4   .BYTE >f7C60
+
 a1FD5   .BYTE $80
 a1FD6   .BYTE $5C
+
         .BYTE $00
         .BYTE $B9,$E1,$1F,$00,$40,$A9
         .BYTE $3C,$8D,$02,$00,$B9,$E1,$1F,$00
@@ -421,7 +423,7 @@ HasAForegroundPixelToPaint
         BEQ ExitForegroundPaintLoop
         JMP ForegroundPaintLoop
 
-a2CAE   .BYTE $00
+demoModeForgroundGraphicsToggle   .BYTE $00
 explosionMode   .BYTE $00
 ;-------------------------------------------------------------------------
 ; PaintExplosionMode
@@ -714,8 +716,7 @@ creditsText
         .TEXT 'AMOUNTS OF FLOYD,   '
         .TEXT 'GENESIS AND '
 .enc "atascii2"
-        .TEXT 'STEVE   '
-        .TEXT 'HILLAGE'
+        .TEXT 'STEVE   HILLAGE'
 .enc "atascii"
         .TEXT ' TO GO WITH  THE ZARJ'
         .TEXT 'AZ DISPLAYS.SPECIAL '
@@ -725,7 +726,8 @@ creditsText
         .TEXT ' THE SLOTHS  '
 .enc "none"
 
-a2FCA   .BYTE $00,$55,$55,$55,$55,$55,$55,$55
+bannerControlByte   
+        .BYTE $00,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
         .BYTE $55,$55,$55,$55,$55,$55,$55,$55
@@ -739,13 +741,14 @@ a2FCA   .BYTE $00,$55,$55,$55,$55,$55,$55,$55
 ;-------------------------------------------------------------------------
 LaunchColourspace
         LDX #$00
-        LDA a2FCA
-        BNE b4032
-        INC a2FCA
+        LDA bannerControlByte
+        BNE JustLaunch
+        INC bannerControlByte
 
         ; Copy the banner data into the RAM
         ; used for foreground data.
-b400A   LDA #$CC
+ForegroundPixeDataLoop   
+        LDA #$CC
         STA fA000,X
         STA fB000,X
         LDX #$00
@@ -764,15 +767,16 @@ b4022   INC a4018
 b402A   LDA a4019
         INX 
         CMP #$1C
-        BNE b400A
+        BNE ForegroundPixeDataLoop
 
-b4032   JSR CreateLinePtrArrays
+JustLaunch   
+        JSR CreateLinePtrArrays
         JSR ClearLinePtrArrays
         JSR UpdateDefaultColors
         JMP InitializeColourSpace
 
         .BYTE $00
-a403F   .BYTE $00
+curvedSpaceControlByte   .BYTE $00
 ;-------------------------------------------------------------------------
 ; GenerateDisplayList
 ;-------------------------------------------------------------------------
@@ -788,7 +792,7 @@ GenerateDisplayList
 
         LDX verticalResolutionSPAC
         LDA verticalResolutionArray,X
-        STA a403F
+        STA curvedSpaceControlByte
 
         LDY #$00
         STY bottomMostYPos
@@ -836,7 +840,7 @@ b4084   LDA #$4F
         ADC #$00
         STA foregroundPixelsHiPtr2
         INC bottomMostYPos
-        DEC a403F
+        DEC curvedSpaceControlByte
         BNE NoScreenModeSelected
 
 WriteDisplayListFooter
@@ -918,7 +922,7 @@ InitializeColourSpace
         STA currentPulseWidth2
         STA textOutputControl
         LDA #$FF
-        STA aDF
+        STA playbackControlBit
         LDA #$01
         STA currentPatternIndex
         JSR ClearExplosionModeArray
@@ -951,9 +955,9 @@ CreateLinePtrArrays
         LDA #>foregroundPixelsOriginalLocation
         STA foregroundPixelsHiPtr2
         LDA #<p8280
-        STA someKindOfLinePtrLo
+        STA backgroundLinePtrLo
         LDA #>p8280
-        STA someKindOfLinePtrHi
+        STA backgroundLinePtrHi
 
         LDX #$00
 b4170   LDA foregroundPixelsLoPtr2
@@ -961,10 +965,10 @@ b4170   LDA foregroundPixelsLoPtr2
         LDA foregroundPixelsHiPtr2
         STA foregroundPixelsHiPtrArray,X
 
-        LDA someKindOfLinePtrLo
-        STA someKindOfLinePtrLoArray,X
-        LDA someKindOfLinePtrHi
-        STA someKindOfLineHiPtrArray,X
+        LDA backgroundLinePtrLo
+        STA backgroundLinePtrLoArray,X
+        LDA backgroundLinePtrHi
+        STA backgroundLinePtrHiArray,X
 
         LDA foregroundPixelsLoPtr2
         CLC 
@@ -975,79 +979,88 @@ b4170   LDA foregroundPixelsLoPtr2
         ADC #$00
         STA foregroundPixelsHiPtr2
 
-        LDA someKindOfLinePtrLo
+        LDA backgroundLinePtrLo
         CLC 
         ADC #$50
-        STA someKindOfLinePtrLo
+        STA backgroundLinePtrLo
 
-        LDA someKindOfLinePtrHi
+        LDA backgroundLinePtrHi
         ADC #$00
-        STA someKindOfLinePtrHi
+        STA backgroundLinePtrHi
 
         INX 
         CPX #$5A
         BNE b4170
         RTS 
 
-b41A4   PLA 
+ReturnEarlyFromPaintPixel   
+        PLA 
         RTS 
 
 ;-------------------------------------------------------------------------
-; PaintRestOfCurrentSymmetry
+; PaintPixel
 ;-------------------------------------------------------------------------
-PaintRestOfCurrentSymmetry
+PaintPixel
         LDX previousPixelYPosition
         PHA 
         LDY previousPixelXPosition
         TXA 
         AND #$80
-        BNE b41A4
-        CPX #$5A
-        BPL b41A4
+        BNE ReturnEarlyFromPaintPixel
+        CPX #NUM_COLS + $0A
+        BPL ReturnEarlyFromPaintPixel
         TYA 
         AND #$80
-        BNE b41A4
-        CPY #$50
-        BPL b41A4
-        LDA someKindOfLinePtrLoArray,X
+        BNE ReturnEarlyFromPaintPixel
+
+        CPY #NUM_COLS
+        BPL ReturnEarlyFromPaintPixel
+
+        LDA backgroundLinePtrLoArray,X
         STA linePtrLo
-        LDA someKindOfLineHiPtrArray,X
+        LDA backgroundLinePtrHiArray,X
         STA linePtrHi
         LDA foregroundPixelsLoPtrArray,X
-        STA screenLoPtr
+        STA foregroundLoPtr
         LDA foregroundPixelsHiPtrArray,X
-        STA screenHiPtr
+        STA foregroundHiPtr
+
         PLA 
         STA pixelValueToPaint
+
         LDA beginDrawingForeground
-        BNE b41E7
+        BNE ActuallyPaintPixel
+
         LDA (linePtrLo),Y
         AND #$EF
         SEC 
         SBC pixelValueToPaint
-        BMI b41E7
+        BMI ActuallyPaintPixel
+
         CMP #$01
-        BEQ b41E7
+        BEQ ActuallyPaintPixel
         RTS 
 
-b41E7   LDA pixelValueToPaint
+ActuallyPaintPixel   
+        LDA pixelValueToPaint
         STA (linePtrLo),Y
         AND #$0F
         PHA 
         TYA 
         CLC 
         ROR 
-        BCC b4200
+        BCC PaintForegroundPixels
         TAY 
         PLA 
         STA pixelValueToPaint
-        LDA (screenLoPtr),Y
+        LDA (foregroundLoPtr),Y
         AND #$F0
         ORA pixelValueToPaint
-        STA (screenLoPtr),Y
+        STA (foregroundLoPtr),Y
         RTS 
 
-b4200   TAY 
+PaintForegroundPixels   
+        TAY 
         PLA 
         CLC 
         ROL 
@@ -1055,10 +1068,10 @@ b4200   TAY
         ROL 
         ROL 
         STA pixelValueToPaint
-        LDA (screenLoPtr),Y
+        LDA (foregroundLoPtr),Y
         AND #$0F
         ORA pixelValueToPaint
-        STA (screenLoPtr),Y
+        STA (foregroundLoPtr),Y
         RTS 
 
 verticalResolutionArray   
@@ -1085,9 +1098,9 @@ b4233   LDA #$00
         CPY #$28
         BNE b4233
 
-        LDA someKindOfLinePtrLoArray,X
+        LDA backgroundLinePtrLoArray,X
         STA tempLoPtr
-        LDA someKindOfLineHiPtrArray,X
+        LDA backgroundLinePtrHiArray,X
         STA tempHiPtr
 
         LDY #$00
@@ -1121,26 +1134,26 @@ defaultColorArray   .BYTE $00,$18,$38,$58,$78,$98,$B8,$D8
 PaintPixelForCurrentSymmetry
         LDA currentPaintState
         PHA 
-        JSR PaintRestOfCurrentSymmetry
+        JSR PaintPixel
         LDA currentSymmetrySetting
         BNE b4279
         PLA 
         RTS 
 
-b4279   CMP #$01
+b4279   CMP #E_Y_AXIS_SYMMETRY
         BNE MaybeXYSymmetry
 
 YAxisSymmetry
-        LDA #$4F
+        LDA #NUM_COLS-1
         SEC 
         SBC previousPixelXPosition
         STA previousPixelXPosition
         PLA 
-        JMP PaintRestOfCurrentSymmetry
+        JMP PaintPixel
 
 MaybeXYSymmetry   
-        CMP #$02
-        BNE b4296
+        CMP #E_X_Y_SYMMETRY
+        BNE MaybeXAxisSymmetry
 
         ; X-Y Symmetry
         LDA currentBottomMostYPos
@@ -1149,40 +1162,48 @@ MaybeXYSymmetry
         STA previousPixelYPosition
         JMP YAxisSymmetry
 
-b4296   CMP #$03
-        BNE b42A5
+MaybeXAxisSymmetry   
+        CMP #E_X_AXIS_SYMMETRY
+        BNE QuadSymmetry
+
         LDA currentBottomMostYPos
         SEC 
         SBC previousPixelYPosition
         STA previousPixelYPosition
         PLA 
-        JMP PaintRestOfCurrentSymmetry
+        JMP PaintPixel
 
-b42A5   LDA currentBottomMostYPos
+QuadSymmetry   
+        LDA currentBottomMostYPos
         SEC 
         SBC previousPixelYPosition
         STA previousPixelYPosition
         PLA 
         PHA 
-        JSR PaintRestOfCurrentSymmetry
-        LDA #$4F
+
+        JSR PaintPixel
+
+        LDA #NUM_COLS-1
         SEC 
         SBC previousPixelXPosition
         STA previousPixelXPosition
         PLA 
         PHA 
-        JSR PaintRestOfCurrentSymmetry
+
+        JSR PaintPixel
+
         LDA currentBottomMostYPos
         SEC 
         SBC previousPixelYPosition
         STA previousPixelYPosition
         PLA 
-        JMP PaintRestOfCurrentSymmetry
+
+        JMP PaintPixel
 
 ;-------------------------------------------------------------------------
-; LoopThroughPixelsAndPaint
+; PaintStructureAtCurrentPosition
 ;-------------------------------------------------------------------------
-LoopThroughPixelsAndPaint
+PaintStructureAtCurrentPosition
         LDA currentPixelXPosition
         STA previousPixelXPosition
         LDA currentPixelYPosition
@@ -1194,7 +1215,7 @@ LoopThroughPixelsAndPaint
 
 b42D9   JSR PaintPixelForCurrentSymmetry
         LDA pixelsToPaint
-        CMP #$07
+        CMP #NUM_ARRAYS
         BNE b42E3
         RTS 
 
@@ -1208,8 +1229,8 @@ b42E3   LDX patternIndex
         LDA pixelYPositionHiPtrArray,X
         STA yPosHiPtr
 
-        LDA #$07
-        STA FR3
+        LDA #NUM_ARRAYS
+        STA countToMatchCurrentIndex
         LDY #$00
 ;-------------------------------------------------------------------------
 ; PixelPaintLoop
@@ -1233,10 +1254,10 @@ PixelPaintLoop
         INY 
         JMP PixelPaintLoop
 
-b431C   DEC FR3
+b431C   DEC countToMatchCurrentIndex
         INY 
         LDA pixelsToPaint
-        CMP FR3
+        CMP countToMatchCurrentIndex
         BNE PixelPaintLoop
         STA ATRACT   ;ATRACT  screen attract counter
         RTS 
@@ -1423,11 +1444,11 @@ FetchValuesForPlayback
         PHA 
         LDX pixelYPosition
         LDY pixelXPosition
-        LDA someKindOfLinePtrLoArray,X
-        STA aDD
-        LDA someKindOfLineHiPtrArray,X
-        STA aDE
-        LDA (aDD),Y
+        LDA backgroundLinePtrLoArray,X
+        STA playbackBackgroundLinePtrLo
+        LDA backgroundLinePtrHiArray,X
+        STA playbackBackgroundLinePtrHi
+        LDA (playbackBackgroundLinePtrLo),Y
         AND #$40
         BEQ b44E7
         PLA 
@@ -1442,35 +1463,36 @@ b44E7   LDX pixelYPosition
         ROR 
         TAY 
         LDA foregroundPixelsLoPtrArray,X
-        STA aDD
+        STA playbackBackgroundLinePtrLo
         LDA foregroundPixelsHiPtrArray,X
-        STA aDE
-        LDA aDF
+        STA playbackBackgroundLinePtrHi
+        LDA playbackControlBit
         BEQ b4526
 
         LDA #$08
-b44FE   STA aE1
+b44FE   STA twiddleBitForPlayback
         LDA pixelXPosition
         AND #$01
         BEQ b4511
-        LDA (aDD),Y
+        LDA (playbackBackgroundLinePtrLo),Y
         AND #$F0
-        ORA aE1
-        STA (aDD),Y
-        JMP j4521
+        ORA twiddleBitForPlayback
+        STA (playbackBackgroundLinePtrLo),Y
+        JMP ReturnFromValuesForPlayback
 
-b4511   LDA aE1
+b4511   
+        LDA twiddleBitForPlayback
         ASL 
         ASL 
         ASL 
         ASL 
-        STA aE1
-        LDA (aDD),Y
+        STA twiddleBitForPlayback
+        LDA (playbackBackgroundLinePtrLo),Y
         AND #$0F
-        ORA aE1
-        STA (aDD),Y
+        ORA twiddleBitForPlayback
+        STA (playbackBackgroundLinePtrLo),Y
 
-j4521
+ReturnFromValuesForPlayback
         PLA 
         TAX 
         PLA 
@@ -1489,7 +1511,7 @@ GetJoystickInput
 
         LDA #$00
         STA alsoStoredPixelYPosition      ;alsoStoredPixelYPosition     
-        STA aDF
+        STA playbackControlBit
 
         LDA pixelYPosition
         PHA 
@@ -1500,10 +1522,12 @@ GetJoystickInput
         PLA 
         STA pixelYPosition
         JSR DuplicatePixelPosition
+
         LDA #$0A
-        STA a5CF7
-b4549   LDA #$00
-        STA aDF
+        STA storedPixelYPosition2
+b4549   
+        LDA #$00
+        STA playbackControlBit
         JSR FetchValuesForPlayback
 
         LDX speedBoostAdjust
@@ -1521,20 +1545,20 @@ b455F   STA lastJoystickInput      ;lastJoystickInput     floating point registe
         CMP #RECORDING_ENABLED
         BEQ b456E
 
-        LDA FLPTR
+        LDA storedJoystickInput
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
 
 b456E   LDA dualJoystickMode
         BEQ b4580
 
-        INC a58A4
-        LDA a58A4
+        INC secondJoystickTwiddle
+        LDA secondJoystickTwiddle
         AND #$01
         BEQ b4580
 
         JSR SomethingToDoWithSecondJoystick
 
-b4580   LDA a4ECC
+b4580   LDA inputControlByte
         BEQ JoystickLoop
 
         LDA #$FA
@@ -1608,7 +1632,7 @@ UpdateStateFromJoystickMovement
         BNE JoystickLoop
 
         LDA #$01
-        STA aDF
+        STA playbackControlBit
         JSR FetchValuesForPlayback
         LDA secondJoystickMadeAMovememnt
         BEQ b4614
@@ -1616,9 +1640,9 @@ UpdateStateFromJoystickMovement
         LDA #$00
         STA secondJoystickMadeAMovememnt
         LDA pixelXPosition
-        STA a5CF6
+        STA storedPixelXPosition
         LDA pixelYPosition
-        STA a5CF7
+        STA storedPixelYPosition2
         LDA a5CF3
         STA pixelXPosition
         LDA a5CF4
@@ -1771,7 +1795,7 @@ b4862   LDA explosionModeArray,X
         LDA initialFramesRemainingToNextPaintForStep,X
         STA framesRemainingToNextPaintForStep,X
         DEC explosionModeArray,X
-        JSR LoopThroughPixelsAndPaint
+        JSR PaintStructureAtCurrentPosition
 
 GoBackToStartOfLoop
         LDA selectedModePreventsForegroundDrawing
@@ -1791,10 +1815,11 @@ UpdateStateArrays
         BEQ b48AD
         JMP UpdatePixelsForeground
 
-b48AD   LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
+b48AD   
+        LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
         AND #$80
         BNE b48B9
-        LDA a4ECC
+        LDA inputControlByte
         BNE b48B9
 b48B8   RTS 
 
@@ -2075,11 +2100,11 @@ MaybeCurvedColorspace1Mode
 
 CurvedColorspace1Mode   
         LDA #$01
-        STA a403F
+        STA curvedSpaceControlByte
         LDA #$00
         STA bottomMostYPos
 b4B19   LDX #$04
-b4B1B   LDA a403F
+b4B1B   LDA curvedSpaceControlByte
         STA a4B48
 b4B21   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
@@ -2094,8 +2119,8 @@ b4B21   JSR WriteValuesFromMemoryToDisplayList
         INC bottomMostYPos
         DEX 
         BNE b4B1B
-        INC a403F
-        LDA a403F
+        INC curvedSpaceControlByte
+        LDA curvedSpaceControlByte
         CMP #$0A
         BNE b4B19
         JMP WriteDisplayListFooter
@@ -2116,11 +2141,11 @@ MaybeCurvedColorspace2Mode
 
 CurvedColorspace2Mode   
         LDA #$01
-        STA a403F
+        STA curvedSpaceControlByte
         LDA #$00
         STA bottomMostYPos
 b4B68   LDX CurvedInnerLoopCounter
-b4B6B   LDA a403F
+b4B6B   LDA curvedSpaceControlByte
         STA a4B48
 b4B71   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
@@ -2135,13 +2160,13 @@ b4B71   JSR WriteValuesFromMemoryToDisplayList
         INC bottomMostYPos
         DEX 
         BNE b4B6B
-        INC a403F
-        LDA a403F
+        INC curvedSpaceControlByte
+        LDA curvedSpaceControlByte
         CMP #$0A
         BNE b4B68
-        DEC a403F
+        DEC curvedSpaceControlByte
 b4B98   LDX CurvedInnerLoopCounter
-b4B9B   LDA a403F
+b4B9B   LDA curvedSpaceControlByte
         STA a4B48
 b4BA1   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
@@ -2165,7 +2190,7 @@ IncrementLowPointers
 UpdateStuffAndMaybeReturn
         DEX 
         BNE b4B9B
-        DEC a403F
+        DEC curvedSpaceControlByte
         BNE b4B98
         DEC CurvedOuterLoopCounter
         BNE CurvedColorspace2Mode
@@ -2403,9 +2428,10 @@ b4D57   LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
 
         JMP ComposeForeground
 
-b4D66   LDA a4ECC
+b4D66   LDA inputControlByte
         BEQ b4D6E
-        DEC a4ECC
+
+        DEC inputControlByte
 b4D6E   LDA a4F4C
         BEQ b4D87
         DEC a4F4C
@@ -2570,7 +2596,7 @@ b4E56   INC PCOLR0,X ;PCOLR0  shadow for COLPM0 ($D012)
         STA lastKeyPressed
         STA colorValuesOfSomeSort,X
         LDA #$30
-        STA a4ECC
+        STA inputControlByte
         JSR IncrementColorValue
         RTS 
 
@@ -2629,7 +2655,8 @@ b4EBC   LDA #$00
         JSR UpdateStatusLine
         JMP RestoreStrobo
 
-a4ECC   BRK #$00
+inputControlByte   BRK #$00
+
 b4ECE   JMP MaybeAsteriskPressed
 
 statusTextLineOne   
@@ -2852,7 +2879,7 @@ b54B1   INC oozeRates,X
 WriteColorValueAndReturn
         STA lastKeyPressed
         LDA #$30
-        STA a4ECC
+        STA inputControlByte
         JMP IncrementColorValue
         ; Returns
 
@@ -3375,12 +3402,12 @@ DuplicatePixelPosition
         PHA 
         LDA pixelYPosition
         PHA 
-        LDA a5CF6
+        LDA storedPixelXPosition
         STA pixelXPosition
-        LDA a5CF7
+        LDA storedPixelYPosition2
         STA pixelYPosition
         LDA #$00
-        STA aDF
+        STA playbackControlBit
         JSR FetchValuesForPlayback
         PLA 
         STA pixelYPosition
@@ -3441,7 +3468,7 @@ ClearAndDisableDemoMode
         LDY #$00
         LDA #$CC
         STA (generalLoPtr),Y
-        STA (keyboardInputArray),Y
+        STA (keyboardInputArrayLoPtr),Y
 
 DisableDemoMode   
         LDX #T_E_R_M_I_N_A_T_E_D
@@ -3489,7 +3516,7 @@ b588F   LDA #$03
         JMP UpdateStatusLine
 
 dualJoystickMode   .BYTE $00
-a58A4   .BYTE $00
+secondJoystickTwiddle   .BYTE $00
 
 MaybeJPressed   
         CMP #KEY_J
@@ -3946,9 +3973,9 @@ StartRecording
         STA randomKeyInputCounter
         STA randomJoystickInputCounter
         LDA #<fB000
-        STA keyboardInputArray
+        STA keyboardInputArrayLoPtr
         LDA #>fB000
-        STA aC6
+        STA keyboardInputArrayHiPtr
         LDY #$00
         TYA 
         STA (generalLoPtr),Y
@@ -3963,7 +3990,7 @@ StartRecording
         STA selectedPresetForPlayback
 b5B65   RTS 
 
-autoDemoEnabled   .BYTE $00
+autoDemoEnabled   .BYTE DEMO_ENABLED
 ;-------------------------------------------------------------------------
 ; GetInputForDemo
 ;-------------------------------------------------------------------------
@@ -4008,28 +4035,36 @@ b5B9C   TXA
 GetKeyboardInput
         LDY #$00
         LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
-        CMP (keyboardInputArray),Y
+        CMP (keyboardInputArrayLoPtr),Y
         BNE b5BB4
+
         INC randomKeyInputCounter
-        BNE b5BD7
-b5BB4   INY 
+        BNE ReturnFromGetKeyboardInput
+
+b5BB4   
+        INY 
         LDA randomKeyInputCounter
-        STA (keyboardInputArray),Y
-        LDA keyboardInputArray
+        STA (keyboardInputArrayLoPtr),Y
+
+        LDA keyboardInputArrayLoPtr
         CLC 
         ADC #$02
-        STA keyboardInputArray
-        LDA aC6
+        STA keyboardInputArrayLoPtr
+
+        LDA keyboardInputArrayHiPtr
         ADC #$00
-        STA aC6
+        STA keyboardInputArrayHiPtr
+
         CMP #$C0
         BEQ b5B99
+
         LDY #$00
         LDA inputCharacter       ;inputCharacter      keyboard FIFO byte
-        STA (keyboardInputArray),Y
+        STA (keyboardInputArrayLoPtr),Y
         LDA #$01
         STA randomKeyInputCounter
-b5BD7   RTS 
+ReturnFromGetKeyboardInput   
+        RTS 
 
 ;-------------------------------------------------------------------------
 ; StartPlayback
@@ -4040,14 +4075,14 @@ StartPlayback
         LDA #>fA000
         STA generalHiPtr
         LDA #<fB000
-        STA keyboardInputArray
+        STA keyboardInputArrayLoPtr
         LDA #>fB000
-        STA aC6
+        STA keyboardInputArrayHiPtr
         LDA #$01
         STA randomKeyInputCounter
         STA randomJoystickInputCounter
         LDA #$00
-        STA aDF
+        STA playbackControlBit
         JSR FetchValuesForPlayback
         LDA pixelXPositionForPlayback
         STA pixelXPosition
@@ -4073,22 +4108,22 @@ GetRandomKeyboardInput
 
 b5C14   DEC randomKeyInputCounter
         BNE b5C39
-        LDA keyboardInputArray
+        LDA keyboardInputArrayLoPtr
         CLC 
         ADC #$02
-        STA keyboardInputArray
-        LDA aC6
+        STA keyboardInputArrayLoPtr
+        LDA keyboardInputArrayHiPtr
         ADC #$00
-        STA aC6
+        STA keyboardInputArrayHiPtr
         CMP #$C0
         BNE b5C2D
         JMP b5B99
 
 b5C2D   LDY #$00
-        LDA (keyboardInputArray),Y
+        LDA (keyboardInputArrayLoPtr),Y
         STA DEGFLG
         INY 
-        LDA (keyboardInputArray),Y
+        LDA (keyboardInputArrayLoPtr),Y
         STA randomKeyInputCounter
 b5C39   DEC randomJoystickInputCounter
         BNE b5C5E
@@ -4105,7 +4140,7 @@ b5C39   DEC randomJoystickInputCounter
 
 b5C52   LDY #$00
         LDA (generalLoPtr),Y
-        STA FLPTR
+        STA storedJoystickInput
         INY 
         LDA (generalLoPtr),Y
         STA randomJoystickInputCounter
@@ -4115,7 +4150,7 @@ b5C5E   LDA DEGFLG
         CMP #$FF
         BEQ b5C6B
         STA inputCharacter       ;inputCharacter      keyboard FIFO byte
-b5C6B   LDA FLPTR
+b5C6B   LDA storedJoystickInput
         CMP #$CC
         BEQ b5C72
         RTS 
@@ -4131,11 +4166,11 @@ selectedPresetForPlayback   .BYTE $00
 ;-------------------------------------------------------------------------
 StorePixelPositions
         LDA pixelXPosition
-        STA a5CF6
+        STA storedPixelXPosition
         LDA pixelYPosition
-        STA a5CF7
+        STA storedPixelYPosition2
         LDA #$00
-        STA a58A4
+        STA secondJoystickTwiddle
 b5C88   LDA #<fA000
         STA generalLoPtr
         LDA #>fA000
@@ -4160,18 +4195,19 @@ SomethingToDoWithSecondJoystick
         STA secondUserLightform
         LDA #$FF
         STA secondJoystickMadeAMovememnt
-        LDA a5CF6
+        LDA storedPixelXPosition
         STA pixelXPosition
-        LDA a5CF7
+        LDA storedPixelYPosition2
         STA pixelYPosition
         LDA #$00
-        STA aDF
+        STA playbackControlBit
         JSR FetchValuesForPlayback
         LDA dualJoystickMode
         CMP #$02
         BEQ GetInputFromSecondJoystick
         DEC randomJoystickInputCounter
         BNE b5CEE
+
         LDA generalLoPtr
         CLC 
         ADC #$02
@@ -4183,22 +4219,23 @@ SomethingToDoWithSecondJoystick
         LDA (generalLoPtr),Y
         CMP #$CC
         BEQ b5C88
+
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
-        STA FLPTR
+        STA storedJoystickInput
         INY 
         LDA (generalLoPtr),Y
         STA randomJoystickInputCounter
         RTS 
 
-b5CEE   LDA FLPTR
+b5CEE   LDA storedJoystickInput
         STA lastJoystickInput      ;lastJoystickInput     floating point register 1
         RTS 
 
 a5CF3   .BYTE $00
 a5CF4   .BYTE $00
 secondJoystickMadeAMovememnt   .BYTE $00
-a5CF6   .BYTE $00
-a5CF7   .BYTE $00
+storedPixelXPosition   .BYTE $00
+storedPixelYPosition2   .BYTE $00
 
 ;-------------------------------------------------------------------------
 ; GetInputFromSecondJoystick   
@@ -4263,7 +4300,7 @@ b5D39   LDA #$00
 
 b5D4A   LDA pixelsToPaint
         STA currentPaintState
-        JSR LoopThroughPixelsAndPaint
+        JSR PaintStructureAtCurrentPosition
         LDA pixelsToPaint
         BNE b5D4A
         LDA #$00
@@ -4386,65 +4423,66 @@ randomJoystickMovememtArray   .BYTE $0E,$06,$07,$05,$0D,$09,$0B,$0A
 ; GetRandomJoystickMovement2
 ;-------------------------------------------------------------------------
 GetRandomJoystickMovement2
-        LDA a5E5B
+        LDA randomJoystickInputFeedback
         BEQ b5E39
         LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
         ORA #$80
-        STA FLPTR
-        DEC a5E5B
+        STA storedJoystickInput
+        DEC randomJoystickInputFeedback
         RTS 
 
-b5E39   LDA a5E5C
+b5E39   LDA randomJoystickInputFeedback2
         BEQ b5E48
         LDA lastJoystickInput      ;lastJoystickInput     floating point register 1
         AND #$7F
-        STA FLPTR
-        DEC a5E5C
+        STA storedJoystickInput
+        DEC randomJoystickInputFeedback2
         RTS 
 
 b5E48   JSR GetProceduralValue
         AND #$7F
-        STA a5E5B
+        STA randomJoystickInputFeedback
         JSR GetProceduralValue
         AND #$1F
-        STA a5E5C
+        STA randomJoystickInputFeedback2
         JMP SelectRandomPreset
 
-a5E5B   .BYTE $0A
-a5E5C   .BYTE $02   
+randomJoystickInputFeedback   .BYTE $0A
+randomJoystickInputFeedback2   .BYTE $02   
 
 SelectRandomPreset
-        DEC a5EB6
+        DEC randomPresetFeedback
         BEQ b5E63
         RTS 
 
 b5E63   JSR GetProceduralValue
         AND #$1F
         ADC #$10
-        STA a5EB6
+        STA randomPresetFeedback
         LDA #FOREGROUND_GRAPHICS_OFF
         STA textOutputControl
-        INC a2CAE
-        LDA a2CAE
+        INC demoModeForgroundGraphicsToggle
+        LDA demoModeForgroundGraphicsToggle
         CMP #$03
         BNE b5E86
         LDA #FOREGROUND_GRAPHICS_ON
         STA textOutputControl
         LDA #$00
-        STA a2CAE
-b5E86   INC a5EB7
-        LDA a5EB7
+        STA demoModeForgroundGraphicsToggle
+b5E86   INC demoModeSelectPresetToggle
+        LDA demoModeSelectPresetToggle
         AND #$0F
         TAX 
-        BNE b5EA1
+        BNE LoadNewPreset
         INC selectedPresetBank
         LDA selectedPresetBank
         CMP #$05
-        BNE b5EA1
+        BNE LoadNewPreset
         LDA #$00
         STA selectedPresetBank
         TAX 
-b5EA1   JSR LoadPreset
+LoadNewPreset   
+        JSR LoadPreset
         LDA screenMode
         CMP #$04
         BEQ b5EB0
@@ -4456,8 +4494,8 @@ b5EB0   LDA #FOREGROUND_GRAPHICS_OFF
         STA textOutputControl
         RTS 
 
-a5EB6   .BYTE $0A
-a5EB7   .BYTE $00
+randomPresetFeedback   .BYTE $0A
+demoModeSelectPresetToggle   .BYTE $00
 ;-------------------------------------------------------------------------
 ; ShowCurrentForegroundPixelMaybe
 ;-------------------------------------------------------------------------
@@ -4643,6 +4681,9 @@ b5FA9   LDA #FOREGROUND_POINT_SELECTED
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00
+f7C56
+        .BYTE $00,$00
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+f7C60
         .BYTE $00,$E0,$02,$E1,$02,$00,$40

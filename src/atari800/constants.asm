@@ -549,3 +549,13 @@ DEMO_ENABLED = $03
 RECORDING_ENABLED = $01
 PLAYBACK_ENABLED = $02
 
+NUM_ARRAYS = $07
+
+E_NO_SYMMETRY                      = $00
+E_Y_AXIS_SYMMETRY                  = $01
+E_X_Y_SYMMETRY                     = $02
+E_X_AXIS_SYMMETRY                  = $03
+E_QUAD_SYMMETRY                    = $04
+
+NUM_ROWS                         = $18
+NUM_COLS                         = $50

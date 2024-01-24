@@ -40,9 +40,9 @@ aB4 = $B4
 aB5 = $B5
 displayListInstructionsLoPtr = $C0
 displayListInstructionsHiPtr = $C1
-verticalResolutionSPAC = $C2
-foregroundPixelsLoPtr2 = $C3
-foregroundPixelsHiPtr2 = $C4
+numberOfLinesToDraw = $C2
+foregroundPixelsLoPtr = $C3
+foregroundPixelsHiPtr = $C4
 keyboardInputArrayHiPtr = $C6
 backgroundLinePtrLo = $C7
 backgroundLinePtrHi = $C8
@@ -125,7 +125,7 @@ ICBLH = $0369
 ICAX1 = $036A
 ICAX2 = $036B
 a1400 = $1400
-foregroundPixelsLoPtr = $8003
+statusLineLoPtr = $8003
 displayListInstructions = $8000
 ;
 ; **** POINTERS **** 
@@ -136,9 +136,9 @@ p0102 = $0102
 p0428 = $0428
 p0FFF = $0FFF
 foregroundPixelData = $1000
-foregroundPixelsHiPtr = $8004
+statusLineHiPtr = $8004
 p8008 = $8008
-p8280 = $8280
+backgroundScreenRAM = $8280
 
 .include "constants.asm"
 
@@ -254,8 +254,8 @@ b1F77   LDA f1FC8,X
         STA DOSINI   ;DOSINI  
         STA CASINI   ;CASINI  cassette initialization vector
         LDA LaunchColorspaceLoPtr
-        STA a0D
-        STA a03
+        STA DOSINI+1
+        STA CASINI+1
         LDA a1FC9
         STA RAMLO    ;RAMLO   
         LDA a1FCA
@@ -307,33 +307,33 @@ DoSomethingWithTheCasette
 ; PaintForegroundPoint
 ;-------------------------------------------------------------------------
 PaintForegroundPoint
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         CMP #$0F
         BNE b2C09
         JMP ClearAndProcessForeground
 
 b2C09   LDY #$00
-        LDA (foregroundPixelsLoPtr2),Y
+        LDA (foregroundPixelsLoPtr),Y
         STA previousPixelXPosition
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         PHA 
         CLC 
         ADC #$04
-        STA foregroundPixelsHiPtr2
-        LDA (foregroundPixelsLoPtr2),Y
+        STA foregroundPixelsHiPtr
+        LDA (foregroundPixelsLoPtr),Y
         STA previousPixelYPosition
         LDA #$00
         STA currentPaintState
         JSR PaintPixelForCurrentSymmetry
         PLA 
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         LDA #$FF
-        STA (foregroundPixelsLoPtr2),Y
-        DEC foregroundPixelsLoPtr2
-        LDA foregroundPixelsLoPtr2
+        STA (foregroundPixelsLoPtr),Y
+        DEC foregroundPixelsLoPtr
+        LDA foregroundPixelsLoPtr
         CMP #$FF
         BNE ClearAndProcessForeground
-        DEC foregroundPixelsHiPtr2
+        DEC foregroundPixelsHiPtr
 
 ClearAndProcessForeground
         LDA #$00
@@ -363,15 +363,15 @@ ForegroundIsOff
 ForegroundIsOn   
         LDA #>foregroundPixelData
         SEI 
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         LDA #<foregroundPixelData
-        STA foregroundPixelsLoPtr2
+        STA foregroundPixelsLoPtr
         LDA symmetryForeground
         STA currentSymmetrySetting
 
 ForegroundPaintLoop   
         LDY #$00
-        LDA (foregroundPixelsLoPtr2),Y
+        LDA (foregroundPixelsLoPtr),Y
         CMP #$FF
         BNE HasAForegroundPixelToPaint
 
@@ -387,22 +387,22 @@ HasAForegroundPixelToPaint
         STA previousPixelXPosition
         
         ; Get the Y position for this pixel.
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         PHA 
         CLC 
         ADC #$04
-        STA foregroundPixelsHiPtr2
-        LDA (foregroundPixelsLoPtr2),Y
+        STA foregroundPixelsHiPtr
+        LDA (foregroundPixelsLoPtr),Y
         CLC 
         ADC drawForegroundAtYPos
         STA previousPixelYPosition
 
         ; Get the color value for this pixel.
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         CLC 
         ADC #$04
-        STA foregroundPixelsHiPtr2
-        LDA (foregroundPixelsLoPtr2),Y
+        STA foregroundPixelsHiPtr
+        LDA (foregroundPixelsLoPtr),Y
         ORA #$40
         STA currentPaintState
         
@@ -412,13 +412,13 @@ HasAForegroundPixelToPaint
         ; Reset the hi ptr back to the X position
         ; array.
         PLA 
-        STA foregroundPixelsHiPtr2
-        INC foregroundPixelsLoPtr2
+        STA foregroundPixelsHiPtr
+        INC foregroundPixelsLoPtr
         BNE ForegroundPaintLoop
 
         ; Check if we've read all the pixels.
-        INC foregroundPixelsHiPtr2
-        LDA foregroundPixelsHiPtr2
+        INC foregroundPixelsHiPtr
+        LDA foregroundPixelsHiPtr
         CMP #$14
         BEQ ExitForegroundPaintLoop
         JMP ForegroundPaintLoop
@@ -559,9 +559,9 @@ WriteScreenStateToDevice
         STA ICBAL
         LDA #>p2D58
         STA ICBAH
-        LDA #<foregroundPixelsHiPtr
+        LDA #<statusLineHiPtr
         STA ICAX1
-        LDA #>foregroundPixelsHiPtr
+        LDA #>statusLineHiPtr
         STA ICAX2
         LDX #$20
         JMP CIOV     ;$E456 (jmp) CIOV
@@ -686,22 +686,22 @@ b2E96   STA statusTextLineOne,X
 ;-------------------------------------------------------------------------
 WriteCreditsText
         LDX #$00
-b2EB8   LDY a2ED8
+b2EB8   LDY textWrittenCount
         LDA creditsText,Y
         STA statusTextLineOne,X
         STA statusTextLineTwo,X
         INX 
-        INC a2ED8
+        INC textWrittenCount
         CPX #$14
         BNE b2EB8
         INY 
         LDA creditsText,Y
         BNE b2ED7
         LDA #$00
-        STA a2ED8
+        STA textWrittenCount
 b2ED7   RTS 
 
-a2ED8   .BYTE $00
+textWrittenCount   .BYTE $00
 
 .enc "atascii2"  ;define an ascii->atascii encoding
         .cdef " Z", $80
@@ -776,7 +776,7 @@ JustLaunch
         JMP InitializeColourSpace
 
         .BYTE $00
-curvedSpaceControlByte   .BYTE $00
+bottomMostLineNumber   .BYTE $00
 ;-------------------------------------------------------------------------
 ; GenerateDisplayList
 ;-------------------------------------------------------------------------
@@ -786,13 +786,13 @@ GenerateDisplayList
         LDA #<displayListInstructions
         STA displayListInstructionsLoPtr
         LDA #>foregroundPixelsOriginalLocation
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         LDA #<foregroundPixelsOriginalLocation
-        STA foregroundPixelsLoPtr2
+        STA foregroundPixelsLoPtr
 
-        LDX verticalResolutionSPAC
-        LDA verticalResolutionArray,X
-        STA curvedSpaceControlByte
+        LDX numberOfLinesToDraw
+        LDA totalNumberOfLinesToDrawArray,X
+        STA bottomMostLineNumber
 
         LDY #$00
         STY bottomMostYPos
@@ -801,13 +801,13 @@ GenerateDisplayList
         JSR WriteValueToDisplayList
         JSR WriteValueToDisplayList
 
-        ; Mode 6 setting screen memory to foregroundPixelsLoPtr
-        ; and foregroundPixelsHiPtr
+        ; Mode 6 setting screen memory to statusLineLoPtr
+        ; and statusLineHiPtr
         LDA #$46
         JSR WriteValueToDisplayList
-        LDA foregroundPixelsLoPtr
+        LDA statusLineLoPtr
         JSR WriteValueToDisplayList
-        LDA foregroundPixelsHiPtr
+        LDA statusLineHiPtr
         JSR WriteValueToDisplayList
 
         ; Not sure what this is, more blank lines.
@@ -822,26 +822,33 @@ GenerateDisplayList
         ; Mode 15 setting screen memory to foregroundPixelsLoPtr
         ; and foregroundPixelsHiPtr
 NoScreenModeSelected   
-        LDX verticalResolutionSPAC
-b4084   LDA #$4F
+        ; Write out a display list of all the pixels to 
+        ; display.
+WriteDisplayListLoop   
+        LDX numberOfLinesToDraw
+        ; '4' == Load Memory Scan
+        ; 'F' == Graphics Mode 8.
+_Loop   LDA #$4F
         JSR WriteValueToDisplayList
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         JSR WriteValueToDisplayList
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         JSR WriteValueToDisplayList
         DEX 
-        BNE b4084
+        BNE _Loop
 
-        LDA foregroundPixelsLoPtr2
+        ; Move the ptr to the bytes for the
+        ; next line
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$28
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         INC bottomMostYPos
-        DEC curvedSpaceControlByte
-        BNE NoScreenModeSelected
+        DEC bottomMostLineNumber
+        BNE WriteDisplayListLoop
 
 WriteDisplayListFooter
         ; JVB, restart same display list on next frame
@@ -852,7 +859,7 @@ WriteDisplayListFooter
         LDA #>displayListInstructions
         JSR WriteValueToDisplayList
 
-        LDA #<p00
+        LDA #$00
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
 
         LDA #<displayListInstructions
@@ -862,8 +869,10 @@ WriteDisplayListFooter
 
         LDA #$22
         STA SDMCTL   ;SDMCTL  shadow for DMACTL ($D400)
+
         LDA dualJoystickMode
         BEQ b40D7
+
         LDA bottomMostYPos
         JMP j40DD
 
@@ -878,6 +887,7 @@ j40DD
         STA pixelYPosition
         DEC pixelYPosition
         DEC pixelYPosition
+
 b40E9   RTS 
 
 ;-------------------------------------------------------------------------
@@ -903,10 +913,10 @@ InitializeColourSpace
         LDA #<DisplayListInterrupt
         STA VDSLST   ;VDSLST  display list interrupt vector
         LDA #>DisplayListInterrupt
-        STA a0201
-        LDA #<p0428
+        STA VDSLST+1
+        LDA #$28
         STA pixelXPosition
-        LDA #>p0428
+        LDA #$04
         STA pixelYPosition
         LDA #THE_SMOOTH_CROSSFLOW
         STA currentSymmetry
@@ -940,7 +950,7 @@ InitializeColourSpace
         LDA #$18
         STA bottomMostYPos
         LDA #$05
-        STA verticalResolutionSPAC
+        STA numberOfLinesToDraw
         JSR GenerateDisplayList
         JMP MainGameLoop
 
@@ -951,18 +961,18 @@ foregroundPixelsHiPtrArray = $7EC4
 ;-------------------------------------------------------------------------
 CreateLinePtrArrays
         LDA #<foregroundPixelsOriginalLocation
-        STA foregroundPixelsLoPtr2
+        STA foregroundPixelsLoPtr
         LDA #>foregroundPixelsOriginalLocation
-        STA foregroundPixelsHiPtr2
-        LDA #<p8280
+        STA foregroundPixelsHiPtr
+        LDA #<backgroundScreenRAM
         STA backgroundLinePtrLo
-        LDA #>p8280
+        LDA #>backgroundScreenRAM
         STA backgroundLinePtrHi
 
         LDX #$00
-b4170   LDA foregroundPixelsLoPtr2
+b4170   LDA foregroundPixelsLoPtr
         STA foregroundPixelsLoPtrArray,X
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         STA foregroundPixelsHiPtrArray,X
 
         LDA backgroundLinePtrLo
@@ -970,14 +980,14 @@ b4170   LDA foregroundPixelsLoPtr2
         LDA backgroundLinePtrHi
         STA backgroundLinePtrHiArray,X
 
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$28
-        STA foregroundPixelsLoPtr2
+        STA foregroundPixelsLoPtr
 
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
 
         LDA backgroundLinePtrLo
         CLC 
@@ -1074,7 +1084,7 @@ PaintForegroundPixels
         STA (foregroundLoPtr),Y
         RTS 
 
-verticalResolutionArray   
+totalNumberOfLinesToDrawArray   
         .BYTE $00,$B4,$5A,$3C,$2D,$24,$1E,$19
         .BYTE $16,$14,$12,$10,$0F,$0E,$0D,$0C
         .BYTE $0B,$0B,$0A
@@ -1086,17 +1096,18 @@ tempHiPtr = displayListInstructionsHiPtr
 ;-------------------------------------------------------------------------
 ClearLinePtrArrays
         LDX #$00
-b4227   LDA foregroundPixelsLoPtrArray,X
+ClearLinePtrLoop   
+        LDA foregroundPixelsLoPtrArray,X
         STA tempLoPtr
         LDA foregroundPixelsHiPtrArray,X
         STA tempHiPtr
 
         LDY #$00
-b4233   LDA #$00
+_Loop   LDA #$00
         STA (tempLoPtr),Y
         INY 
         CPY #$28
-        BNE b4233
+        BNE _Loop
 
         LDA backgroundLinePtrLoArray,X
         STA tempLoPtr
@@ -1105,14 +1116,14 @@ b4233   LDA #$00
 
         LDY #$00
         LDA #$00
-b424A   STA (tempLoPtr),Y
+_Loop2  STA (tempLoPtr),Y
         INY 
         CPY #$50
-        BNE b424A
+        BNE _Loop2
 
         INX 
         CPX #$5A
-        BNE b4227
+        BNE ClearLinePtrLoop
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -1210,39 +1221,38 @@ PaintStructureAtCurrentPosition
         STA previousPixelYPosition
         LDA currentPaintState
         AND #$80
-        BEQ b42D9
+        BEQ DoANormalPaint
         JMP PaintExplosionMode
 
-b42D9   JSR PaintPixelForCurrentSymmetry
+DoANormalPaint   
+        JSR PaintPixelForCurrentSymmetry
         LDA pixelsToPaint
         CMP #NUM_ARRAYS
-        BNE b42E3
+        BNE HasPixelsToPaint
         RTS 
 
-b42E3   LDX patternIndex
+HasPixelsToPaint   
+        LDX patternIndex
         LDA pixelXPositionLoPtrArray,X
         STA xPosLoPtr
         LDA pixelXPositionHiPtrArray,X
         STA xPosHiPtr
         LDA pixelYPositionLoPtrArray,X
-        STA yPosLoPtr      ;yPosLoPtr     floating point register 0
+        STA yPosLoPtr
         LDA pixelYPositionHiPtrArray,X
         STA yPosHiPtr
 
         LDA #NUM_ARRAYS
         STA countToMatchCurrentIndex
         LDY #$00
-;-------------------------------------------------------------------------
-; PixelPaintLoop
-;-------------------------------------------------------------------------
 PixelPaintLoop
         LDA (xPosLoPtr),Y
         CMP #$55
-        BEQ b431C
+        BEQ ReachedEndOfLine
         CLC 
         ADC currentPixelXPosition
         STA previousPixelXPosition
-        LDA (yPosLoPtr),Y  ;yPosLoPtr     floating point register 0
+        LDA (yPosLoPtr),Y
         CLC 
         ADC currentPixelYPosition
         STA previousPixelYPosition
@@ -1254,7 +1264,8 @@ PixelPaintLoop
         INY 
         JMP PixelPaintLoop
 
-b431C   DEC countToMatchCurrentIndex
+ReachedEndOfLine   
+        DEC countToMatchCurrentIndex
         INY 
         LDA pixelsToPaint
         CMP countToMatchCurrentIndex
@@ -2052,25 +2063,25 @@ MaybeHIResHardReflectMode
 
 b4AC7   LDX #$59
 b4AC9   JSR WriteValuesFromMemoryToDisplayList
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$28
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         DEX 
         BNE b4AC9
 
         LDX #$59
 b4ADE   JSR WriteValuesFromMemoryToDisplayList
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$D8
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$FF
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         DEX 
         BNE b4ADE
         LDA #$5A
@@ -2083,9 +2094,9 @@ b4ADE   JSR WriteValuesFromMemoryToDisplayList
 WriteValuesFromMemoryToDisplayList
         LDA #$4F
         JSR WriteValueToDisplayList
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         JSR WriteValueToDisplayList
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         JSR WriteValueToDisplayList
         RTS 
 
@@ -2100,27 +2111,27 @@ MaybeCurvedColorspace1Mode
 
 CurvedColorspace1Mode   
         LDA #$01
-        STA curvedSpaceControlByte
+        STA bottomMostLineNumber
         LDA #$00
         STA bottomMostYPos
 b4B19   LDX #$04
-b4B1B   LDA curvedSpaceControlByte
+b4B1B   LDA bottomMostLineNumber
         STA a4B48
 b4B21   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
         BNE b4B21
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$28
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         INC bottomMostYPos
         DEX 
         BNE b4B1B
-        INC curvedSpaceControlByte
-        LDA curvedSpaceControlByte
+        INC bottomMostLineNumber
+        LDA bottomMostLineNumber
         CMP #$0A
         BNE b4B19
         JMP WriteDisplayListFooter
@@ -2141,32 +2152,32 @@ MaybeCurvedColorspace2Mode
 
 CurvedColorspace2Mode   
         LDA #$01
-        STA curvedSpaceControlByte
+        STA bottomMostLineNumber
         LDA #$00
         STA bottomMostYPos
 b4B68   LDX CurvedInnerLoopCounter
-b4B6B   LDA curvedSpaceControlByte
+b4B6B   LDA bottomMostLineNumber
         STA a4B48
 b4B71   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
         BNE b4B71
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$28
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         INC bottomMostYPos
         DEX 
         BNE b4B6B
-        INC curvedSpaceControlByte
-        LDA curvedSpaceControlByte
+        INC bottomMostLineNumber
+        LDA bottomMostLineNumber
         CMP #$0A
         BNE b4B68
-        DEC curvedSpaceControlByte
+        DEC bottomMostLineNumber
 b4B98   LDX CurvedInnerLoopCounter
-b4B9B   LDA curvedSpaceControlByte
+b4B9B   LDA bottomMostLineNumber
         STA a4B48
 b4BA1   JSR WriteValuesFromMemoryToDisplayList
         DEC a4B48
@@ -2178,19 +2189,19 @@ b4BA1   JSR WriteValuesFromMemoryToDisplayList
         ;Returns
 
 IncrementLowPointers   
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$28
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         INC bottomMostYPos
 
 UpdateStuffAndMaybeReturn
         DEX 
         BNE b4B9B
-        DEC curvedSpaceControlByte
+        DEC bottomMostLineNumber
         BNE b4B98
         DEC CurvedOuterLoopCounter
         BNE CurvedColorspace2Mode
@@ -2201,13 +2212,13 @@ a4BD3   .BYTE $01
 ; IncrementScreenMemoryPointers
 ;-------------------------------------------------------------------------
 IncrementScreenMemoryPointers
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$D8
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$FF
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -2259,11 +2270,11 @@ MaybeZarjazInterlaceMode
         RTS 
 
 ZarjazInterlaceMode   
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$E8
         STA aEB
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         ADC #$0D
         STA FPCOC
 
@@ -2275,13 +2286,13 @@ b4C30   JSR WriteValuesFromMemoryToDisplayList
         JSR WriteValueToDisplayList
         LDA FPCOC
         JSR WriteValueToDisplayList
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$28
-        STA foregroundPixelsLoPtr2
-        LDA foregroundPixelsHiPtr2
+        STA foregroundPixelsLoPtr
+        LDA foregroundPixelsHiPtr
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         LDA aEB
         CLC 
         ADC #$D8
@@ -2441,15 +2452,15 @@ b4D6E   LDA a4F4C
 
 RepointTextMaybe
         LDA #<statusTextLineOne
-        STA foregroundPixelsLoPtr
+        STA statusLineLoPtr
         LDA #>statusTextLineOne
-        STA foregroundPixelsHiPtr
+        STA statusLineHiPtr
 b4D87   RTS 
 
 b4D88   LDA #<statusTextLineTwo
-        STA foregroundPixelsLoPtr
+        STA statusLineLoPtr
         LDA #>statusTextLineTwo
-        STA foregroundPixelsHiPtr
+        STA statusLineHiPtr
         RTS 
 
 MaybeCheckKeyboardInput   
@@ -2511,11 +2522,11 @@ MaybeZKeyPressed
         BNE MaybeShiftZPressed
 
         ; Z/SHIFT - Z=Vary Vertical Resolution SPAC
-        INC verticalResolutionSPAC
-        LDA verticalResolutionSPAC
+        INC numberOfLinesToDraw
+        LDA numberOfLinesToDraw
         CMP #$12
         BNE b4DEE
-        DEC verticalResolutionSPAC
+        DEC numberOfLinesToDraw
 b4DEE   LDA #$01
         STA selectedModePreventsForegroundDrawing
         RTS 
@@ -2525,11 +2536,11 @@ MaybeShiftZPressed
         BNE MaybeSpaceKeyPressed
 
         ; Z/SHIFT - Z=Vary Vertical Resolution SPAC
-        DEC verticalResolutionSPAC
-        LDA verticalResolutionSPAC
+        DEC numberOfLinesToDraw
+        LDA numberOfLinesToDraw
         CMP #$01
         BNE b4DEE
-        INC verticalResolutionSPAC
+        INC numberOfLinesToDraw
         JMP b4DEE
 
 MaybeSpaceKeyPressed   
@@ -2703,9 +2714,9 @@ b4F24   LDA statusLineTextLoByte
         DEX 
         BNE b4F24
 b4F38   LDA statusLineTextLoByte
-        STA foregroundPixelsLoPtr
+        STA statusLineLoPtr
         LDA statusLineTextHiByte
-        STA foregroundPixelsHiPtr
+        STA statusLineHiPtr
         LDA #$30
         STA a4F4C
         RTS 
@@ -2841,9 +2852,9 @@ lastKeyPressed   .BYTE $00
 WriteStatusLine
         LDA disableStatusLine
         BNE b5492
-        LDA foregroundPixelsLoPtr
+        LDA statusLineLoPtr
         STA presetLoPtr
-        LDA foregroundPixelsHiPtr
+        LDA statusLineHiPtr
 
 WriteStatusReturn
         STA presetHiPtr
@@ -3198,7 +3209,7 @@ StorePresetValues
         JSR StorePresetByte
         LDA currentPatternIndex
         JSR StorePresetByte
-        LDA verticalResolutionSPAC
+        LDA numberOfLinesToDraw
         JSR StorePresetByte
         LDA pulseSpeed   ;pulseSpeed  
         JSR StorePresetByte
@@ -3253,7 +3264,7 @@ LoadPreset
         JSR GetByteFromPreset
         STA currentPatternIndex
         JSR GetByteFromPreset
-        STA verticalResolutionSPAC
+        STA numberOfLinesToDraw
         JSR GetByteFromPreset
         STA pulseSpeed   ;pulseSpeed  
         STA pulseSpeed2
@@ -3702,7 +3713,7 @@ UpdateColorStatusForDrawingForeground
         LDX #PIXEL_COLOUR__000
         LDA foregroundDrawPlotColor
         STA lastKeyPressed
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         CMP #$13
         BEQ b59D3
         JMP UpdateStatusLineAndDisplaySelectedValue
@@ -3732,7 +3743,7 @@ MaybeShiftFPressed
         JMP UpdateStatusLine
         ;Returns
 
-b59D3   LDA foregroundPixelsLoPtr2
+b59D3   LDA foregroundPixelsLoPtr
         AND #$80
         BNE b59DC
         JMP UpdateStatusLineAndDisplaySelectedValue
@@ -3747,7 +3758,7 @@ b59DC   LDX #COLOUR_0__FREE_000
         STA (presetLoPtr),Y
         LDA #$00
         SEC 
-        SBC foregroundPixelsLoPtr2
+        SBC foregroundPixelsLoPtr
         STA lastKeyPressed
         JMP IncrementDisplayedValue
 
@@ -3819,40 +3830,46 @@ MaybeHPressed
         PHA 
         AND #$3F
         CMP #KEY_H
-        BEQ b5A63
+        BEQ HPressed
         PLA 
         JMP MaybeYPressed
 
         ; H,C,V,B,N,M,[=Individual colour Variable Keys 
-b5A63   LDA #$00
+HPressed   
+        LDA #$00
         LDY currentColourControlEffect
         BEQ b5A70
-b5A6A   CLC 
+
+_Loop   CLC 
         ADC #$08
         DEY 
-        BNE b5A6A
+        BNE _Loop
+
 b5A70   TAX 
         PLA 
         AND #$40
         BEQ b5A85
+
         INX 
         LDY #$07
-b5A79   LDA #$00
+ClearClrValuesLoop   
+        LDA #$00
         STA colorValuesOfSomeSort,X
         INX 
         DEY 
-        BNE b5A79
+        BNE ClearClrValuesLoop
         JMP ColourFlowResync
 
 b5A85   LDY #$07
         INX 
-b5A88   LDA colorValuesOfSomeSort,X
+UpdateColorValues   
+        LDA colorValuesOfSomeSort,X
         CLC 
         ADC simlAdder
         STA colorValuesOfSomeSort,X
         INX 
         DEY 
-        BNE b5A88
+        BNE UpdateColorValues
         JMP ColourFlowResync
 
 MaybeYPressed
@@ -3865,9 +3882,9 @@ MaybeYPressed
         LDA #$01
         STA disableStatusLine
         LDA #<statusTextLineTwo
-        STA foregroundPixelsLoPtr
+        STA statusLineLoPtr
         LDA #>statusTextLineTwo
-        STA foregroundPixelsHiPtr
+        STA statusLineHiPtr
         RTS 
 
 b5AB2   LDA #$00
@@ -4556,9 +4573,9 @@ ForegroundStateCleared
 ;-------------------------------------------------------------------------
 ProcessForegroundPointPaint
         LDA #>foregroundPixelData - $01
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         LDA #<foregroundPixelData - $01
-        STA foregroundPixelsLoPtr2
+        STA foregroundPixelsLoPtr
         LDA #$00
         STA foregroundDrawState
         LDA cursorSpeed
@@ -4591,21 +4608,21 @@ foregroundDrawState   .BYTE $00
 
 ForegroundPointRecorded   
         LDY #$00
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         PHA 
-        LDA (foregroundPixelsLoPtr2),Y
+        LDA (foregroundPixelsLoPtr),Y
         CMP foregroundRecordPixelXPos
         BNE b5F6B
         PLA 
         PHA 
         CLC 
         ADC #$04
-        STA foregroundPixelsHiPtr2
-        LDA (foregroundPixelsLoPtr2),Y
+        STA foregroundPixelsHiPtr
+        LDA (foregroundPixelsLoPtr),Y
         CMP foregroundRecordPixelYPos
         BNE b5F6B
         PLA 
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         LDA #$00
         STA foregroundDrawState
         JMP ProcessForegroundDrawState
@@ -4618,42 +4635,42 @@ b5F6B   JMP PrepareAndStoreSelectedForegroundPoint
 StoreSelectedForegroundPoint
         PLA 
         PHA 
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
 
         LDA foregroundRecordPixelXPos
-        STA (foregroundPixelsLoPtr2),Y
+        STA (foregroundPixelsLoPtr),Y
 
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         CLC 
         ADC #$04
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
 
         LDA foregroundRecordPixelYPos
-        STA (foregroundPixelsLoPtr2),Y
+        STA (foregroundPixelsLoPtr),Y
 
-        LDA foregroundPixelsHiPtr2
+        LDA foregroundPixelsHiPtr
         CLC 
         ADC #$04
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
 
         LDA foregroundPixelPaintState
-        STA (foregroundPixelsLoPtr2),Y
+        STA (foregroundPixelsLoPtr),Y
 
         PLA 
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         JMP ForegroundStateCleared
 
 ;-------------------------------------------------------------------------
 ; PrepareAndStoreSelectedForegroundPoint
 ;-------------------------------------------------------------------------
 PrepareAndStoreSelectedForegroundPoint
-        LDA foregroundPixelsLoPtr2
+        LDA foregroundPixelsLoPtr
         CLC 
         ADC #$01
-        STA foregroundPixelsLoPtr2
+        STA foregroundPixelsLoPtr
         PLA 
         ADC #$00
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         PHA 
         CMP #$20
         BEQ b5FA9
@@ -4662,7 +4679,7 @@ PrepareAndStoreSelectedForegroundPoint
 b5FA9   LDA #FOREGROUND_POINT_SELECTED
         STA foregroundDrawState
         PLA 
-        STA foregroundPixelsHiPtr2
+        STA foregroundPixelsHiPtr
         JMP ProcessForegroundDrawState
 
         ; zero-byte padding

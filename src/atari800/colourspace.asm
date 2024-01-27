@@ -124,7 +124,6 @@ ICBLL = $0368
 ICBLH = $0369
 ICAX1 = $036A
 ICAX2 = $036B
-a1400 = $1400
 statusLineLoPtr = $8003
 displayListInstructions = $8000
 ;
@@ -136,6 +135,8 @@ p0102 = $0102
 p0428 = $0428
 p0FFF = $0FFF
 foregroundPixelData = $1000
+foregroundPixelXPosData = $1000
+foregroundPixelYPosData = $1400
 statusLineHiPtr = $8004
 p8008 = $8008
 backgroundScreenRAM = $8280
@@ -382,6 +383,7 @@ ExitForegroundPaintLoop
         JMP MainGameLoop
 
 HasAForegroundPixelToPaint   
+        ; Get the X position for this pixel.
         CLC 
         ADC drawForegroundAtXPos
         STA previousPixelXPosition
@@ -1051,6 +1053,8 @@ PaintPixel
         BEQ ActuallyPaintPixel
         RTS 
 
+        ; Each pixel is a four bit nibble. The nibble is then an index
+        ; into presetColorValuesArray giving the color for the 'pixel'.
 ActuallyPaintPixel   
         LDA pixelValueToPaint
         STA (linePtrLo),Y
@@ -3790,11 +3794,11 @@ MaybeGPressed
         ; G=Draw foreground graphics at current cursor position 
         LDA pixelXPosition
         SEC 
-        SBC foregroundPixelData
+        SBC foregroundPixelXPosData
         STA drawForegroundAtXPos
         LDA pixelYPosition
         SEC 
-        SBC a1400
+        SBC foregroundPixelYPosData
         STA drawForegroundAtYPos
         LDA #FOREGROUND_GRAPHICS_ON 
         STA textOutputControl

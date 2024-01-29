@@ -559,3 +559,4 @@ E_QUAD_SYMMETRY                    = $04
 
 NUM_ROWS                         = $18
 NUM_COLS                         = $50
+NUM_COLS_40                      = $28

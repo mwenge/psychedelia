@@ -843,7 +843,7 @@ _Loop   LDA #$4F
         ; next line
         LDA foregroundPixelsLoPtr
         CLC 
-        ADC #$28
+        ADC #NUM_COLS_40
         STA foregroundPixelsLoPtr
         LDA foregroundPixelsHiPtr
         ADC #$00
@@ -916,7 +916,7 @@ InitializeColourSpace
         STA VDSLST   ;VDSLST  display list interrupt vector
         LDA #>DisplayListInterrupt
         STA VDSLST+1
-        LDA #$28
+        LDA #NUM_COLS_40
         STA pixelXPosition
         LDA #$04
         STA pixelYPosition
@@ -984,7 +984,7 @@ b4170   LDA foregroundPixelsLoPtr
 
         LDA foregroundPixelsLoPtr
         CLC 
-        ADC #$28
+        ADC #NUM_COLS_40
         STA foregroundPixelsLoPtr
 
         LDA foregroundPixelsHiPtr
@@ -1110,7 +1110,7 @@ ClearLinePtrLoop
 _Loop   LDA #$00
         STA (tempLoPtr),Y
         INY 
-        CPY #$28
+        CPY #NUM_COLS_40
         BNE _Loop
 
         LDA backgroundLinePtrLoArray,X
@@ -1749,10 +1749,10 @@ bottomMostYPosArray
 ;-------------------------------------------------------------------------
 ClearExplosionModeArray
         LDX #$40
-b4817   LDA #$FF
+_Loop   LDA #$FF
         STA explosionModeArray - 1,X
         DEX 
-        BNE b4817
+        BNE _Loop
         LDA #$00
         STA aE3
         STA currentPosInBuffer
@@ -2062,23 +2062,24 @@ pixelYPositionHiPtrArray
 ;-------------------------------------------------------------------------
 MaybeHIResHardReflectMode
         CMP #HIRES_HARD_REFLECT_MODE
-        BEQ b4AC7
+        BEQ UseHiResHardReflectMode
         JMP MaybeCurvedColorspace1Mode
 
-b4AC7   LDX #$59
-b4AC9   JSR WriteValuesFromMemoryToDisplayList
+UseHiResHardReflectMode   
+        LDX #$59
+_Loop   JSR WriteValuesFromMemoryToDisplayList
         LDA foregroundPixelsLoPtr
         CLC 
-        ADC #$28
+        ADC #NUM_COLS_40
         STA foregroundPixelsLoPtr
         LDA foregroundPixelsHiPtr
         ADC #$00
         STA foregroundPixelsHiPtr
         DEX 
-        BNE b4AC9
+        BNE _Loop
 
         LDX #$59
-b4ADE   JSR WriteValuesFromMemoryToDisplayList
+_Loop2  JSR WriteValuesFromMemoryToDisplayList
         LDA foregroundPixelsLoPtr
         CLC 
         ADC #$D8
@@ -2087,7 +2088,8 @@ b4ADE   JSR WriteValuesFromMemoryToDisplayList
         ADC #$FF
         STA foregroundPixelsHiPtr
         DEX 
-        BNE b4ADE
+        BNE _Loop2
+
         LDA #$5A
         STA bottomMostYPos
         JMP WriteDisplayListFooter
@@ -2118,30 +2120,43 @@ CurvedColorspace1Mode
         STA bottomMostLineNumber
         LDA #$00
         STA bottomMostYPos
-b4B19   LDX #$04
-b4B1B   LDA bottomMostLineNumber
-        STA a4B48
-b4B21   JSR WriteValuesFromMemoryToDisplayList
-        DEC a4B48
-        BNE b4B21
+
+CurvedColorSpace1Loop   
+        LDX #$04
+
+CurvedColorSpaceInnerLoop   
+        LDA bottomMostLineNumber
+        STA numberOfCurvedPixelLines
+
+_Loop   JSR WriteValuesFromMemoryToDisplayList
+        DEC numberOfCurvedPixelLines
+        BNE _Loop
+
         LDA foregroundPixelsLoPtr
         CLC 
-        ADC #$28
+        ADC #NUM_COLS_40
         STA foregroundPixelsLoPtr
+
         LDA foregroundPixelsHiPtr
         ADC #$00
         STA foregroundPixelsHiPtr
+
         INC bottomMostYPos
         DEX 
-        BNE b4B1B
+        BNE CurvedColorSpaceInnerLoop
+
         INC bottomMostLineNumber
         LDA bottomMostLineNumber
         CMP #$0A
-        BNE b4B19
+        BNE CurvedColorSpace1Loop
+
         JMP WriteDisplayListFooter
 
-a4B48   .BYTE $01
+numberOfCurvedPixelLines   .BYTE $01
 
+;-------------------------------------------------------------------------
+; MaybeCurvedColorspace2Mode
+;-------------------------------------------------------------------------
 MaybeCurvedColorspace2Mode
         LDX #$00
         STX a4BD3
@@ -2161,13 +2176,13 @@ CurvedColorspace2Mode
         STA bottomMostYPos
 b4B68   LDX CurvedInnerLoopCounter
 b4B6B   LDA bottomMostLineNumber
-        STA a4B48
+        STA numberOfCurvedPixelLines
 b4B71   JSR WriteValuesFromMemoryToDisplayList
-        DEC a4B48
+        DEC numberOfCurvedPixelLines
         BNE b4B71
         LDA foregroundPixelsLoPtr
         CLC 
-        ADC #$28
+        ADC #NUM_COLS_40
         STA foregroundPixelsLoPtr
         LDA foregroundPixelsHiPtr
         ADC #$00
@@ -2182,9 +2197,9 @@ b4B71   JSR WriteValuesFromMemoryToDisplayList
         DEC bottomMostLineNumber
 b4B98   LDX CurvedInnerLoopCounter
 b4B9B   LDA bottomMostLineNumber
-        STA a4B48
+        STA numberOfCurvedPixelLines
 b4BA1   JSR WriteValuesFromMemoryToDisplayList
-        DEC a4B48
+        DEC numberOfCurvedPixelLines
         BNE b4BA1
         LDA a4BD3
         BEQ IncrementLowPointers
@@ -2195,7 +2210,7 @@ b4BA1   JSR WriteValuesFromMemoryToDisplayList
 IncrementLowPointers   
         LDA foregroundPixelsLoPtr
         CLC 
-        ADC #$28
+        ADC #NUM_COLS_40
         STA foregroundPixelsLoPtr
         LDA foregroundPixelsHiPtr
         ADC #$00
@@ -2292,7 +2307,7 @@ b4C30   JSR WriteValuesFromMemoryToDisplayList
         JSR WriteValueToDisplayList
         LDA foregroundPixelsLoPtr
         CLC 
-        ADC #$28
+        ADC #NUM_COLS_40
         STA foregroundPixelsLoPtr
         LDA foregroundPixelsHiPtr
         ADC #$00
@@ -4294,7 +4309,7 @@ ForegroundPixelsMaybe
         JSR ClearLinePtrArrays
         JSR ClearExplosionModeArray
 
-        LDA #$28
+        LDA #NUM_COLS_40
         STA currentPixelXPosition
 
         LDA bottomMostYPos
@@ -4360,7 +4375,7 @@ b5D85   LDA pixelsToPaint
         LDY a5966
         LDA pixelXPosition
         SEC 
-        SBC #$28
+        SBC #NUM_COLS_40
         STA (generalLoPtr),Y
         TYA 
         CLC 

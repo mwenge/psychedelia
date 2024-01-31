@@ -1,0 +1,13 @@
+diff --git a/src/atari800/colourspace.asm b/src/atari800/colourspace.asm
+index aff8598..c675ea4 100644
+--- a/src/atari800/colourspace.asm
++++ b/src/atari800/colourspace.asm
+@@ -4026,7 +4026,7 @@ StartRecording
+         STA selectedPresetForPlayback
+ b5B65   RTS 
+ 
+-autoDemoEnabled   .BYTE DEMO_ENABLED
++autoDemoEnabled   .BYTE DEMO_DISABLED
+ ;-------------------------------------------------------------------------
+ ; GetInputForDemo
+ ;-------------------------------------------------------------------------

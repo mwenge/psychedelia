@@ -2026,8 +2026,10 @@ newCursorSpeed   .BYTE $01
 pixelXPositionLoPtrArray   
         .BYTE <theTwistXPosArray,<smoothCrossflowXPosArray,<denturesXPosArray,<deltoidsXPosArray
         .BYTE <pulsarCrossXPosArray,<slothMultiCrossXPosArray,<crossAndABitXPosArray,<star2XPosArray
-        .BYTE <a2000,<a2080,<a2100,<a2180,<a2200,<a2280,<a2300,<a2380
-        .BYTE <a2400,<a2480,<a2500,<a2580,<a2600,<a2680,<a2700,<a2780
+        .BYTE <userLightform0XPosArray,<userLightform1XPosArray,<userLightform2XPosArray,<userLightform3XPosArray
+        .BYTE <userLightform4XPosArray,<userLightform5XPosArray,<userLightform6XPosArray,<userLightform7XPosArray
+        .BYTE <userLightform8XPosArray,<userLightform9XPosArray,<userLightform10XPosArray,<userLightform11XPosArray
+        .BYTE <userLightform12XPosArray,<userLightform13XPosArray,<userLightform14XPosArray,<userLightform15XPosArray
         .BYTE <a2800,<a2880,<a2900,<a2980,<a2A00,<a2A80,<a2B00,<a2B80
         .BYTE <a2C00,<a2C80,<a2D00,<a2D80,<a2E00,<a2E80,<a2F00,<a2F80
 
@@ -2035,16 +2037,20 @@ pixelXPositionLoPtrArray
 pixelXPositionHiPtrArray   
         .BYTE >theTwistXPosArray,>smoothCrossflowXPosArray,>denturesXPosArray,>deltoidsXPosArray
         .BYTE >pulsarCrossXPosArray,>slothMultiCrossXPosArray,>crossAndABitXPosArray,>star2XPosArray
-        .BYTE >a2000,>a2080,>a2100,>a2180,>a2200,>a2280,>a2300,>a2380
-        .BYTE >a2400,>a2480,>a2500,>a2580,>a2600,>a2680,>a2700,>a2780
+        .BYTE >userLightform0XPosArray,>userLightform1XPosArray,>userLightform2XPosArray,>userLightform3XPosArray
+        .BYTE >userLightform4XPosArray,>userLightform5XPosArray,>userLightform6XPosArray,>userLightform7XPosArray
+        .BYTE >userLightform8XPosArray,>userLightform9XPosArray,>userLightform10XPosArray,>userLightform11XPosArray
+        .BYTE >userLightform12XPosArray,>userLightform13XPosArray,>userLightform14XPosArray,>userLightform15XPosArray
         .BYTE >a2800,>a2880,>a2900,>a2980,>a2A00,>a2A80,>a2B00,>a2B80
         .BYTE >a2C00,>a2C80,>a2D00,>a2D80,>a2E00,>a2E80,>a2F00,>a2F80
 
 pixelYPositionLoPtrArray   
         .BYTE <theTwistYPosArray,<smoothCrossflowYPosArray,<denturesYPosArray,<deltoidsYPosArray
         .BYTE <pulsarCrossYPosArray,<slothMultiCrossYPosArray,<crossAndABitYPosArray,<start2YPosArray
-        .BYTE <a2040,<a20C0,<a2140,<a21C0,<a2240,<a22C0,<a2340,<a23C0
-        .BYTE <a2440,<a24C0,<a2540,<a25C0,<a2640,<a26C0,<a2740,<a27C0
+        .BYTE <userLightform0YPosArray,<userLightform1YPosArray,<userLightform2YPosArray,<userLightform3YPosArray
+        .BYTE <userLightform4YPosArray,<userLightform5YPosArray,<userLightform6YPosArray,<userLightform7YPosArray
+        .BYTE <userLightform8YPosArray,<userLightform9YPosArray,<userLightform10YPosArray,<userLightform11YPosArray
+        .BYTE  <userLightform12YPosArray,<userLightform13YPosArray,<userLightform14YPosArray,<userLightform15YPosArray
         .BYTE <a2840,<a28C0,<a2940,<a29C0,<a2A40,<a2AC0,<a2B40,<a2BC0
         .BYTE <a2C40,<a2CC0,<a2D40,<a2DC0,<a2E40,<a2EC0,<a2F40,<a2FC0
 
@@ -2052,8 +2058,10 @@ pixelYPositionLoPtrArray
 pixelYPositionHiPtrArray   
         .BYTE >theTwistYPosArray,>smoothCrossflowYPosArray,>denturesYPosArray,>deltoidsYPosArray
         .BYTE >pulsarCrossYPosArray,>slothMultiCrossYPosArray,>crossAndABitYPosArray,>start2YPosArray
-        .BYTE >a2040,>a20C0,>a2140,>a21C0,>a2240,>a22C0,>a2340,>a23C0
-        .BYTE >a2440,>a24C0,>a2540,>a25C0,>a2640,>a26C0,>a2740,>a27C0
+        .BYTE >userLightform0YPosArray,>userLightform1YPosArray,>userLightform2YPosArray,>userLightform3YPosArray
+        .BYTE >userLightform4YPosArray,>userLightform5YPosArray,>userLightform6YPosArray,>userLightform7YPosArray
+        .BYTE >userLightform8YPosArray,>userLightform9YPosArray,>userLightform10YPosArray,>userLightform11YPosArray
+        .BYTE >userLightform12YPosArray,>userLightform13YPosArray,>userLightform14YPosArray,>userLightform15YPosArray
         .BYTE >a2840,>a28C0,>a2940,>a29C0,>a2A40,>a2AC0,>a2B40,>a2BC0
         .BYTE >a2C40,>a2CC0,>a2D40,>a2DC0,>a2E40,>a2EC0,>a2F40,>a2FC0
 
@@ -4291,7 +4299,7 @@ LooksUnusedRoutine
         LDA #$55
 a5D08   =*+$01
 a5D09   =*+$02
-        STA a2000
+        STA userLightform0XPosArray
         INC a5D08
         BNE LooksUnusedRoutine
         INC a5D09

@@ -1,5 +1,5 @@
 
-a2000
+userLightform0XPosArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$55
         .BYTE $04,$04,$04,$04,$04,$FC,$FC,$FC,$FC,$FC,$55
         .BYTE $FC,$FC,$FB,$FB,$FA,$F9,$F8,$F6,$04,$04,$05,$05,$06,$07,$08,$0A,$55
@@ -25,7 +25,7 @@ a2000
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2040
+userLightform0YPosArray
         .BYTE $01,$03,$02,$05,$07,$09,$0B,$07,$00,$01,$02,$03,$04,$00,$01,$02,$03,$04,$03,$05,$06,$07,$08,$09,$0A,$0B,$0B,$05,$06,$07,$08,$09,$0A,$0B,$0B,$03,$0A,$08,$06,$01,$04,$FF,$0B,$0B,$07,$09,$09,$55
         .BYTE $55
         .BYTE $55
@@ -43,7 +43,7 @@ a2040
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2080
+userLightform1XPosArray
         .BYTE $02,$04,$07,$55
         .BYTE $0A,$0C,$55
         .BYTE $0F,$12,$15,$55
@@ -93,7 +93,7 @@ a2080
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a20c0
+userLightform1YPosArray
         .BYTE $FE,$FD,$FC,$FC,$FB,$FB,$FB,$FA,$FA,$FA,$55
         .BYTE $F9,$F9,$F9,$55
         .BYTE $0D,$0F,$55
@@ -141,7 +141,7 @@ a20c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2100
+userLightform2XPosArray
         .BYTE $FF,$FE,$FD,$55
         .BYTE $01,$02,$02,$02,$02,$02,$55
         .BYTE $02,$02,$02,$02,$01,$55
@@ -183,7 +183,7 @@ a2100
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2140
+userLightform2YPosArray
         .BYTE $01,$02,$03,$55
         .BYTE $FF,$FF,$00,$01,$02,$03,$55
         .BYTE $04,$05,$06,$07,$08,$55
@@ -225,7 +225,7 @@ a2140
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2180
+userLightform3XPosArray
         .BYTE $FD,$03,$55
         .BYTE $FA,$06,$55
         .BYTE $F8,$07,$55
@@ -275,7 +275,7 @@ a2180
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a21c0
+userLightform3YPosArray
         .BYTE $FF,$FF,$55
         .BYTE $01,$01,$55
         .BYTE $FC,$FC,$55
@@ -325,7 +325,7 @@ a21c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2200
+userLightform4XPosArray
         .BYTE $FF,$00,$01,$55
         .BYTE $FF,$00,$01,$55
         .BYTE $04,$04,$04,$55
@@ -374,7 +374,7 @@ a2200
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2240
+userLightform4YPosArray
         .BYTE $FD,$FD,$FD,$55
         .BYTE $03,$03,$03,$55
         .BYTE $FF,$00,$01,$55
@@ -423,7 +423,7 @@ a2240
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2280
+userLightform5XPosArray
         .BYTE $FE,$FF,$00,$01,$02,$FD,$FC,$55
         .BYTE $03,$04,$05,$06,$FC,$FC,$FD,$FF,$FE,$55
         .BYTE $07,$08,$09,$04,$03,$55
@@ -448,7 +448,7 @@ a2280
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a22c0
+userLightform5YPosArray
         .BYTE $FD,$FD,$FD,$FD,$FD,$FE,$FF,$55
         .BYTE $FE,$FE,$FF,$FF,$00,$01,$02,$02,$02,$55
         .BYTE $FF,$FF,$FE,$00,$01,$55
@@ -473,7 +473,7 @@ a22c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2300
+userLightform6XPosArray
         .BYTE $FF,$FE,$01,$02,$01,$00,$FF,$FE,$FF,$00,$01,$02,$55
         .BYTE $05,$05,$05,$05,$06,$07,$08,$09,$09,$09,$09,$06,$07,$08,$55
         .BYTE $0C,$0C,$0C,$0C,$0C,$0D,$0E,$0F,$0D,$0E,$55
@@ -489,7 +489,7 @@ a2300
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2340
+userLightform6YPosArray
         .BYTE $00,$00,$00,$00,$01,$02,$03,$04,$04,$04,$04,$04,$55
         .BYTE $04,$03,$02,$01,$00,$00,$00,$01,$02,$03,$04,$02,$02,$02,$55
         .BYTE $04,$03,$02,$00,$01,$00,$00,$01,$02,$02,$55
@@ -505,7 +505,7 @@ a2340
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2380
+userLightform7XPosArray
         .BYTE $00,$00,$00,$FE,$55
         .BYTE $00,$02,$05,$07,$0A,$03,$05,$08,$0A,$55
         .BYTE $0C,$0E,$00,$02,$05,$07,$0A,$55
@@ -541,7 +541,7 @@ a2380
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a23c0
+userLightform7YPosArray
         .BYTE $FE,$FC,$FA,$FC,$55
         .BYTE $02,$02,$02,$02,$02,$00,$00,$00,$00,$55
         .BYTE $FF,$00,$04,$04,$04,$04,$04,$55
@@ -577,7 +577,7 @@ a23c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2400
+userLightform8XPosArray
         .BYTE $FE,$FC,$FA,$55
         .BYTE $0D,$0F,$11,$55
         .BYTE $06,$05,$07,$06,$55
@@ -623,7 +623,7 @@ a2400
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2440
+userLightform8YPosArray
         .BYTE $02,$04,$06,$55
         .BYTE $06,$06,$06,$55
         .BYTE $0D,$0E,$0E,$0F,$55
@@ -669,7 +669,7 @@ a2440
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2480
+userLightform9XPosArray
         .BYTE $FF,$01,$55
         .BYTE $FD,$03,$55
         .BYTE $FB,$05,$55
@@ -721,7 +721,7 @@ a2480
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a24c0
+userLightform9YPosArray
         .BYTE $02,$02,$55
         .BYTE $04,$04,$55
         .BYTE $06,$06,$55
@@ -773,7 +773,7 @@ a24c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2500
+userLightform10XPosArray
         .BYTE $EA,$E7,$E4,$55
         .BYTE $E7,$EA,$ED,$55
         .BYTE $E5,$E8,$EB,$55
@@ -824,7 +824,7 @@ a2500
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2540
+userLightform10YPosArray
         .BYTE $00,$00,$00,$55
         .BYTE $02,$02,$02,$55
         .BYTE $04,$04,$04,$55
@@ -875,7 +875,7 @@ a2540
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2580
+userLightform11XPosArray
         .BYTE $01,$55
         .BYTE $00,$02,$04,$55
         .BYTE $00,$03,$06,$55
@@ -924,7 +924,7 @@ a2580
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a25c0
+userLightform11YPosArray
         .BYTE $00,$55
         .BYTE $01,$01,$01,$55
         .BYTE $02,$02,$02,$55
@@ -973,7 +973,7 @@ a25c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2600
+userLightform12XPosArray
         .BYTE $01,$02,$55
         .BYTE $01,$00,$FF,$55
         .BYTE $00,$FF,$FE,$55
@@ -1021,7 +1021,7 @@ a2600
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2640
+userLightform12YPosArray
         .BYTE $FF,$FE,$55
         .BYTE $00,$01,$02,$55
         .BYTE $02,$03,$04,$55
@@ -1069,7 +1069,7 @@ a2640
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2680
+userLightform13XPosArray
         .BYTE $00,$FF,$01,$FE,$02,$55
         .BYTE $FD,$03,$FC,$04,$FB,$05,$55
         .BYTE $FA,$06,$F9,$07,$F8,$08,$55
@@ -1102,7 +1102,7 @@ a2680
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a26c0
+userLightform13YPosArray
         .BYTE $FB,$FC,$FC,$FD,$FD,$55
         .BYTE $FE,$FE,$FF,$FF,$00,$00,$55
         .BYTE $01,$01,$02,$02,$03,$03,$55
@@ -1135,7 +1135,7 @@ a26c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2700
+userLightform14XPosArray
         .BYTE $FC,$FC,$FC,$FD,$FE,$FF,$00,$01,$02,$FC,$FD,$FE,$FF,$00,$01,$03,$03,$02,$04,$05,$06,$06,$06,$06,$05,$04,$01,$55
         .BYTE $01,$01,$01,$01,$01,$01,$01,$55
         .BYTE $55
@@ -1161,7 +1161,7 @@ a2700
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2740
+userLightform14YPosArray
         .BYTE $00,$01,$02,$03,$04,$05,$05,$05,$05,$FF,$FE,$FD,$FC,$FC,$FC,$FC,$05,$FC,$FD,$FE,$FF,$00,$01,$02,$03,$04,$FD,$FE,$FE,$FF,$00,$01,$02,$03,$04,$55
         .BYTE $55
         .BYTE $01,$02,$00,$01,$02,$55
@@ -1186,7 +1186,7 @@ a2740
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2780
+userLightform15XPosArray
         .BYTE $F5,$F8,$FA,$55
         .BYTE $FA,$FD,$00,$55
         .BYTE $F5,$F8,$FA,$55
@@ -1233,7 +1233,7 @@ a2780
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a27c0
+userLightform15YPosArray
         .BYTE $00,$00,$00,$55
         .BYTE $02,$02,$02,$55
         .BYTE $03,$03,$03,$55
@@ -1475,7 +1475,7 @@ a2880
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a28c0
+a28C0
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -1735,7 +1735,7 @@ a2980
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a29c0
+a29C0
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -1800,7 +1800,7 @@ a29c0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2a00
+a2A00
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -1865,7 +1865,7 @@ a2a00
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2a40
+a2A40
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -1930,7 +1930,7 @@ a2a40
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2a80
+a2A80
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -1995,7 +1995,7 @@ a2a80
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2ac0
+a2AC0
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -2060,7 +2060,7 @@ a2ac0
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2b00
+a2B00
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -2125,7 +2125,7 @@ a2b00
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2b40
+a2B40
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -2190,7 +2190,7 @@ a2b40
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2b80
+a2B80
         .BYTE $55
         .BYTE $55
         .BYTE $55
@@ -2255,7 +2255,7 @@ a2b80
         .BYTE $55
         .BYTE $55
         .BYTE $55
-a2bc0
+a2BC0
         .BYTE $55
         .BYTE $55
         .BYTE $55

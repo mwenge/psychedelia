@@ -1278,14 +1278,14 @@ ReachedEndOfLine
         RTS 
 
 ; Some patterns
-theTwistXPosArray
-        .BYTE $00,$55
-        .BYTE $01,$02,$55
-        .BYTE $01,$02,$03,$55
-        .BYTE $01,$02,$03,$04,$55
-        .BYTE $00,$00,$00,$55
-        .BYTE $FF,$FE,$55
-        .BYTE $55
+theTwistXPosArray                        
+        .BYTE $00,$55             ;     2  
+        .BYTE $01,$02,$55         ;   12   
+        .BYTE $01,$02,$03,$55     ;    333 
+        .BYTE $01,$02,$03,$04,$55 ;  654   
+        .BYTE $00,$00,$00,$55     ; 6 5 4  
+        .BYTE $FF,$FE,$55         ;   5  4 
+        .BYTE $55                 ;       4
 theTwistYPosArray
         .BYTE $FF,$55
         .BYTE $FF,$FE,$55
@@ -1294,109 +1294,119 @@ theTwistYPosArray
         .BYTE $01,$02,$03,$55
         .BYTE $01,$02,$55
         .BYTE $55
+
 smoothCrossflowXPosArray
-        .BYTE $FF,$01,$55
-        .BYTE $FE,$02,$55
+        .BYTE $FF,$01,$55        ;            5
+        .BYTE $FE,$02,$55        ;              
+        .BYTE $FD,$03,$55        ;          3   
+        .BYTE $FC,$04,$55        ; 6            
+        .BYTE $FB,$05,$55        ;   4    1     
+        .BYTE $FA,$06,$55        ;     2        
+        .BYTE $55                ;              
+smoothCrossflowYPosArray         ;         2    
+        .BYTE $02,$FE,$55        ;      1    4  
+        .BYTE $FF,$01,$55        ;             6
+        .BYTE $04,$FC,$55        ;    3         
+        .BYTE $FE,$02,$55        ;              
+        .BYTE $06,$FA,$55        ;  5           
         .BYTE $FD,$03,$55
-        .BYTE $FC,$04,$55
-        .BYTE $FB,$05,$55
-        .BYTE $FA,$06,$55
         .BYTE $55
-smoothCrossflowYPosArray
-        .BYTE $02,$FE,$55
-        .BYTE $FF,$01,$55
-        .BYTE $04,$FC,$55
-        .BYTE $FE,$02,$55
-        .BYTE $06,$FA,$55
-        .BYTE $FD,$03,$55
-        .BYTE $55
+
 denturesXPosArray
-        .BYTE $01,$55
-        .BYTE $02,$55
-        .BYTE $03,$55
-        .BYTE $04,$55
-        .BYTE $05,$55
-        .BYTE $06,$55
-        .BYTE $55
-denturesYPosArray
-        .BYTE $FE,$55
+        .BYTE $01,$55            ;      5 
+        .BYTE $02,$55            ;    3   
+        .BYTE $03,$55            ;  1     
+        .BYTE $04,$55            ;        
+        .BYTE $05,$55            ;        
+        .BYTE $06,$55            ;        
+        .BYTE $55                ;   2    
+denturesYPosArray                ;     4  
+        .BYTE $FE,$55            ;       6
         .BYTE $02,$55
         .BYTE $FD,$55
         .BYTE $03,$55
         .BYTE $FC,$55
         .BYTE $04,$55
         .BYTE $55
-deltoidsXPosArray
-        .BYTE $FF,$00,$01,$55
-        .BYTE $55
-        .BYTE $FE,$FF,$00,$01,$02,$55
-        .BYTE $FD,$00,$03,$55
-        .BYTE $FC,$00,$04,$55
-        .BYTE $FA,$00,$06,$55
-        .BYTE $55
-deltoidsYPosArray
-        .BYTE $00,$FF,$00,$55
-        .BYTE $55
-        .BYTE $00,$FF,$FE,$FF,$00,$55
+
+deltoidsXPosArray                     
+        .BYTE $FF,$00,$01,$55         ;       6      
+        .BYTE $55                     ;              
+        .BYTE $FE,$FF,$00,$01,$02,$55 ;       5      
+        .BYTE $FD,$00,$03,$55         ;       4      
+        .BYTE $FC,$00,$04,$55         ;       3      
+        .BYTE $FA,$00,$06,$55         ;      313     
+        .BYTE $55                     ;     31 13    
+deltoidsYPosArray                     ;    4     4   
+        .BYTE $00,$FF,$00,$55         ;   5       5  
+        .BYTE $55                     ;              
+        .BYTE $00,$FF,$FE,$FF,$00,$55 ; 6           6
         .BYTE $01,$FD,$01,$55
         .BYTE $02,$FC,$02,$55
         .BYTE $04,$FA,$04,$55
         .BYTE $55
+
 pulsarCrossXPosArray
-        .BYTE $00,$01,$00,$FF,$55
-        .BYTE $00,$02,$00,$FE,$55
-        .BYTE $00,$03,$00,$FD,$55
-        .BYTE $00,$04,$00,$FC,$55
-        .BYTE $00,$05,$00,$FB,$55
-        .BYTE $00,$06,$00,$FA,$55
-        .BYTE $55
-pulsarCrossYPosArray
-        .BYTE $FF,$00,$01,$00,$55
-        .BYTE $FE,$00,$02,$00,$55
-        .BYTE $FD,$00,$03,$00,$55
-        .BYTE $FC,$00,$04,$00,$55
-        .BYTE $FB,$00,$05,$00,$55
+        .BYTE $00,$01,$00,$FF,$55     ;       6      
+        .BYTE $00,$02,$00,$FE,$55     ;       5      
+        .BYTE $00,$03,$00,$FD,$55     ;       4      
+        .BYTE $00,$04,$00,$FC,$55     ;       3      
+        .BYTE $00,$05,$00,$FB,$55     ;       2      
+        .BYTE $00,$06,$00,$FA,$55     ;       1      
+        .BYTE $55                     ; 654321 123456
+pulsarCrossYPosArray                  ;       1      
+        .BYTE $FF,$00,$01,$00,$55     ;       2      
+        .BYTE $FE,$00,$02,$00,$55     ;       3      
+        .BYTE $FD,$00,$03,$00,$55     ;       4      
+        .BYTE $FC,$00,$04,$00,$55     ;       5      
+        .BYTE $FB,$00,$05,$00,$55     ;       6      
         .BYTE $FA,$00,$06,$00,$55
         .BYTE $55
+
 slothMultiCrossXPosArray
-        .BYTE $FF,$01,$01,$FF,$55
-        .BYTE $FE,$02,$02,$FE,$55
-        .BYTE $FD,$FF,$01,$03,$03,$01,$FF,$FD,$55
-        .BYTE $FD,$03,$03,$FD,$55
-        .BYTE $FC,$04,$04,$FC,$55
-        .BYTE $FB,$FD,$03,$05,$05,$03,$FD,$FB,$55
-        .BYTE $55
-slothMultiCrossYPosArray
-        .BYTE $FF,$FF,$01,$01,$55
-        .BYTE $FE,$FE,$02,$02,$55
-        .BYTE $FF,$FD,$FD,$FF,$01,$03,$03,$01,$55
+        .BYTE $FF,$01,$01,$FF,$55                 ;   6     6  
+        .BYTE $FE,$02,$02,$FE,$55                 ;  5       5 
+        .BYTE $FD,$FF,$01,$03,$03,$01,$FF,$FD,$55 ; 6 4 3 3 4 6
+        .BYTE $FD,$03,$03,$FD,$55                 ;    2   2   
+        .BYTE $FC,$04,$04,$FC,$55                 ;   3 1 1 3  
+        .BYTE $FB,$FD,$03,$05,$05,$03,$FD,$FB,$55 ;            
+        .BYTE $55                                 ;   3 1 1 3  
+slothMultiCrossYPosArray                          ;    2   2   
+        .BYTE $FF,$FF,$01,$01,$55                 ; 6 4 3 3 4 6
+        .BYTE $FE,$FE,$02,$02,$55                 ;  5       5 
+        .BYTE $FF,$FD,$FD,$FF,$01,$03,$03,$01,$55 ;   6     6  
         .BYTE $FD,$FD,$03,$03,$55
         .BYTE $FC,$FC,$04,$04,$55
         .BYTE $FD,$FB,$FB,$FD,$03,$05,$05,$03,$55
         .BYTE $55
-crossAndABitXPosArray
-        .BYTE $FF,$01,$55
-        .BYTE $FD,$03,$55
-        .BYTE $FE,$02,$55
-        .BYTE $FB,$05,$55
-        .BYTE $08,$08,$55
-        .BYTE $08,$08,$55
-        .BYTE $55
-crossAndABitYPosArray
-        .BYTE $FF,$01,$55
-        .BYTE $FD,$03,$55
-        .BYTE $01,$FF,$55
-        .BYTE $02,$FE,$55
-        .BYTE $0B,$0F,$55
-        .BYTE $0C,$0E,$55
-        .BYTE $55
+
+crossAndABitXPosArray         ;   2           
+        .BYTE $FF,$01,$55     ;           4   
+        .BYTE $FD,$03,$55     ;     1  3      
+        .BYTE $FE,$02,$55     ;               
+        .BYTE $FB,$05,$55     ;    3  1       
+        .BYTE $08,$08,$55     ; 4             
+        .BYTE $08,$08,$55     ;         2     
+        .BYTE $55             ;               
+crossAndABitYPosArray         ;               
+        .BYTE $FF,$01,$55     ;               
+        .BYTE $FD,$03,$55     ;               
+        .BYTE $01,$FF,$55     ;               
+        .BYTE $02,$FE,$55     ;               
+        .BYTE $0B,$0F,$55     ;               
+        .BYTE $0C,$0E,$55     ;              5
+        .BYTE $55             ;              6
+                              ;               
+                              ;              6
+                              ;              5
+
 star2XPosArray
-        .BYTE $FF,$55
-        .BYTE $01,$55
-        .BYTE $FE,$55
-        .BYTE $02,$55
-        .BYTE $01,$55
-        .BYTE $FF,$55
+        .BYTE $FF,$55  ;  1   
+        .BYTE $01,$55  ;    2 
+        .BYTE $FE,$55  ; 3    
+        .BYTE $02,$55  ;     4
+        .BYTE $01,$55  ;      
+        .BYTE $FF,$55  ;  6 5 
         .BYTE $55
 start2YPosArray
         .BYTE $FD,$55

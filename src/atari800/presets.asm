@@ -13,15 +13,14 @@ preset0
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_LAVENDER10
-        .BYTE $20 ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $5A ; unused1
+        .BYTE $20 ; unused2
 preset1
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -36,15 +35,14 @@ preset1
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,BLACK0
-        .BYTE $53 ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $53 ; unused2
 preset2
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -59,15 +57,14 @@ preset2
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED1
-        .BYTE $BE ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $41 ; unused1
+        .BYTE $BE ; unused2
 preset3
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -82,15 +79,14 @@ preset3
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED_ORANGE0
-        .BYTE $20 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $20 ; unused1
+        .BYTE $20 ; unused2
 preset4
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -105,15 +101,14 @@ preset4
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED_ORANGE0
-        .BYTE $43 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $20 ; unused1
+        .BYTE $43 ; unused2
 preset5
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -128,15 +123,14 @@ preset5
         .BYTE $40 ; bufferLength
         .BYTE $04 ; stroboscopicsEnabled
         .BYTE $04 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK15,RED_ORANGE0,RED_ORANGE2,RED_ORANGE8,RED_ORANGE10
-        .BYTE DARK_ORANGE12,DARK_ORANGE14,MEDIUM_BLUE15,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED1
-        .BYTE $94 ; explosionMode
+        .BYTE BLACK15,RED_ORANGE0,RED_ORANGE2,RED_ORANGE8 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE10,DARK_ORANGE12,DARK_ORANGE14,MEDIUM_BLUE15
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $41 ; unused1
+        .BYTE $94 ; unused2
 preset6
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -151,15 +145,14 @@ preset6
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_LAVENDER3
-        .BYTE $41 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $53 ; unused1
+        .BYTE $41 ; unused2
 preset7
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -174,15 +167,14 @@ preset7
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_LAVENDER3
-        .BYTE $59 ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $53 ; unused1
+        .BYTE $59 ; unused2
 preset8
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -197,15 +189,14 @@ preset8
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE4,COBALT_BLUE6,COBALT_BLUE10,MEDIUM_BLUE15
-        .BYTE COBALT_BLUE5,DARK_BLUE1,DARK_BLUE17,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED15
-        .BYTE $4F ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE4,COBALT_BLUE6,COBALT_BLUE10 ; colorValuesOfSomeSort
+        .BYTE MEDIUM_BLUE15,COBALT_BLUE5,DARK_BLUE1,DARK_BLUE17
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $4F ; unused1
+        .BYTE $4F ; unused2
 preset9
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -220,15 +211,14 @@ preset9
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED_ORANGE13
-        .BYTE $57 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $2D ; unused1
+        .BYTE $57 ; unused2
 preset10
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -243,15 +233,14 @@ preset10
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST2,RUST4,RUST6,RED_ORANGE11
-        .BYTE DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED1
-        .BYTE $C0 ; explosionMode
+        .BYTE BLACK0,RUST2,RUST4,RUST6 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE11,DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $41 ; unused1
+        .BYTE $C0 ; unused2
 preset11
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -266,15 +255,14 @@ preset11
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK1,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED3
-        .BYTE $52 ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$00,$00,$00,$01,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $43 ; unused1
+        .BYTE $52 ; unused2
 preset12
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -289,15 +277,14 @@ preset12
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST2,RUST4,RUST6,RED_ORANGE11
-        .BYTE DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED15
-        .BYTE $0B ; explosionMode
+        .BYTE BLACK0,RUST2,RUST4,RUST6 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE11,DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $4F ; unused1
+        .BYTE $0B ; unused2
 preset13
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -312,15 +299,14 @@ preset13
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST2,RUST4,RUST6,RED_ORANGE11
-        .BYTE DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
+        .BYTE BLACK0,RUST2,RUST4,RUST6 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE11,DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
         .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $00 ; unused2
 preset14
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -335,15 +321,14 @@ preset14
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8,OLIVE_GREEN10
-        .BYTE OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED3
-        .BYTE $09 ; explosionMode
+        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8 ; colorValuesOfSomeSort
+        .BYTE OLIVE_GREEN10,OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $43 ; unused1
+        .BYTE $09 ; unused2
 preset15
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -358,15 +343,14 @@ preset15
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8,OLIVE_GREEN10
-        .BYTE OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK2,BLACK2,BLACK3
-        .BYTE BLACK3,BLACK5,BLACK5,BLACK6,BLACK15
-        .BYTE RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0
-        .BYTE RED_ORANGE0,RED_ORANGE0,BLACK0,DARK_LAVENDER3
-        .BYTE $09 ; explosionMode
+        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8 ; colorValuesOfSomeSort
+        .BYTE OLIVE_GREEN10,OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$02,$02,$03,$03,$05,$05,$06 ; oozeSteps
+        .BYTE $0F,$20,$20,$20,$20,$20,$20,$20 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $53 ; unused1
+        .BYTE $09 ; unused2
 preset16
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -381,15 +365,14 @@ preset16
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE13,RED0,RED4,RED8
-        .BYTE RED12,DARK_LAVENDER0,DARK_LAVENDER4,BLACK3,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK1,BLACK1
-        .BYTE $50 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE13,RED0,RED4 ; colorValuesOfSomeSort
+        .BYTE RED8,RED12,DARK_LAVENDER0,DARK_LAVENDER4
+        .BYTE $03,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $01 ; explosionMode
+        .BYTE $01 ; unused1
+        .BYTE $50 ; unused2
 preset17
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -404,15 +387,14 @@ preset17
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE13,RED0,RED4,RED8
-        .BYTE RED12,DARK_LAVENDER0,DARK_LAVENDER4,BLACK3,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,RUST0,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK3,RED12
-        .BYTE $4F ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE13,RED0,RED4 ; colorValuesOfSomeSort
+        .BYTE RED8,RED12,DARK_LAVENDER0,DARK_LAVENDER4
+        .BYTE $03,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $10,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $03 ; explosionMode
+        .BYTE $4C ; unused1
+        .BYTE $4F ; unused2
 preset18
         .BYTE $02 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -427,15 +409,14 @@ preset18
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,MEDIUM_BLUE0
-        .BYTE $02 ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $80 ; unused1
+        .BYTE $02 ; unused2
 preset19
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -450,15 +431,14 @@ preset19
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_ORANGE1
-        .BYTE $0C ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $31 ; unused1
+        .BYTE $0C ; unused2
 preset20
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -473,15 +453,14 @@ preset20
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,BLACK0
-        .BYTE $01 ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $01 ; unused2
 preset21
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -496,15 +475,14 @@ preset21
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,RED13
-        .BYTE $32 ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $4D ; unused1
+        .BYTE $32 ; unused2
 preset22
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -519,15 +497,14 @@ preset22
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,BLACK2,BLACK14,BLACK4,BLACK12
-        .BYTE BLACK6,BLACK10,BLACK8,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,DARK_LAVENDER0
-        .BYTE $0A ; explosionMode
+        .BYTE BLACK0,BLACK2,BLACK14,BLACK4 ; colorValuesOfSomeSort
+        .BYTE BLACK12,BLACK6,BLACK10,BLACK8
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $50 ; unused1
+        .BYTE $0A ; unused2
 preset23
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -542,15 +519,14 @@ preset23
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE RUST2,RUST3,RUST4,RUST5,RUST6
-        .BYTE RUST7,RUST8,BLACK0,RED15
-        .BYTE $55 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$12,$13,$14,$15,$16,$17,$18 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $4F ; unused1
+        .BYTE $55 ; unused2
 preset24
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -565,15 +541,14 @@ preset24
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,DARK_LAVENDER3
-        .BYTE $0B ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $53 ; unused1
+        .BYTE $0B ; unused2
 preset25
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -588,15 +563,14 @@ preset25
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE13,RED0,RED4,RED8
-        .BYTE RED12,DARK_LAVENDER0,DARK_LAVENDER4,BLACK7,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,RUST0,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK3,BLACK2
-        .BYTE $50 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE13,RED0,RED4 ; colorValuesOfSomeSort
+        .BYTE RED8,RED12,DARK_LAVENDER0,DARK_LAVENDER4
+        .BYTE $07,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $10,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $03 ; explosionMode
+        .BYTE $02 ; unused1
+        .BYTE $50 ; unused2
 preset26
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -611,15 +585,14 @@ preset26
         .BYTE $24 ; bufferLength
         .BYTE $02 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK9,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,MEDIUM_GREEN0
-        .BYTE $08 ; explosionMode
+        .BYTE BLACK9,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $C0 ; unused1
+        .BYTE $08 ; unused2
 preset27
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -634,15 +607,14 @@ preset27
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED7
-        .BYTE $08 ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $47 ; unused1
+        .BYTE $08 ; unused2
 preset28
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -657,15 +629,14 @@ preset28
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0,BLACK5,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK3,DARK_LAVENDER4
-        .BYTE $49 ; explosionMode
+        .BYTE ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0
+        .BYTE $05,$00,$00,$00,$00,$00,$00,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $03 ; explosionMode
+        .BYTE $54 ; unused1
+        .BYTE $49 ; unused2
 preset29
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -680,15 +651,14 @@ preset29
         .BYTE $40 ; bufferLength
         .BYTE $02 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0,BLACK5,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK4,DARK_LAVENDER9
-        .BYTE $4D ; explosionMode
+        .BYTE ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0
+        .BYTE $05,$00,$00,$00,$00,$00,$00,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $04 ; explosionMode
+        .BYTE $59 ; unused1
+        .BYTE $4D ; unused2
 preset30
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -703,15 +673,14 @@ preset30
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE0,RED3,DARK_ORANGE0,RED_ORANGE6
-        .BYTE ORANGE_GREEN12,DARK_GREEN13,DARK_GREEN15,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK10
-        .BYTE $60 ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE0,RED3,DARK_ORANGE0 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE6,ORANGE_GREEN12,DARK_GREEN13,DARK_GREEN15
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $0A ; unused1
+        .BYTE $60 ; unused2
 preset31
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -726,15 +695,14 @@ preset31
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE0,RED3,DARK_ORANGE0,RED_ORANGE6
-        .BYTE ORANGE_GREEN12,DARK_GREEN13,DARK_GREEN15,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $03 ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE0,RED3,DARK_ORANGE0 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE6,ORANGE_GREEN12,DARK_GREEN13,DARK_GREEN15
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $03 ; unused2
 preset32
         .BYTE $02 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -749,15 +717,14 @@ preset32
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,BLACK2,BLACK14,BLACK4,BLACK12
-        .BYTE BLACK6,BLACK10,BLACK8,BLACK0,BLACK5
-        .BYTE BLACK5,BLACK5,BLACK5,BLACK5,BLACK5
-        .BYTE BLACK5,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,DARK_LAVENDER0
-        .BYTE $4C ; explosionMode
+        .BYTE BLACK0,BLACK2,BLACK14,BLACK4 ; colorValuesOfSomeSort
+        .BYTE BLACK12,BLACK6,BLACK10,BLACK8
+        .BYTE $00,$05,$05,$05,$05,$05,$05,$05 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $50 ; unused1
+        .BYTE $4C ; unused2
 preset33
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -772,15 +739,14 @@ preset33
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,BLACK2,BLACK14,BLACK4,BLACK12
-        .BYTE BLACK6,BLACK10,BLACK8,BLACK0,BLACK5
-        .BYTE BLACK5,BLACK5,BLACK5,BLACK5,BLACK5
-        .BYTE BLACK5,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,DARK_LAVENDER9
-        .BYTE $0B ; explosionMode
+        .BYTE BLACK0,BLACK2,BLACK14,BLACK4 ; colorValuesOfSomeSort
+        .BYTE BLACK12,BLACK6,BLACK10,BLACK8
+        .BYTE $00,$05,$05,$05,$05,$05,$05,$05 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $59 ; unused1
+        .BYTE $0B ; unused2
 preset34
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -795,15 +761,14 @@ preset34
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,BLACK2,BLACK14,BLACK4,BLACK12
-        .BYTE BLACK6,BLACK10,BLACK8,BLACK0,BLACK5
-        .BYTE BLACK5,BLACK5,BLACK5,BLACK5,BLACK5
-        .BYTE BLACK5,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,BLACK0
-        .BYTE $8A ; explosionMode
+        .BYTE BLACK0,BLACK2,BLACK14,BLACK4 ; colorValuesOfSomeSort
+        .BYTE BLACK12,BLACK6,BLACK10,BLACK8
+        .BYTE $00,$05,$05,$05,$05,$05,$05,$05 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $8A ; unused2
 preset35
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -818,15 +783,14 @@ preset35
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED1
-        .BYTE $54 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $41 ; unused1
+        .BYTE $54 ; unused2
 preset36
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -841,15 +805,14 @@ preset36
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_LAVENDER2
-        .BYTE $0A ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $52 ; unused1
+        .BYTE $0A ; unused2
 preset37
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -864,15 +827,14 @@ preset37
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST2,RUST4,RUST6,RED_ORANGE11
-        .BYTE DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED15
-        .BYTE $4C ; explosionMode
+        .BYTE BLACK0,RUST2,RUST4,RUST6 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE11,DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $4F ; unused1
+        .BYTE $4C ; unused2
 preset38
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -887,15 +849,14 @@ preset38
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST2,RUST4,RUST6,RED_ORANGE11
-        .BYTE DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $3F ; explosionMode
+        .BYTE BLACK0,RUST2,RUST4,RUST6 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE11,DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $3F ; unused2
 preset39
         .BYTE $02 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -910,15 +871,14 @@ preset39
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST2,RUST4,RUST6,RED_ORANGE11
-        .BYTE DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $8D ; explosionMode
+        .BYTE BLACK0,RUST2,RUST4,RUST6 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE11,DARK_ORANGE8,MEDIUM_BLUE3,DARK_BLUE8
+        .BYTE $00,$02,$02,$02,$02,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $8D ; unused2
 preset40
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -933,15 +893,14 @@ preset40
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK4,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK5,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,RUST0,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK3,RED14
-        .BYTE $0C ; explosionMode
+        .BYTE BLACK4,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $05,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $10,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $03 ; explosionMode
+        .BYTE $4E ; unused1
+        .BYTE $0C ; unused2
 preset41
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -956,15 +915,14 @@ preset41
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $45 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12
+        .BYTE $00,$00,$00,$00,$00,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $45 ; unused2
 preset42
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -979,15 +937,14 @@ preset42
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $06 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12
+        .BYTE $00,$00,$00,$00,$00,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $06 ; unused2
 preset43
         .BYTE $03 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1002,15 +959,14 @@ preset43
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_LAVENDER2
-        .BYTE $32 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12
+        .BYTE $00,$00,$00,$00,$00,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $52 ; unused1
+        .BYTE $32 ; unused2
 preset44
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1025,15 +981,14 @@ preset44
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE OLIVE_GREEN0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE RUST2,RUST3,RUST4,RUST5,RUST6
-        .BYTE RUST7,RUST8,BLACK0,COBALT_BLUE8
-        .BYTE $06 ; explosionMode
+        .BYTE OLIVE_GREEN0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$12,$13,$14,$15,$16,$17,$18 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $68 ; unused1
+        .BYTE $06 ; unused2
 preset45
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1048,15 +1003,14 @@ preset45
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE0,RED3,DARK_ORANGE0,RED_ORANGE6
-        .BYTE ORANGE_GREEN12,DARK_GREEN13,DARK_GREEN15,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $A3 ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE0,RED3,DARK_ORANGE0 ; colorValuesOfSomeSort
+        .BYTE RED_ORANGE6,ORANGE_GREEN12,DARK_GREEN13,DARK_GREEN15
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $A3 ; unused2
 preset46
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1071,15 +1025,14 @@ preset46
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST6,RUST8,RUST10,RUST12
-        .BYTE RUST14,RED_ORANGE0,RED_ORANGE2,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,MEDIUM_BLUE0
-        .BYTE $48 ; explosionMode
+        .BYTE BLACK0,RUST6,RUST8,RUST10 ; colorValuesOfSomeSort
+        .BYTE RUST12,RUST14,RED_ORANGE0,RED_ORANGE2
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $80 ; unused1
+        .BYTE $48 ; unused2
 preset47
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1094,15 +1047,14 @@ preset47
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10,ORANGE_GREEN12
-        .BYTE ORANGE_GREEN14,ORANGE0,ORANGE2,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $F7 ; explosionMode
+        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10 ; colorValuesOfSomeSort
+        .BYTE ORANGE_GREEN12,ORANGE_GREEN14,ORANGE0,ORANGE2
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $F7 ; unused2
 preset48
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1117,15 +1069,14 @@ preset48
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10,ORANGE_GREEN12
-        .BYTE ORANGE_GREEN14,ORANGE0,ORANGE2,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED4
-        .BYTE $44 ; explosionMode
+        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10 ; colorValuesOfSomeSort
+        .BYTE ORANGE_GREEN12,ORANGE_GREEN14,ORANGE0,ORANGE2
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $44 ; unused1
+        .BYTE $44 ; unused2
 preset49
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1140,15 +1091,14 @@ preset49
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10,ORANGE_GREEN12
-        .BYTE ORANGE_GREEN14,ORANGE0,ORANGE2,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK7
-        .BYTE $44 ; explosionMode
+        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10 ; colorValuesOfSomeSort
+        .BYTE ORANGE_GREEN12,ORANGE_GREEN14,ORANGE0,ORANGE2
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $07 ; unused1
+        .BYTE $44 ; unused2
 preset50
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1163,15 +1113,14 @@ preset50
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,COBALT_BLUE6,COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12
-        .BYTE COBALT_BLUE14,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $8A ; explosionMode
+        .BYTE BLACK0,COBALT_BLUE6,COBALT_BLUE8,COBALT_BLUE10 ; colorValuesOfSomeSort
+        .BYTE COBALT_BLUE12,COBALT_BLUE14,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $8A ; unused2
 preset51
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1186,15 +1135,14 @@ preset51
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10,ORANGE_GREEN12
-        .BYTE ORANGE_GREEN14,ORANGE0,ORANGE2,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE RED0,RED0,RED_ORANGE0,RED_ORANGE0,RED0
-        .BYTE RED_ORANGE0,RED0,BLACK0,DARK_ORANGE5
-        .BYTE $09 ; explosionMode
+        .BYTE BLACK0,ORANGE_GREEN6,ORANGE_GREEN8,ORANGE_GREEN10 ; colorValuesOfSomeSort
+        .BYTE ORANGE_GREEN12,ORANGE_GREEN14,ORANGE0,ORANGE2
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$40,$40,$20,$20,$40,$20,$40 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $35 ; unused1
+        .BYTE $09 ; unused2
 preset52
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1209,15 +1157,14 @@ preset52
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $3E ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE0,ULTRAMARINE_BLUE2,ULTRAMARINE_BLUE4 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE10,MEDIUM_BLUE0
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $3E ; unused2
 preset53
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1232,15 +1179,14 @@ preset53
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE DARK_BLUE0,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE12,ULTRAMARINE_BLUE10
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE4,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $4A ; explosionMode
+        .BYTE DARK_BLUE0,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE12 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE10,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE4
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $4A ; unused2
 preset54
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1255,15 +1201,14 @@ preset54
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE DARK_BLUE0,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE12,ULTRAMARINE_BLUE10
-        .BYTE ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE4,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_LAVENDER2
-        .BYTE $45 ; explosionMode
+        .BYTE DARK_BLUE0,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE14,ULTRAMARINE_BLUE12 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE10,ULTRAMARINE_BLUE8,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE4
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $52 ; unused1
+        .BYTE $45 ; unused2
 preset55
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1278,15 +1223,14 @@ preset55
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE4,COBALT_BLUE6,COBALT_BLUE10,MEDIUM_BLUE15
-        .BYTE COBALT_BLUE5,DARK_BLUE1,DARK_BLUE17,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK4
-        .BYTE $FF ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE4,COBALT_BLUE6,COBALT_BLUE10 ; colorValuesOfSomeSort
+        .BYTE MEDIUM_BLUE15,COBALT_BLUE5,DARK_BLUE1,DARK_BLUE17
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $04 ; unused1
+        .BYTE $FF ; unused2
 preset56
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1301,15 +1245,14 @@ preset56
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK4,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,RED_ORANGE0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,RUST0,BLACK1,BLACK2,BLACK3
-        .BYTE BLACK4,BLACK5,BLACK6,BLACK7,BLACK15
-        .BYTE RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0
-        .BYTE RED_ORANGE0,RED_ORANGE0,BLACK7,RED3
-        .BYTE $4F ; explosionMode
+        .BYTE BLACK4,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6
+        .BYTE $20,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $10,$01,$02,$03,$04,$05,$06,$07 ; oozeSteps
+        .BYTE $0F,$20,$20,$20,$20,$20,$20,$20 ; oozeCycles
+        .BYTE $07 ; explosionMode
+        .BYTE $43 ; unused1
+        .BYTE $4F ; unused2
 preset57
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1324,15 +1267,14 @@ preset57
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6
-        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,RUST0,BLACK1,BLACK2,BLACK3
-        .BYTE BLACK4,BLACK5,BLACK6,BLACK7,BLACK15
-        .BYTE RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0
-        .BYTE RED_ORANGE0,RED_ORANGE0,BLACK0,BLACK0
-        .BYTE $D9 ; explosionMode
+        .BYTE BLACK0,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6,ULTRAMARINE_BLUE6
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $10,$01,$02,$03,$04,$05,$06,$07 ; oozeSteps
+        .BYTE $0F,$20,$20,$20,$20,$20,$20,$20 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $D9 ; unused2
 preset58
         .BYTE $02 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1347,15 +1289,14 @@ preset58
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8,OLIVE_GREEN10
-        .BYTE OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK10
-        .BYTE $D6 ; explosionMode
+        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8 ; colorValuesOfSomeSort
+        .BYTE OLIVE_GREEN10,OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $0A ; unused1
+        .BYTE $D6 ; unused2
 preset59
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1370,15 +1311,14 @@ preset59
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8,OLIVE_GREEN10
-        .BYTE OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE RED_ORANGE14,RED_ORANGE14,RED_ORANGE14,RED_ORANGE14,RED_ORANGE14
-        .BYTE RED_ORANGE14,RED_ORANGE14,BLACK0,RED5
-        .BYTE $58 ; explosionMode
+        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8 ; colorValuesOfSomeSort
+        .BYTE OLIVE_GREEN10,OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$2E,$2E,$2E,$2E,$2E,$2E,$2E ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $45 ; unused1
+        .BYTE $58 ; unused2
 preset60
         .BYTE $02 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1393,15 +1333,14 @@ preset60
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_ORANGE3
-        .BYTE $41 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,COBALT_BLUE8,COBALT_BLUE10,COBALT_BLUE12
+        .BYTE $00,$01,$01,$01,$01,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $33 ; unused1
+        .BYTE $41 ; unused2
 preset61
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1416,15 +1355,14 @@ preset61
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE RED0,RED0,RED0,RED0,RED0
-        .BYTE RED0,RED0,BLACK0,RED12
-        .BYTE $C0 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$40,$40,$40,$40,$40,$40,$40 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $4C ; unused1
+        .BYTE $C0 ; unused2
 preset62
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1439,15 +1377,14 @@ preset62
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE RED0,RED0,RED0,RED1,RED0
-        .BYTE RED0,RED0,BLACK0,BLACK9
-        .BYTE $70 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$40,$40,$40,$41,$40,$40,$40 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $09 ; unused1
+        .BYTE $70 ; unused2
 preset63
         .BYTE $02 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1462,15 +1399,14 @@ preset63
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,RED5
-        .BYTE $59 ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $45 ; unused1
+        .BYTE $59 ; unused2
 preset64
         .BYTE $04 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1485,15 +1421,14 @@ preset64
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,BLACK2,BLACK14,BLACK4,BLACK12
-        .BYTE BLACK6,BLACK10,BLACK8,BLACK0,BLACK2
-        .BYTE BLACK2,BLACK2,BLACK2,BLACK2,BLACK2
-        .BYTE BLACK2,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,RED8
-        .BYTE $4F ; explosionMode
+        .BYTE BLACK0,BLACK2,BLACK14,BLACK4 ; colorValuesOfSomeSort
+        .BYTE BLACK12,BLACK6,BLACK10,BLACK8
+        .BYTE $00,$02,$02,$02,$02,$02,$02,$02 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $48 ; unused1
+        .BYTE $4F ; unused2
 preset65
         .BYTE $04 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1508,15 +1443,14 @@ preset65
         .BYTE $40 ; bufferLength
         .BYTE $02 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK7,BLACK2,BLACK14,BLACK4,BLACK12
-        .BYTE BLACK6,BLACK10,BLACK8,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,DARK_LAVENDER10
-        .BYTE $0A ; explosionMode
+        .BYTE BLACK7,BLACK2,BLACK14,BLACK4 ; colorValuesOfSomeSort
+        .BYTE BLACK12,BLACK6,BLACK10,BLACK8
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $5A ; unused1
+        .BYTE $0A ; unused2
 preset66
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1531,15 +1465,14 @@ preset66
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,DARK_LAVENDER3
-        .BYTE $30 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $53 ; unused1
+        .BYTE $30 ; unused2
 preset67
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1554,15 +1487,14 @@ preset67
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8,OLIVE_GREEN10
-        .BYTE OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK2,BLACK2,BLACK3
-        .BYTE BLACK3,BLACK5,BLACK5,BLACK6,BLACK15
-        .BYTE RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0,RED_ORANGE0
-        .BYTE RED_ORANGE0,RED_ORANGE0,BLACK0,DARK_ORANGE2
-        .BYTE $0A ; explosionMode
+        .BYTE BLACK0,OLIVE_GREEN4,OLIVE_GREEN6,OLIVE_GREEN8 ; colorValuesOfSomeSort
+        .BYTE OLIVE_GREEN10,OLIVE_GREEN12,OLIVE_GREEN10,OLIVE_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $01,$02,$02,$03,$03,$05,$05,$06 ; oozeSteps
+        .BYTE $0F,$20,$20,$20,$20,$20,$20,$20 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $32 ; unused1
+        .BYTE $0A ; unused2
 preset68
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1577,15 +1509,14 @@ preset68
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK4,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK5,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,RUST0,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK2,BLACK10
-        .BYTE $4D ; explosionMode
+        .BYTE BLACK4,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $05,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $10,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $02 ; explosionMode
+        .BYTE $0A ; unused1
+        .BYTE $4D ; unused2
 preset69
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1600,15 +1531,14 @@ preset69
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK10
-        .BYTE $A1 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $0A ; unused1
+        .BYTE $A1 ; unused2
 preset70
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1623,15 +1553,14 @@ preset70
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK8,BLACK8,BLACK8
-        .BYTE BLACK8,BLACK8,BLACK8,BLACK8,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,RED5
-        .BYTE $4E ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$08,$08,$08,$08,$08,$08,$08 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $45 ; unused1
+        .BYTE $4E ; unused2
 preset71
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1646,15 +1575,14 @@ preset71
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8,ULTRAMARINE_BLUE8
-        .BYTE DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8,BLACK0,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,RUST0,RUST0,RUST0,RUST0
-        .BYTE RUST0,RUST0,RUST0,RUST0,BLACK15
-        .BYTE ORANGE15,ORANGE15,ORANGE15,ORANGE15,ORANGE15
-        .BYTE ORANGE15,ORANGE15,BLACK0,RED5
-        .BYTE $0B ; explosionMode
+        .BYTE BLACK0,RUST8,DARK_ORANGE8,DARK_LAVENDER8 ; colorValuesOfSomeSort
+        .BYTE ULTRAMARINE_BLUE8,DARK_BLUE8,OLIVE_GREEN8,DARK_GREEN8
+        .BYTE $00,$01,$01,$01,$01,$01,$01,$01 ; oozeRates
+        .BYTE $10,$10,$10,$10,$10,$10,$10,$10 ; oozeSteps
+        .BYTE $0F,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $45 ; unused1
+        .BYTE $0B ; unused2
 preset72
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1669,15 +1597,14 @@ preset72
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK11
-        .BYTE $4B ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $0B ; unused1
+        .BYTE $4B ; unused2
 preset73
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1692,15 +1619,14 @@ preset73
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,RUST4
-        .BYTE RUST4,RUST4,RUST4,RUST4,RUST4
-        .BYTE RUST4,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK12
-        .BYTE $4B ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$14,$14,$14,$14,$14,$14,$14 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$00,$00,$00,$00,$00,$00,$00 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $0C ; unused1
+        .BYTE $4B ; unused2
 preset74
         .BYTE $02 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1715,15 +1641,14 @@ preset74
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,RUST4
-        .BYTE RUST4,RUST4,RUST4,RUST4,RUST4
-        .BYTE RUST4,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK9
-        .BYTE $C4 ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$14,$14,$14,$14,$14,$14,$14 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$00,$00,$00,$00,$00,$00,$00 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $09 ; unused1
+        .BYTE $C4 ; unused2
 preset75
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1738,15 +1663,14 @@ preset75
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,RUST4
-        .BYTE RUST4,RUST4,RUST4,RUST4,RUST4
-        .BYTE RUST4,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,RED4
-        .BYTE $4F ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$14,$14,$14,$14,$14,$14,$14 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$00,$00,$00,$00,$00,$00,$00 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $44 ; unused1
+        .BYTE $4F ; unused2
 preset76
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1761,15 +1685,14 @@ preset76
         .BYTE $40 ; bufferLength
         .BYTE $01 ; stroboscopicsEnabled
         .BYTE $01 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK5,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,RUST4
-        .BYTE RUST4,RUST4,RUST4,RUST4,RUST4
-        .BYTE RUST4,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,MEDIUM_BLUE0
-        .BYTE $69 ; explosionMode
+        .BYTE BLACK5,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$14,$14,$14,$14,$14,$14,$14 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$00,$00,$00,$00,$00,$00,$00 ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $80 ; unused1
+        .BYTE $69 ; unused2
 preset77
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1784,15 +1707,14 @@ preset77
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK1,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK0
-        .BYTE $0C ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $01,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $00 ; explosionMode
+        .BYTE $00 ; unused1
+        .BYTE $0C ; unused2
 preset78
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1807,15 +1729,14 @@ preset78
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $02 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK1,BLACK3
-        .BYTE BLACK3,BLACK3,BLACK3,BLACK3,BLACK3
-        .BYTE BLACK3,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK1,BLACK12
-        .BYTE $4B ; explosionMode
+        .BYTE BLACK0,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $01,$03,$03,$03,$03,$03,$03,$03 ; oozeRates
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
+        .BYTE $01 ; explosionMode
+        .BYTE $0C ; unused1
+        .BYTE $4B ; unused2
 preset79
         .BYTE $01 ; cursorSpeed
         .BYTE $01 ; vectorMode
@@ -1830,15 +1751,14 @@ preset79
         .BYTE $40 ; bufferLength
         .BYTE $00 ; stroboscopicsEnabled
         .BYTE $05 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE DARK_ORANGE13,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4,DARK_ORANGE6
-        .BYTE DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK0,BLACK0,BLACK0,BLACK0
-        .BYTE BLACK0,BLACK1,BLACK1,BLACK1,BLACK1
-        .BYTE BLACK1,BLACK1,BLACK1,BLACK1,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK15,BLACK15,BLACK15
-        .BYTE BLACK15,BLACK15,BLACK0,BLACK6
+        .BYTE DARK_ORANGE13,DARK_ORANGE1,DARK_ORANGE2,DARK_ORANGE4 ; colorValuesOfSomeSort
+        .BYTE DARK_ORANGE6,DARK_ORANGE8,DARK_ORANGE10,DARK_ORANGE12
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00 ; oozeRates
+        .BYTE $01,$01,$01,$01,$01,$01,$01,$01 ; oozeSteps
+        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F ; oozeCycles
         .BYTE $00 ; explosionMode
+        .BYTE $06 ; unused1
+        .BYTE $00 ; unused2
 preset80
         .BYTE $7E ; cursorSpeed
         .BYTE $18 ; vectorMode
@@ -1853,15 +1773,14 @@ preset80
         .BYTE $50 ; bufferLength
         .BYTE $41 ; stroboscopicsEnabled
         .BYTE $52 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE RED5,RED3,DARK_ORANGE9,MEDIUM_BLUE8,RUST8
-        .BYTE BLACK12,DARK_LAVENDER0,MEDIUM_BLUE6,RED3,RED15
-        .BYTE RED12,RED15,DARK_LAVENDER2,DARK_LAVENDER3,DARK_ORANGE9
-        .BYTE DARK_BLUE2,RUST8,BLACK10,DARK_LAVENDER1,MEDIUM_BLUE4
-        .BYTE RED6,DARK_LAVENDER2,RED5,DARK_LAVENDER1,DARK_ORANGE9
-        .BYTE DARK_BLUE12,RUST8,BLACK11,DARK_LAVENDER0,MEDIUM_BLUE5
-        .BYTE RED6,DARK_LAVENDER2,RED5,DARK_LAVENDER1
-        .BYTE $52 ; explosionMode
+        .BYTE RED5,RED3,DARK_ORANGE9,MEDIUM_BLUE8 ; colorValuesOfSomeSort
+        .BYTE RUST8,BLACK12,DARK_LAVENDER0,MEDIUM_BLUE6
+        .BYTE $43,$4F,$4C,$4F,$52,$53,$39,$92 ; oozeRates
+        .BYTE $18,$0A,$51,$84,$46,$52,$45,$51 ; oozeSteps
+        .BYTE $39,$9C,$18,$0B,$50,$85,$46,$52 ; oozeCycles
+        .BYTE $45 ; explosionMode
+        .BYTE $51 ; unused1
+        .BYTE $52 ; unused2
 preset81
         .BYTE $39 ; cursorSpeed
         .BYTE $A6 ; vectorMode
@@ -1876,15 +1795,14 @@ preset81
         .BYTE $45 ; bufferLength
         .BYTE $39 ; stroboscopicsEnabled
         .BYTE $B0 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE RUST8,BLACK10,DARK_LAVENDER0,MEDIUM_BLUE4,RED3
-        .BYTE DARK_LAVENDER9,RED3,DARK_LAVENDER2,DARK_ORANGE9,OLIVE_GREEN10
-        .BYTE RUST8,BLACK4,DARK_ORANGE2,MEDIUM_GREEN4,RUST8
-        .BYTE BLACK7,RED_ORANGE8,DARK_ORANGE14,BLACK6,BLACK8
-        .BYTE MEDIUM_GREEN14,RUST8,BLACK8,RED8,MEDIUM_BLUE3
-        .BYTE RED7,RED7,RED9,DARK_GREEN8,RUST8
-        .BYTE BLACK14,DARK_LAVENDER1,MEDIUM_BLUE6,DARK_LAVENDER3
-        .BYTE $50 ; explosionMode
+        .BYTE RUST8,BLACK10,DARK_LAVENDER0,MEDIUM_BLUE4 ; colorValuesOfSomeSort
+        .BYTE RED3,DARK_LAVENDER9,RED3,DARK_LAVENDER2
+        .BYTE $39,$BA,$18,$04,$32,$C4,$18,$07 ; oozeRates
+        .BYTE $28,$3E,$06,$08,$CE,$18,$08,$48 ; oozeSteps
+        .BYTE $83,$47,$47,$49,$D8,$18,$0E,$51 ; oozeCycles
+        .BYTE $86 ; explosionMode
+        .BYTE $53 ; unused1
+        .BYTE $50 ; unused2
 preset82
         .BYTE $41 ; cursorSpeed
         .BYTE $52 ; vectorMode
@@ -1899,15 +1817,14 @@ preset82
         .BYTE $50 ; bufferLength
         .BYTE $86 ; stroboscopicsEnabled
         .BYTE $43 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE RED15,RED12,RED15,DARK_LAVENDER2,DARK_LAVENDER3
-        .BYTE RUST2,BLACK8,BLACK8,ORANGE_GREEN3,RUST8
-        .BYTE BLACK7,DARK_LAVENDER1,DARK_ORANGE14,BLACK6,BLACK1
-        .BYTE ORANGE_GREEN4,RUST8,BLACK11,DARK_LAVENDER0,MEDIUM_BLUE6
-        .BYTE RED3,RED8,RED12,RED9,DARK_LAVENDER3
-        .BYTE DARK_LAVENDER4,ORANGE_GREEN12,RUST8,BLACK8,RED_ORANGE1
-        .BYTE MEDIUM_BLUE3,RED2,RED8,RED1
-        .BYTE $F6 ; explosionMode
+        .BYTE RED15,RED12,RED15,DARK_LAVENDER2 ; colorValuesOfSomeSort
+        .BYTE DARK_LAVENDER3,RUST2,BLACK8,BLACK8
+        .BYTE $E3,$18,$07,$51,$3E,$06,$01,$E4 ; oozeRates
+        .BYTE $18,$0B,$50,$86,$43,$48,$4C,$49 ; oozeSteps
+        .BYTE $53,$54,$EC,$18,$08,$21,$83,$42 ; oozeCycles
+        .BYTE $48 ; explosionMode
+        .BYTE $41 ; unused1
+        .BYTE $F6 ; unused2
 preset83
         .BYTE $18 ; cursorSpeed
         .BYTE $10 ; vectorMode
@@ -1922,15 +1839,14 @@ preset83
         .BYTE $49 ; bufferLength
         .BYTE $58 ; stroboscopicsEnabled
         .BYTE $4C ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE RED15,DARK_ORANGE7,BLACK0,RUST9,BLACK4
-        .BYTE DARK_ORANGE3,BLACK10,RUST9,BLACK4,DARK_ORANGE10
-        .BYTE RUST4,RUST9,BLACK10,MEDIUM_BLUE5,RED11
-        .BYTE RED5,DARK_LAVENDER9,DARK_ORANGE1,DARK_ORANGE8,DARK_ORANGE5
-        .BYTE RUST14,RUST9,BLACK7,RED13,DARK_ORANGE14
-        .BYTE BLACK6,DARK_ORANGE15,RED_ORANGE8,RUST9,BLACK7
-        .BYTE DARK_LAVENDER2,DARK_ORANGE14,BLACK6,BLACK8
-        .BYTE $32 ; explosionMode
+        .BYTE RED15,DARK_ORANGE7,BLACK0,RUST9 ; colorValuesOfSomeSort
+        .BYTE BLACK4,DARK_ORANGE3,BLACK10,RUST9
+        .BYTE $04,$3A,$14,$19,$0A,$85,$4B,$45 ; oozeRates
+        .BYTE $59,$31,$38,$35,$1E,$19,$07,$4D ; oozeSteps
+        .BYTE $3E,$06,$3F,$28,$19,$07,$52,$3E ; oozeCycles
+        .BYTE $06 ; explosionMode
+        .BYTE $08 ; unused1
+        .BYTE $32 ; unused2
 preset84
         .BYTE $19 ; cursorSpeed
         .BYTE $07 ; vectorMode
@@ -1945,15 +1861,14 @@ preset84
         .BYTE $46 ; bufferLength
         .BYTE $19 ; stroboscopicsEnabled
         .BYTE $0A ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE RED_ORANGE1,MEDIUM_BLUE5,RED11,RED5,DARK_LAVENDER9
-        .BYTE DARK_ORANGE1,DARK_ORANGE9,DARK_LAVENDER0,RUST9,BLACK7
-        .BYTE MEDIUM_BLUE2,RED11,DARK_LAVENDER10,DARK_ORANGE7,DARK_LAVENDER10
-        .BYTE RUST9,BLACK7,RED13,DARK_ORANGE14,BLACK6
-        .BYTE MEDIUM_GREEN0,COBALT_BLUE4,RUST9,BLACK9,RED8
-        .BYTE MEDIUM_BLUE4,RED14,RED15,RED11,RED15
-        .BYTE COBALT_BLUE14,RUST9,BLACK4,DARK_ORANGE10
-        .BYTE $78 ; explosionMode
+        .BYTE RED_ORANGE1,MEDIUM_BLUE5,RED11,RED5 ; colorValuesOfSomeSort
+        .BYTE DARK_LAVENDER9,DARK_ORANGE1,DARK_ORANGE9,DARK_LAVENDER0
+        .BYTE $19,$07,$82,$4B,$5A,$37,$5A,$19 ; oozeRates
+        .BYTE $07,$4D,$3E,$06,$C0,$64,$19,$09 ; oozeSteps
+        .BYTE $48,$84,$4E,$4F,$4B,$4F,$6E,$19 ; oozeCycles
+        .BYTE $04 ; explosionMode
+        .BYTE $3A ; unused1
+        .BYTE $78 ; unused2
 preset85
         .BYTE $19 ; cursorSpeed
         .BYTE $0C ; vectorMode
@@ -1968,5 +1883,5 @@ preset85
         .BYTE $80 ; bufferLength
         .BYTE $82 ; stroboscopicsEnabled
         .BYTE $19 ; stroboFlashRate
-        ; colorValuesOfSomeSort
-        .BYTE BLACK9,RED6,MEDIUM_BLUE4
+        .BYTE BLACK9,RED6,MEDIUM_BLUE4 ; colorValuesOfSomeSort
+

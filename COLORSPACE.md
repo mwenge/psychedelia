@@ -15,6 +15,8 @@
   * [Dynamic Colourflows - an Intro](#dynamic-colourflows---an-intro)
   * [Individual Settings for Individual Colourflow Segments](#individual-settings-for-individual-colourflow-segments)
   * [Other commands affecting the display](#other-commands-affecting-the-display)
+  * [The Preset Banks](#the-preset-banks)
+* [Recording, Dual Modes, Pattern Definition, Foreground Painting](#recording-dual-modes-pattern-definition-foreground-painting)
   * [Record Mode](#record-mode)
   * [Dual Modes](#dual-modes)
   * [Pattern Definition](#pattern-definition)
@@ -424,7 +426,7 @@ what they do is to get a light form you know well (like that red Preset 3 of
 bank 0 that we used as an example earlier) and modify it using these
 parameters, separately or in combination.  You'll soon get the hang of things.
 
-The Preset Banks
+## The Preset Banks
 
 Once you've set up a good colourflow, it's convenient to be able to stash it
 away for later recall by a single key press.  There are 80 presets available
@@ -439,8 +441,9 @@ The presets come already assigned with 80 examples, but you can overwrite these
 with your own data.  To assign your own data to a preset, select bank as
 previously described, then type SHIFT together with the preset key you've
 chosen.  The message STASHING PRESET#nn will appear.  Your data is now assigned
-to that key.  Recording, Dual Modes, Pattern Definition, Foreground Painting
+to that key.  
 
+# Recording, Dual Modes, Pattern Definition, Foreground Painting
 
 ## Record Mode
 

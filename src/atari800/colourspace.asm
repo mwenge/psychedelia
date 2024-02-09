@@ -43,6 +43,7 @@ displayListInstructionsHiPtr = $C1
 numberOfLinesToDraw = $C2
 foregroundPixelsLoPtr = $C3
 foregroundPixelsHiPtr = $C4
+keyboardInputArrayLoPtr = $C5
 keyboardInputArrayHiPtr = $C6
 backgroundLinePtrLo = $C7
 backgroundLinePtrHi = $C8
@@ -102,7 +103,6 @@ generalHiPtr = $FE
 ;
 ; **** ZP POINTERS **** 
 ;
-keyboardInputArrayLoPtr = $C5
 ;
 ; **** FIELDS **** 
 ;

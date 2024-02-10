@@ -3,28 +3,29 @@
 <!-- vim-markdown-toc GFM -->
 
 * [COLOURSPACE a light synthesizer for Atari computers](#colourspace-a-light-synthesizer-for-atari-computers)
-  * [What is Colourspace?](#what-is-colourspace)
-  * [Loading COLOURSPACE](#loading-colourspace)
-  * [Auto Demo Mode](#auto-demo-mode)
-  * [Taking Control](#taking-control)
-  * [First Encounter](#first-encounter)
-  * [Keyboard Controls](#keyboard-controls)
-  * [The Colour Control Bank](#the-colour-control-bank)
-  * [Altering All Colours Simultaneously](#altering-all-colours-simultaneously)
-  * [Adjusting a Variable](#adjusting-a-variable)
-  * [Dynamic Colourflows - an Intro](#dynamic-colourflows---an-intro)
-  * [Individual Settings for Individual Colourflow Segments](#individual-settings-for-individual-colourflow-segments)
-  * [Other commands affecting the display](#other-commands-affecting-the-display)
-  * [The Preset Banks](#the-preset-banks)
+	* [What is Colourspace?](#what-is-colourspace)
+	* [Loading COLOURSPACE](#loading-colourspace)
+	* [Auto Demo Mode](#auto-demo-mode)
+	* [Taking Control](#taking-control)
+	* [First Encounter](#first-encounter)
+	* [Keyboard Controls](#keyboard-controls)
+	* [The Colour Control Bank](#the-colour-control-bank)
+	* [Altering All Colours Simultaneously](#altering-all-colours-simultaneously)
+	* [Adjusting a Variable](#adjusting-a-variable)
+	* [Dynamic Colourflows - an Intro](#dynamic-colourflows---an-intro)
+	* [Parameters defining the Ooze](#parameters-defining-the-ooze)
+	* [Individual Settings for Individual Colourflow Segments](#individual-settings-for-individual-colourflow-segments)
+	* [Other commands affecting the display](#other-commands-affecting-the-display)
+	* [The Preset Banks](#the-preset-banks)
 * [Recording, Dual Modes, Pattern Definition, Foreground Painting](#recording-dual-modes-pattern-definition-foreground-painting)
-  * [Record Mode](#record-mode)
-  * [Dual Modes](#dual-modes)
-  * [Pattern Definition](#pattern-definition)
-  * [Foreground Painting](#foreground-painting)
-  * [Saving your Atari Colourspace creations](#saving-your-atari-colourspace-creations)
-  * [Other Controls](#other-controls)
-  * [Using COLOURSPACE](#using-colourspace)
-  * [Summary of Commands](#summary-of-commands)
+	* [Record Mode](#record-mode)
+	* [Dual Modes](#dual-modes)
+	* [Pattern Definition](#pattern-definition)
+	* [Foreground Painting](#foreground-painting)
+	* [Saving your Atari Colourspace creations](#saving-your-atari-colourspace-creations)
+	* [Other Controls](#other-controls)
+	* [Using COLOURSPACE](#using-colourspace)
+	* [Summary of Commands](#summary-of-commands)
 
 <!-- vim-markdown-toc -->
 
@@ -286,7 +287,7 @@ zero.  Useful for turning off a dynamic colourflow quickly.  Beware using this
 function on the "colours" bank directly, though - it will set all your colours
 to black!).
 
-Parameters defining the Ooze
+## Parameters defining the Ooze
 
 The "ooze" is the term I use for the rhythmic cycles of pulsation used for
 dynamic colourflows.  Set up the simple dynamic flow example used just now, and

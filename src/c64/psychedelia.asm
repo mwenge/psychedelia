@@ -1199,7 +1199,7 @@ UpdateCurrentPattern
         LDX #$00
 txtPresetLoop   
         LDA txtPresetPatternNames,Y
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INY 
         INX 
         CPX #DISPLAY_LINE_LENGTH
@@ -1245,7 +1245,7 @@ DisplaySymmetry
         LDX #$00
 txtSymmLoop   
         LDA txtSymmetrySettingDescriptions,Y
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INY 
         INX 
         CPX #DISPLAY_LINE_LENGTH
@@ -1286,7 +1286,7 @@ JustLPressed
         JSR ClearLastLineOfScreen
         LDX #$00
 _Loop   LDA lineModeSettingDescriptions,Y
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INY 
         INX 
         CPX #DISPLAY_LINE_LENGTH
@@ -1380,7 +1380,7 @@ MaybeTPressed
         LDX #$00
 txtTrackingLoop   
         LDA txtTrackingOnOff,Y
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INY 
         INX 
         CPX #DISPLAY_LINE_LENGTH
@@ -1564,7 +1564,7 @@ pulsarYPosArray .BYTE $FF,$00,$01,$00,$55       ; 5432106012345
                 .BYTE $FA,$00,$06,$00,$55       ;       4      
                 .BYTE $00,$55                   ;       5      
 
-lastLineBufferPtr               .BYTE $FF,$FF,$FF,$FF,$FF,$FF
+statusLineBuffer                .BYTE $FF,$FF,$FF,$FF,$FF,$FF
 dataFreeDigitOne                .BYTE $FF
 dataFreeDigitTwo                .BYTE $FF
 dataFreeDigitThree              .BYTE $FF,$FF,$FF,$FF,$FF
@@ -1582,7 +1582,7 @@ ClearLastLineOfScreen
         LDX #NUM_COLS
 _Loop   
         LDA #$20
-        STA lastLineBufferPtr - $01,X
+        STA statusLineBuffer - $01,X
         STA SCREEN_RAM + $03BF,X
         DEX 
         BNE _Loop
@@ -1594,7 +1594,7 @@ _Loop
 WriteLastLineBufferToScreen    
         LDX #NUM_COLS
 _Loop   
-        LDA lastLineBufferPtr - $01,X
+        LDA statusLineBuffer - $01,X
         AND #$3F
         STA SCREEN_RAM + $03BF,X
         LDA #$0C
@@ -1939,7 +1939,7 @@ UpdateVariableLabel
 
         LDX #$00
 _Loop2  LDA txtVariableLabels,Y
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INY 
         INX 
         CPX #DISPLAY_LINE_LENGTH
@@ -2040,7 +2040,7 @@ SelectNewPreset
         JSR ClearLastLineOfScreen
         LDX #$00
 _Loop   LDA txtPreset,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #DISPLAY_LINE_LENGTH
         BNE _Loop
@@ -2091,6 +2091,7 @@ UpdateCurrentActivePreset
         ASL 
         TAY 
 
+DisplayActivatedOrStored
         LDX #$00
 _Loop   LDA txtPresetActivatedStored,Y
         STA customPatternValueBufferMessage,X
@@ -2101,10 +2102,12 @@ _Loop   LDA txtPresetActivatedStored,Y
 
         LDA shiftPressed
         AND #SHIFT_PRESSED
-        BNE ShiftWasPressed
+        BNE StoreCurrentValuesAsPreset
+
+        ; Shift wasn't pressed, so load the selected preset.
         JMP RefreshPresetData
 
-ShiftWasPressed   
+StoreCurrentValuesAsPreset   
         PLA 
         TAX 
         JSR GetPresetPointersUsingXRegister
@@ -2252,7 +2255,7 @@ LoadOrProgramBurstGenerator
         ; Display data free
         LDX #$00
 _Loop   LDA txtDataFree,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #DISPLAY_LINE_LENGTH
         BNE _Loop
@@ -2599,7 +2602,7 @@ DisplaySequFree
         LDX #$00
 SequencerTextLoop   
         LDA txtSequFree,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #DISPLAY_LINE_LENGTH
         BNE SequencerTextLoop
@@ -2700,7 +2703,7 @@ DisplaySequencerState
         JSR ClearLastLineOfScreen
         LDX #$00
 _Loop   LDA txtSequencer,Y
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INY 
         INX 
         CPX #DISPLAY_LINE_LENGTH
@@ -2757,7 +2760,7 @@ UpdateRecordingDisplay
 
         LDX #$00
 _Loop   LDA txtPlayBackRecord,Y
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INY 
         INX 
         CPX #DISPLAY_LINE_LENGTH
@@ -2826,7 +2829,7 @@ DisplayStoppedRecording
         TAY 
         JSR ClearLastLineOfScreen
 _Loop   LDA txtStopped,Y
-        STA lastLineBufferPtr,Y
+        STA statusLineBuffer,Y
         INY 
         CPY #DISPLAY_LINE_LENGTH
         BNE _Loop
@@ -3006,7 +3009,7 @@ EditCustomPattern
 
         LDX #$00
 _Loop   LDA txtDefineAllLevelPixels,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #NUM_ROWS + 1
         BNE _Loop
@@ -3183,7 +3186,7 @@ GetCustomPatternElement
         LDX #$00
 txtPatternLoop   
         LDA txtCustomPatterns,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #$0E
         BNE txtPatternLoop
@@ -3338,7 +3341,7 @@ PromptToSave
 
         LDX #$00
 _Loop   LDA txtSavePrompt,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #NUM_COLS
         BNE _Loop
@@ -3421,7 +3424,7 @@ DisplayLoadOrAbort
         LDX #$00
 DisplayLoadAbortLoop   
         LDA txtContinueLoadOrAbort,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #NUM_COLS
         BNE DisplayLoadAbortLoop
@@ -3523,7 +3526,7 @@ DisplayDemoModeMessage
 
 DisplayDemoMsgLoop   
         LDA demoMessage,X
-        STA lastLineBufferPtr,X
+        STA statusLineBuffer,X
         INX 
         CPX #NUM_COLS
         BNE DisplayDemoMsgLoop
